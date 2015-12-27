@@ -26,17 +26,17 @@ public class RootController {
     	model.addAttribute("username", MetaVersionUserDetails.of(principal).getUsername());
         return "index";
     }
-    @RequestMapping(value = "/foo")
-    public String foo(Principal principal, Model model,
-    		@RequestParam("username") String username,
-    		@RequestParam("password") char[] password) {
-    	final MetaVersionUserDetails ud = MetaVersionUserDetails.of(principal);
-    	if (!ud.isAdmin()) {
-    		throw new RuntimeException("Access denied!!");
-    	}
-    	model.addAttribute("username", ud.getUsername());
-    	userService.registerUser(username, new StringBuilder().append(password), false, ud);
-    	
-        return "index";
-    }
+//    @RequestMapping("/foo")
+//    public String foo(Principal principal, Model model,
+//    		@RequestParam("username") String username,
+//    		@RequestParam("password") char[] password) {
+//    	final MetaVersionUserDetails ud = MetaVersionUserDetails.of(principal);
+////    	if (!ud.isAdmin()) {
+////    		throw new RuntimeException("Access denied!!");
+////    	}
+//    	model.addAttribute("username", ud.getUsername());
+//    	userService.registerUser(username, new StringBuilder().append(password), false, ud);
+//    	
+//        return "index";
+//    }
 }

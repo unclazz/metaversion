@@ -25,6 +25,7 @@ public class MetaVersionSecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(final HttpSecurity http) throws Exception {
         http
             .authorizeRequests()
+            	.antMatchers("/foo").hasAuthority(MetaVersionGrantedAuthority.NAME_ADMINISTRATOR)
                 .anyRequest().authenticated()
                 .and()
             .formLogin()
