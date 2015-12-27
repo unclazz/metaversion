@@ -4,8 +4,10 @@ import org.springframework.security.core.GrantedAuthority;
 
 public class MetaVersionGrantedAuthority implements GrantedAuthority {
 	private static final long serialVersionUID = -4297213634794564411L;
-	public static final MetaVersionGrantedAuthority OPERATOR = new MetaVersionGrantedAuthority("OPERATOR"); 
-	public static final MetaVersionGrantedAuthority ADMINISTRATOR = new MetaVersionGrantedAuthority("ADMINISTRATOR"); 
+	public static final String NAME_OPERATOR = "OPERATOR";
+	public static final String NAME_ADMINISTRATOR = "ADMINISTRATOR";
+	public static final MetaVersionGrantedAuthority OPERATOR = new MetaVersionGrantedAuthority(NAME_OPERATOR); 
+	public static final MetaVersionGrantedAuthority ADMINISTRATOR = new MetaVersionGrantedAuthority(NAME_ADMINISTRATOR); 
 	private static final MetaVersionGrantedAuthority[] knownAuthorities = {OPERATOR, ADMINISTRATOR};
 	
 	public static MetaVersionGrantedAuthority of(final String name) {
@@ -23,7 +25,7 @@ public class MetaVersionGrantedAuthority implements GrantedAuthority {
 	
 	private MetaVersionGrantedAuthority(String name) {
 		this.name = name;
-		this.admin = name.equals("ADMINISTRATOR");
+		this.admin = name.equals(NAME_ADMINISTRATOR);
 	}
 	
 	public boolean isAdmin() {

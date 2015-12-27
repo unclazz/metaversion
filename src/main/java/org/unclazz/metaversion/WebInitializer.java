@@ -8,5 +8,4 @@ public class WebInitializer extends SpringBootServletInitializer {
     protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
         return application.sources(MetaVersionApplication.class);
     }
-
 }

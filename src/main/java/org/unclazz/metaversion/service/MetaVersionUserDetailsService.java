@@ -1,15 +1,15 @@
-package org.unclazz.metaversions.service;
+package org.unclazz.metaversion.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.unclazz.metaversion.MetaVersionUserDetails;
 import org.unclazz.metaversion.entity.User;
 import org.unclazz.metaversion.mapper.UserMapper;
 
-@Component
+@Service
 public class MetaVersionUserDetailsService implements UserDetailsService {
     @Autowired
     private UserMapper userMapper;

@@ -6,6 +6,7 @@ public class User {
 	private String name;
 	private String password;
 	private boolean admin;
+	
 	public boolean isAdmin() {
 		return admin;
 	}
