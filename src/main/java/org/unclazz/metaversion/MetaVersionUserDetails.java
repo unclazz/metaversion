@@ -1,4 +1,4 @@
-package org.unclazz.metaversions;
+package org.unclazz.metaversion;
 
 import java.security.Principal;
 import java.util.ArrayList;

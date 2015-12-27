@@ -1,4 +1,4 @@
-package org.unclazz.metaversions;
+package org.unclazz.metaversion;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;

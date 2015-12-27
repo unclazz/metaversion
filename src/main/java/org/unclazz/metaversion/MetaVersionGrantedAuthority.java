@@ -1,4 +1,4 @@
-package org.unclazz.metaversions;
+package org.unclazz.metaversion;
 
 import org.springframework.security.core.GrantedAuthority;
 

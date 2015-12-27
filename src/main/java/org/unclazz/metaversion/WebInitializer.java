@@ -1,4 +1,4 @@
-package org.unclazz.metaversions;
+package org.unclazz.metaversion;
 
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.context.web.SpringBootServletInitializer;

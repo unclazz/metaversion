@@ -5,9 +5,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
+import org.unclazz.metaversion.MetaVersionUserDetails;
 import org.unclazz.metaversion.entity.User;
 import org.unclazz.metaversion.mapper.UserMapper;
-import org.unclazz.metaversions.MetaVersionUserDetails;
 
 @Component
 public class MetaVersionUserDetailsService implements UserDetailsService {
