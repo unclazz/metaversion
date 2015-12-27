@@ -19,7 +19,7 @@ public interface UserMapper {
 	int selectNextVal();
 	int selectCountAll();
 	User selectOneById(int id);
-	User selectOneByNameAndPassword(String name, String password);
+	User selectOneByName(String name);
 	List<User> selectListByPartialName(String partialName);
 	int insert(User user);
 	int update(User user);

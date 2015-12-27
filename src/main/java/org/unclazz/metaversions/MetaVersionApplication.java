@@ -1,4 +1,4 @@
-package sample;
+package org.unclazz.metaversions;
 
 import javax.sql.DataSource;
 
@@ -13,10 +13,10 @@ import org.springframework.context.annotation.ComponentScan;
 
 @EnableAutoConfiguration
 @ComponentScan
-public class SampleApplication {
-	
-	private static final String MAPPER_SCAN_BASE_PACKAGE = "sample.mapper";
-	private static final String TYPE_ALIASES_PACKAGE = "sample.entity";
+public class MetaVersionApplication {
+	private static final String APPLICATION_BASE_PACKAGE = MetaVersionApplication.class.getPackage().getName();
+	private static final String MAPPER_SCAN_BASE_PACKAGE = APPLICATION_BASE_PACKAGE + ".mapper";
+	private static final String TYPE_ALIASES_PACKAGE = APPLICATION_BASE_PACKAGE + ".entity";
 
     @Bean
     @Autowired
@@ -36,7 +36,7 @@ public class SampleApplication {
     }
     
     public static void main(String[] args) throws Exception {
-        SpringApplication.run(SampleApplication.class, args);
+        SpringApplication.run(MetaVersionApplication.class, args);
     }
 
 }

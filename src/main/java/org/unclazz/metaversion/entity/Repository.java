@@ -4,22 +4,36 @@ public class Repository {
 	private int id;
 	private String name;
 	private String baseUrl;
-	public int getId() {
+	private String svnUsername;
+	private String svnPassword;
+	public final int getId() {
 		return id;
 	}
-	public void setId(int id) {
+	public final void setId(int id) {
 		this.id = id;
 	}
-	public String getName() {
+	public final String getName() {
 		return name;
 	}
-	public void setName(String name) {
+	public final void setName(String name) {
 		this.name = name;
 	}
-	public String getBaseUrl() {
+	public final String getBaseUrl() {
 		return baseUrl;
 	}
-	public void setBaseUrl(String baseUrl) {
+	public final void setBaseUrl(String baseUrl) {
 		this.baseUrl = baseUrl;
+	}
+	public final String getSvnUsername() {
+		return svnUsername;
+	}
+	public final void setSvnUsername(String svnUsername) {
+		this.svnUsername = svnUsername;
+	}
+	public final String getSvnPassword() {
+		return svnPassword;
+	}
+	public final void setSvnPassword(String svnPassword) {
+		this.svnPassword = svnPassword;
 	}
 }

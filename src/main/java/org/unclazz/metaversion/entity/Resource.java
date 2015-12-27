@@ -4,22 +4,22 @@ public class Resource {
 	private int id;
 	private int repositoryId;
 	private String path;
-	public int getId() {
+	public final int getId() {
 		return id;
 	}
-	public void setId(int id) {
+	public final void setId(int id) {
 		this.id = id;
 	}
-	public int getRepositoryId() {
+	public final int getRepositoryId() {
 		return repositoryId;
 	}
-	public void setRepositoryId(int repositoryId) {
+	public final void setRepositoryId(int repositoryId) {
 		this.repositoryId = repositoryId;
 	}
-	public String getPath() {
+	public final String getPath() {
 		return path;
 	}
-	public void setPath(String path) {
+	public final void setPath(String path) {
 		this.path = path;
 	}
 }
