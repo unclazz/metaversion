@@ -13,8 +13,8 @@ import org.springframework.context.annotation.ComponentScan;
 
 @EnableAutoConfiguration
 @ComponentScan
-public class MetaVersionApplication {
-	private static final String APPLICATION_BASE_PACKAGE = MetaVersionApplication.class.getPackage().getName();
+public class MVApplication {
+	private static final String APPLICATION_BASE_PACKAGE = MVApplication.class.getPackage().getName();
 	private static final String MAPPER_SCAN_BASE_PACKAGE = APPLICATION_BASE_PACKAGE + ".mapper";
 	private static final String TYPE_ALIASES_PACKAGE = APPLICATION_BASE_PACKAGE + ".entity";
 
@@ -36,7 +36,7 @@ public class MetaVersionApplication {
     }
     
     public static void main(String[] args) throws Exception {
-        SpringApplication.run(MetaVersionApplication.class, args);
+        SpringApplication.run(MVApplication.class, args);
     }
 
 }

@@ -5,12 +5,12 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-import org.unclazz.metaversion.MetaVersionUserDetails;
+import org.unclazz.metaversion.MVUserDetails;
 import org.unclazz.metaversion.entity.User;
 import org.unclazz.metaversion.mapper.UserMapper;
 
 @Service
-public class MetaVersionUserDetailsService implements UserDetailsService {
+public class MVUserDetailsService implements UserDetailsService {
     @Autowired
     private UserMapper userMapper;
 
@@ -30,6 +30,6 @@ public class MetaVersionUserDetailsService implements UserDetailsService {
         }
         
         // レコード情報からUserDetailsオブジェクトを作成して返す
-        return MetaVersionUserDetails.of(user);
+        return MVUserDetails.of(user);
     }
 }

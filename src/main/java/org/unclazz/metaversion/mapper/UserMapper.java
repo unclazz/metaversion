@@ -5,7 +5,7 @@ import java.util.List;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
-import org.unclazz.metaversion.MetaVersionUserDetails;
+import org.unclazz.metaversion.MVUserDetails;
 import org.unclazz.metaversion.entity.HasColumnName;
 import org.unclazz.metaversion.entity.LimitOffsetClause;
 import org.unclazz.metaversion.entity.OrderByClause;
@@ -34,7 +34,7 @@ public interface UserMapper {
 	
 	@Insert("insert into metaversion_user (id, name, password, admin, create_user_id, update_user_id) "
 			+ "values (#{user.id}, #{user.name}, #{user.password}, #{user.admin}, #{auth.id}, #{auth.id})")
-	int insert(@Param("user") User user, @Param("auth") MetaVersionUserDetails auth);
+	int insert(@Param("user") User user, @Param("auth") MVUserDetails auth);
 //	int update(User user);
 //	int deleteLogicallyById(int id, LimitOffsetClause limitOffset, OrderByClause orderBy);
 }

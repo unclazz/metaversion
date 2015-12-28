@@ -8,8 +8,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.unclazz.metaversion.MetaVersionGrantedAuthority;
-import org.unclazz.metaversion.MetaVersionUserDetails;
+import org.unclazz.metaversion.MVGrantedAuthority;
+import org.unclazz.metaversion.MVUserDetails;
 import org.unclazz.metaversion.service.UserService;
 
 @Controller
@@ -23,7 +23,7 @@ public class RootController {
     }
     @RequestMapping("/index")
     public String index(Principal principal, Model model) {
-    	model.addAttribute("username", MetaVersionUserDetails.of(principal).getUsername());
+    	model.addAttribute("username", MVUserDetails.of(principal).getUsername());
         return "index";
     }
 //    @RequestMapping("/foo")

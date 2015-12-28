@@ -8,7 +8,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.unclazz.metaversion.entity.User;
 
-public class MetaVersionUserDetails extends org.springframework.security.core.userdetails.User {
+public class MVUserDetails extends org.springframework.security.core.userdetails.User {
 	private static final long serialVersionUID = 2213449577870703888L;
 	
 	private static List<GrantedAuthority> emptyAuthorities() {
@@ -16,28 +16,28 @@ public class MetaVersionUserDetails extends org.springframework.security.core.us
 	}
 	private static List<GrantedAuthority> operatorAuthorities() {
 		final List<GrantedAuthority> l = emptyAuthorities();
-		l.add(MetaVersionGrantedAuthority.OPERATOR);
+		l.add(MVGrantedAuthority.OPERATOR);
 		return l;
 	}
 	private static List<GrantedAuthority> administratorAuthorities() {
 		final List<GrantedAuthority> l = operatorAuthorities();
-		l.add(MetaVersionGrantedAuthority.ADMINISTRATOR);
+		l.add(MVGrantedAuthority.ADMINISTRATOR);
 		return l;
 	}
-	public static MetaVersionUserDetails of(final User user) {
-		return new MetaVersionUserDetails(user.getId(), user.getName(), user.getPassword(), user.isAdmin());
+	public static MVUserDetails of(final User user) {
+		return new MVUserDetails(user.getId(), user.getName(), user.getPassword(), user.isAdmin());
 	}
-	public static MetaVersionUserDetails of(final Principal principal) {
-		return (MetaVersionUserDetails) ((Authentication) principal).getPrincipal();
+	public static MVUserDetails of(final Principal principal) {
+		return (MVUserDetails) ((Authentication) principal).getPrincipal();
 	}
 	
-	public MetaVersionUserDetails() {
+	public MVUserDetails() {
         super("INVALID", "INVALID", false, false, false, false, emptyAuthorities());
     }
 	
-	public MetaVersionUserDetails(final int id, final String username, final String passeord, final boolean isAdmin) {
-		super(username, passeord, true, true, true, true, isAdmin ? administratorAuthorities() : operatorAuthorities());
-		this.admin = isAdmin;
+	public MVUserDetails(final int id, final String username, final String passeord, final boolean admin) {
+		super(username, passeord, true, true, true, true, admin ? administratorAuthorities() : operatorAuthorities());
+		this.admin = admin;
 	}
 	
 	private int id;

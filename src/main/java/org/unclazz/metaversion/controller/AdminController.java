@@ -8,8 +8,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.unclazz.metaversion.MetaVersionGrantedAuthority;
-import org.unclazz.metaversion.MetaVersionUserDetails;
+import org.unclazz.metaversion.MVGrantedAuthority;
+import org.unclazz.metaversion.MVUserDetails;
 import org.unclazz.metaversion.service.UserService;
 
 @Controller
@@ -21,7 +21,7 @@ public class AdminController {
     public String foo(Principal principal, Model model,
     		@RequestParam("username") String username,
     		@RequestParam("password") char[] password) {
-    	final MetaVersionUserDetails ud = MetaVersionUserDetails.of(principal);
+    	final MVUserDetails ud = MVUserDetails.of(principal);
 //    	if (!ud.isAdmin()) {
 //    		throw new RuntimeException("Access denied!!");
 //    	}

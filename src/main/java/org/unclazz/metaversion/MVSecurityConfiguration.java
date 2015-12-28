@@ -16,7 +16,7 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 @Configuration
 @EnableWebMvcSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true, securedEnabled=true)
-public class MetaVersionSecurityConfig extends WebSecurityConfigurerAdapter {
+public class MVSecurityConfiguration extends WebSecurityConfigurerAdapter {
     private final PasswordEncoder passwordEncoder = new StandardPasswordEncoder();
 	@Autowired
 	private UserDetailsService userDetailsService;
@@ -25,7 +25,7 @@ public class MetaVersionSecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(final HttpSecurity http) throws Exception {
         http
             .authorizeRequests()
-            	.antMatchers("/foo").hasAuthority(MetaVersionGrantedAuthority.NAME_ADMINISTRATOR)
+            	.antMatchers("/foo").hasAuthority(MVGrantedAuthority.NAME_ADMINISTRATOR)
                 .anyRequest().authenticated()
                 .and()
             .formLogin()

@@ -2,17 +2,17 @@ package org.unclazz.metaversion;
 
 import org.springframework.security.core.GrantedAuthority;
 
-public class MetaVersionGrantedAuthority implements GrantedAuthority {
+public class MVGrantedAuthority implements GrantedAuthority {
 	private static final long serialVersionUID = -4297213634794564411L;
 	public static final String NAME_OPERATOR = "OPERATOR";
 	public static final String NAME_ADMINISTRATOR = "ADMINISTRATOR";
-	public static final MetaVersionGrantedAuthority OPERATOR = new MetaVersionGrantedAuthority(NAME_OPERATOR); 
-	public static final MetaVersionGrantedAuthority ADMINISTRATOR = new MetaVersionGrantedAuthority(NAME_ADMINISTRATOR); 
-	private static final MetaVersionGrantedAuthority[] knownAuthorities = {OPERATOR, ADMINISTRATOR};
+	public static final MVGrantedAuthority OPERATOR = new MVGrantedAuthority(NAME_OPERATOR); 
+	public static final MVGrantedAuthority ADMINISTRATOR = new MVGrantedAuthority(NAME_ADMINISTRATOR); 
+	private static final MVGrantedAuthority[] knownAuthorities = {OPERATOR, ADMINISTRATOR};
 	
-	public static MetaVersionGrantedAuthority of(final String name) {
+	public static MVGrantedAuthority of(final String name) {
 		final String upperCased = name.toUpperCase();
-		for (final MetaVersionGrantedAuthority auth : knownAuthorities) {
+		for (final MVGrantedAuthority auth : knownAuthorities) {
 			if (auth.equals(upperCased)) {
 				return auth;
 			}
@@ -23,7 +23,7 @@ public class MetaVersionGrantedAuthority implements GrantedAuthority {
 	private final String name;
 	private final boolean admin;
 	
-	private MetaVersionGrantedAuthority(String name) {
+	private MVGrantedAuthority(String name) {
 		this.name = name;
 		this.admin = name.equals(NAME_ADMINISTRATOR);
 	}
@@ -54,7 +54,7 @@ public class MetaVersionGrantedAuthority implements GrantedAuthority {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		MetaVersionGrantedAuthority other = (MetaVersionGrantedAuthority) obj;
+		MVGrantedAuthority other = (MVGrantedAuthority) obj;
 		if (admin != other.admin)
 			return false;
 		if (name == null) {
