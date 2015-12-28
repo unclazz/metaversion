@@ -14,12 +14,12 @@ public class UserService {
     @Autowired
 	private UserMapper userMapper;
 	
-	public void registerUser(String name, CharSequence rawPassord, boolean isAdmin, MVUserDetails auth) {
+	public void registerUser(String name, CharSequence rawPassord, boolean admin, MVUserDetails auth) {
 		final User user = new User();
 		user.setId(userMapper.selectNextVal());
 		user.setName(name);
 		user.setPassword(passwordEncoder.encode(rawPassord));
-		user.setAdmin(isAdmin);
+		user.setAdmin(admin);
 		userMapper.insert(user, auth);
 	}
 }
