@@ -2,8 +2,8 @@ package org.unclazz.metaversion.mapper;
 
 import java.util.List;
 
-import org.unclazz.metaversion.entity.CommitLogImportStatus;
+import org.unclazz.metaversion.entity.SvnLogImportStatus;
 
 public interface CommitLogImportStatusMapper {
-	List<CommitLogImportStatus> selectAll();
+	List<SvnLogImportStatus> selectAll();
 }
