@@ -39,12 +39,14 @@ public class LimitOffsetClause {
 	}
 	@Override
 	public String toString() {
-		if (limit < 1) {
+		if (limit < 1 && offset < 1) {
 			return " ";
+		} else if (limit < 1) {
+			return " OFFSET " + offset + ' '; 
 		} else if (offset < 1) {
-			return " limit " + limit + ' '; 
+			return " LIMIT " + limit + ' '; 
 		} else {
-			return " limit " + limit + " offset " + offset + ' ';
+			return " LIMIT " + limit + " OFFSET " + offset + ' ';
 		}
 	}
 }

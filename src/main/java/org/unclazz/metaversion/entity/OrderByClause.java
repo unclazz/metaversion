@@ -5,11 +5,11 @@ import java.util.regex.Pattern;
 public class OrderByClause {
 	public static enum Order {
 		ASC, DESC;
-		public String toString() { return this == ASC ? "asc" : "desc"; }
+		public String toString() { return this == ASC ? "ASC" : "DESC"; }
 	}
 	public static enum Nulls { 
 		FIRST, LAST;
-		public String toString() { return this == FIRST ? "nulls first" : "nulls last"; }
+		public String toString() { return this == FIRST ? "NULLS FIRST" : "NULLS LAST"; }
 	}
 	private static final Pattern validPattern = Pattern.compile("^[A-Za-z0-9_]+$");
 	public static OrderByClause noParticularOrder() {
@@ -49,7 +49,7 @@ public class OrderByClause {
 		if (buff.length() == 0) {
 			return " ";
 		} else {
-			return " order by " + buff.append(' ');
+			return " ORDER BY " + buff.append(' ');
 		}
 	}
 }
