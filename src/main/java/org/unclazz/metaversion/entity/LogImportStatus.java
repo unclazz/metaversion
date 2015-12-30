@@ -1,6 +1,6 @@
 package org.unclazz.metaversion.entity;
 
-public enum SvnLogImportStatus {
+public enum LogImportStatus {
 	RUNNING(1, "RUNNING"),
 	ENDED(2, "ENDED"),
 	ABENDED(3, "ABENDED"),
@@ -9,7 +9,7 @@ public enum SvnLogImportStatus {
 	private final int id;
 	private final String code;
 	
-	private SvnLogImportStatus(final int id, final String code) {
+	private LogImportStatus(final int id, final String code) {
 		this.id = id;
 		this.code = code;
 	}
@@ -21,8 +21,8 @@ public enum SvnLogImportStatus {
 		return code;
 	}
 	
-	public static SvnLogImportStatus valueOfCode(final String code) {
-		for (final SvnLogImportStatus t : values()) {
+	public static LogImportStatus valueOfCode(final String code) {
+		for (final LogImportStatus t : values()) {
 			if (t.code.equals(code)) {
 				return t;
 			}

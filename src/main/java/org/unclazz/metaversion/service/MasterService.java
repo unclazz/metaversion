@@ -6,10 +6,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.unclazz.metaversion.MVUserDetails;
 import org.unclazz.metaversion.entity.DmlType;
 import org.unclazz.metaversion.entity.ModifiationType;
-import org.unclazz.metaversion.entity.SvnLogImportStatus;
+import org.unclazz.metaversion.entity.LogImportStatus;
 import org.unclazz.metaversion.mapper.DmlTypeMapper;
 import org.unclazz.metaversion.mapper.ModifiationTypeMapper;
-import org.unclazz.metaversion.mapper.SvnLogImportStatusMapper;
+import org.unclazz.metaversion.mapper.LogImportStatusMapper;
 
 @Service
 public class MasterService {
@@ -18,7 +18,7 @@ public class MasterService {
 	@Autowired
 	private DmlTypeMapper dmlTypeMapper;
 	@Autowired
-	private SvnLogImportStatusMapper svnLogImportStatusMapper;
+	private LogImportStatusMapper svnLogImportStatusMapper;
 	
 	@Transactional
 	public void initializeMaster(final MVUserDetails auth) {
@@ -30,7 +30,7 @@ public class MasterService {
 			modifiationTypeMapper.insert(v, auth);
 		}
 		
-		for (final SvnLogImportStatus v : SvnLogImportStatus.values()) {
+		for (final LogImportStatus v : LogImportStatus.values()) {
 			svnLogImportStatusMapper.insert(v, auth);
 		}
 	}

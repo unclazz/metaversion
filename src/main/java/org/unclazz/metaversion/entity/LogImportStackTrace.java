@@ -1,6 +1,6 @@
 package org.unclazz.metaversion.entity;
 
-public class SvnLogImportStackTrace {
+public class LogImportStackTrace {
 	private int svnLogImportId;
 	private int lineNumber;
 	private String line;

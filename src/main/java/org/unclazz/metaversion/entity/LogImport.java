@@ -2,7 +2,7 @@ package org.unclazz.metaversion.entity;
 
 import java.util.Date;
 
-public class SvnLogImport {
+public class LogImport {
 	private int id;
 	private Date startDate;
 	private Date endDate;

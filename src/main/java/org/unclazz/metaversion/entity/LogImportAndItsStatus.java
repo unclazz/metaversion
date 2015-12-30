@@ -1,6 +1,6 @@
 package org.unclazz.metaversion.entity;
 
-public class SvnLogImportAndItsStatus extends SvnLogImport {
+public class LogImportAndItsStatus extends LogImport {
 	private String statusCode;
 	private String repositoryName;
 	public String getStatusCode() {

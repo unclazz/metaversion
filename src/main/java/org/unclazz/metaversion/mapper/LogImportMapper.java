@@ -9,43 +9,43 @@ import org.apache.ibatis.annotations.Update;
 import org.unclazz.metaversion.MVUserDetails;
 import org.unclazz.metaversion.entity.LimitOffsetClause;
 import org.unclazz.metaversion.entity.OrderByClause;
-import org.unclazz.metaversion.entity.SvnLogImport;
-import org.unclazz.metaversion.entity.SvnLogImportAndItsStatus;
+import org.unclazz.metaversion.entity.LogImport;
+import org.unclazz.metaversion.entity.LogImportAndItsStatus;
 
-public interface SvnLogImportMapper {
-	@Select("SELECT nextval('svn_log_import_seq')")
+public interface LogImportMapper {
+	@Select("SELECT nextval('log_import_seq')")
 	int selectNextVal();
 	
 	@Select("SELECT sli.id, sli.start_date startDate, "
 			+ "sli.end_date endDate, slis.id statusId, slis.code statusCode "
 			+ "rp.id repositoryId, rp.name repositoryName "
-			+ "FROM svn_log_import sli "
-			+ "INNER JOIN svn_log_import_status slis "
+			+ "FROM log_import sli "
+			+ "INNER JOIN log_import_status slis "
 			+ "ON sli.status_id = slis.id "
 			+ "INNER JOIN repository rp "
 			+ "ON sli.repository_id = rp.id "
-			+ "WHERE sli.id = (SELECT max(id) FROM svn_log_import)")
-	SvnLogImportAndItsStatus selectOneByMaxId();
+			+ "WHERE sli.id = (SELECT max(id) FROM log_import)")
+	LogImportAndItsStatus selectOneByMaxId();
 	
 	@Select("SELECT sli.id, sli.start_date startDate, "
 			+ "sli.end_date endDate, slis.id statusId, slis.code statusCode, "
 			+ "rp.id repositoryId, rp.name repositoryName "
-			+ "FROM svn_log_import sli "
-			+ "INNER JOIN svn_log_import_status slis "
+			+ "FROM log_import sli "
+			+ "INNER JOIN log_import_status slis "
 			+ "ON sli.status_id = slis.id "
 			+ "INNER JOIN repository rp "
 			+ "ON sli.repository_id = rp.id "
 			+ "${orderBy} ${limitOffset} ")
-	List<SvnLogImportAndItsStatus> selectAll(@Param("orderBy") OrderByClause orderBy, @Param("limitOffset") LimitOffsetClause limitOffset);
+	List<LogImportAndItsStatus> selectAll(@Param("orderBy") OrderByClause orderBy, @Param("limitOffset") LimitOffsetClause limitOffset);
 	
-	@Insert("INSERT INTO svn_log_import (id, start_date, end_date, status_id, repository_id, create_user_id) "
+	@Insert("INSERT INTO log_import (id, start_date, end_date, status_id, repository_id, create_user_id) "
 			+ "VALUES (#{svnLogImport.id}, #{svnLogImport.startDate}, #{svnLogImport.endDate}, "
 			+ "#{svnLogImport.statusId}, #{svnLogImport.repositoryId}, #{auth.id})")
-	int insert(@Param("svnLogImport") SvnLogImport svnLogImport, @Param("auth") MVUserDetails auth);
+	int insert(@Param("svnLogImport") LogImport svnLogImport, @Param("auth") MVUserDetails auth);
 
-	@Update("UPDATE svn_log_import "
+	@Update("UPDATE log_import "
 			+ "SET start_date = #{svnLogImport.startDate}, end_date = #{svnLogImport.endDate}, "
 			+ "status_id = #{svnLogImport.statusId}, repository_id = #{svnLogImport.repositoryId} "
 			+ "WHERE id = #{svnLogImport.id} ")
-	int update(@Param("svnLogImport") SvnLogImport svnLogImport, @Param("auth") MVUserDetails auth);
+	int update(@Param("svnLogImport") LogImport svnLogImport, @Param("auth") MVUserDetails auth);
 }
