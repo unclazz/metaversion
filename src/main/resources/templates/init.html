@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8"/>
+    <title>Init | MetaVersion</title>
+</head>
+<body>
+	<h1>Init</h1>
+	<p><span th:if="${successful}">アプリケーションの初期化に成功しました。</span>
+	<span th:unless="${successful}">アプリケーションの初期化に失敗しました。すでに初期化済みである可能性があります。</span></p>
+	<table th:unless="${successful}">
+		<tr><td>例外名</td><td th:text="${exceptionName}">SomeException</td></tr>
+		<tr><td>メッセージ</td><td><pre th:text="${exceptionMessage}">Unexpected error has occurred.</pre></td></tr>
+		<tr><td>スタックトレース</td><td>
+		<pre th:text="${exceptionStackTrace}">at org.unclazz.metaversion.AClass.aMethod (AClass.java:123)
+at org.unclazz.metaversion.BClass.bMethod (BClass.java:123)
+at org.unclazz.metaversion.CClass.cMethod (CClass.java:123)</pre></td></tr>
+	</table>
+</body>
+</html>

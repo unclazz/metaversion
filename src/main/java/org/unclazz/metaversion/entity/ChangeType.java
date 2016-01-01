@@ -1,6 +1,6 @@
 package org.unclazz.metaversion.entity;
 
-public enum ChangeType {
+public enum ChangeType implements IChangeType {
 	ADD(1, "A", "Added"),
 	DELETE(2, "D", "Deleted"),
 	MODIFY(3, "M", "Modified"),
@@ -22,7 +22,7 @@ public enum ChangeType {
 	public String getCode() {
 		return code;
 	}
-	public String getStatusName() {
+	public String getName() {
 		return name;
 	}
 	

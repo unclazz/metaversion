@@ -28,15 +28,16 @@ public interface UserMapper {
 	@Select("SELECT id, name, password, admin FROM application_user WHERE name = #{name}")
 	User selectOneByName(@Param("name") String name);
 	
-	@Insert("INSERT INTO application_user (id, name, password, admin, create_user_id) "
-			+ "VALUES (#{user.id}, #{user.name}, #{user.password}, #{user.admin}, #{auth.id})")
+	@Insert("INSERT INTO application_user (id, name, password, admin, create_user_id, update_user_id) "
+			+ "VALUES (#{user.id}, #{user.name}, #{user.password}, #{user.admin}, #{auth.id}, #{auth.id})")
 	int insert(@Param("user") User user, @Param("auth") MVUserDetails auth);
 
 	@Update("UPDATE application_user "
-			+ "SET name = #{user.name}, password = #{user.password}, admin = #{user.admin} "
+			+ "SET name = #{user.name}, password = #{user.password}, admin = #{user.admin}, "
+			+ "update_date = now(), update_user_id = #{auth.id} "
 			+ "WHERE id = #{user.id} ")
 	int update(@Param("user") User user, @Param("auth") MVUserDetails auth);
 
-	@Delete("DELETE FROM application_user WHERE id = #{id} ")
+	@Delete("DELETE FROM application_user WHERE id = #{id} and id <> 0 ")
 	int delete(@Param("id") int id);
 }

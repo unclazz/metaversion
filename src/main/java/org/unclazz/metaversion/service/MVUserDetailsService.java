@@ -4,19 +4,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.unclazz.metaversion.MVProperties;
 import org.unclazz.metaversion.MVUserDetails;
 import org.unclazz.metaversion.entity.User;
 import org.unclazz.metaversion.mapper.UserMapper;
 
 @Service
 public class MVUserDetailsService implements UserDetailsService {
-	@Autowired
-	private PasswordEncoder encoder;
-	@Autowired
-	private MVProperties props;
     @Autowired
     private UserMapper userMapper;
 
@@ -27,21 +21,8 @@ public class MVUserDetailsService implements UserDetailsService {
             throw new UsernameNotFoundException("Username is empty");
         }
         
-        final User user;
-        // ユーザ名の内容によって処理を分岐
-        if (username.equals(props.getDefaultAdminName())) {
-        	// プロパティ・ファイルで指定されたアドミニストレータ名の場合
-        	// プロパティ・ファイルの内容をもとにユーザ情報を作成
-        	user = new User();
-        	user.setId(props.getDefaultAdminId());
-        	user.setName(username);
-        	user.setPassword(encoder.encode(new StringBuilder().append(props.getDefaultAdminPassword())));
-        	user.setAdmin(true);
-        } else {
-        	// それ以外の場合
-	        // ユーザ名をキーとして使ってユーザ情報を取得してみる
-	        user = userMapper.selectOneByName(username);
-        }
+        // ユーザ名をキーとして使ってユーザ情報を取得してみる
+        final User user = userMapper.selectOneByName(username);
         
         // 取得できなかった場合のためのチェック
         if (user == null) {

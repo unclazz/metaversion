@@ -1,7 +1,5 @@
 package org.unclazz.metaversion.service;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedList;
@@ -13,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.unclazz.metaversion.MVUserDetails;
+import org.unclazz.metaversion.MVUtils;
 import org.unclazz.metaversion.entity.OnlineBatchError;
 import org.unclazz.metaversion.entity.OnlineBatchLock;
 import org.unclazz.metaversion.entity.OnlineBatchLog;
@@ -154,17 +153,12 @@ public class LogImportService {
 		} catch (final RuntimeException ex) {
 			// この行が実行されたということは処理は異常終了したということ
 			status = OnlineBatchStatus.ABENDED;
-			// 例外スタックトレースをStringWriterに書き出す（あとで文字列化するため）
-			final StringWriter sw = new StringWriter();
-			final PrintWriter pw = new PrintWriter(sw);
-			ex.printStackTrace(pw);
-			pw.flush();
 			// online_batch_errorに1レコードINSERT
 			final OnlineBatchError error = new OnlineBatchError();
 			error.setId(onlineBatchErrorMapper.selectNextVal());
 			error.setOnlineBatchLogId(lockAndLog.getLogId());
 			error.setErrorName(ex.getClass().getCanonicalName());
-			error.setErrorMessage(sw.toString());
+			error.setErrorMessage(MVUtils.stackTraceToCharSequence(ex).toString());
 			onlineBatchErrorMapper.insert(error, auth);
 		}
 		

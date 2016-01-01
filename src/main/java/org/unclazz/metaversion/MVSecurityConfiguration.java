@@ -26,6 +26,7 @@ public class MVSecurityConfiguration extends WebSecurityConfigurerAdapter {
         http
             .authorizeRequests()
             	.antMatchers("/foo").hasAuthority(MVGrantedAuthority.NAME_ADMINISTRATOR)
+            	.antMatchers("/init").permitAll()
                 .anyRequest().authenticated()
                 .and()
             .formLogin()
