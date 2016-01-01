@@ -34,4 +34,12 @@ public enum ChangeType {
 		}
 		throw new IllegalArgumentException();
 	}
+	public static ChangeType valueOfCode(final char code) {
+		for (final ChangeType t : values()) {
+			if (t.code.charAt(0) == code) {
+				return t;
+			}
+		}
+		throw new IllegalArgumentException();
+	}
 }
