@@ -29,6 +29,7 @@ public class JsonController {
 	
 	@RequestMapping(value="/users", method=RequestMethod.GET)
 	public List<User> getUserList(final Principal principal, @ModelAttribute final Paging paging) {
+		// TODO Paginatedの利用
 		return userService.getUserList(paging);
 	}
 	
@@ -83,6 +84,7 @@ public class JsonController {
 	
 	@RequestMapping(value="/repositories", method=RequestMethod.GET)
 	public List<SvnRepository> getRepositoryLsit(final Principal principal, @ModelAttribute final Paging paging) {
+		// TODO Paginatedの利用
 		return repositoryService.getRepositoryList(paging);
 	}
 	
