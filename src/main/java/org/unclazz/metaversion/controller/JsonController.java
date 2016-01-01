@@ -34,12 +34,7 @@ public class JsonController {
 	
 	@RequestMapping(value="/users/{id}", method=RequestMethod.GET)
 	public ResponseEntity<User> getUser(final Principal principal, @PathVariable("id") final int id) {
-		final User user = userService.getUser(id);
-		if (user == null) {
-			return notFound();
-		} else {
-			return ok(user);
-		}
+		return okOrNotFound(userService.getUser(id));
 	}
 	
 	@RequestMapping(value="/users/{id}", method=RequestMethod.PUT)
@@ -92,8 +87,62 @@ public class JsonController {
 	}
 	
 	@RequestMapping(value="/repositories/{id}", method=RequestMethod.GET)
-	public SvnRepository getRepository(final Principal principal, @PathVariable("id") final int id) {
-		return repositoryService.getRepository(id);
+	public ResponseEntity<SvnRepository> getRepository(final Principal principal, @PathVariable("id") final int id) {
+		return okOrNotFound(repositoryService.getRepository(id));
+	}
+	
+	@RequestMapping(value="/repositories/{id}", method=RequestMethod.PUT)
+	public ResponseEntity<SvnRepository> putRepository(final Principal principal,
+			@PathVariable("id") final int id,
+			@RequestParam("name") final String name,
+			@RequestParam("baseUrl") final String baseUrl,
+			@RequestParam("trunkPathPattern") final String trunkPathPattern,
+			@RequestParam("branchPathPattern") final String branchPathPattern,
+			@RequestParam("maxRevision") final int maxRevision,
+			@RequestParam("username") final String username,
+			@RequestParam("password") final char[] password) {
+		
+		final SvnRepository repository = repositoryService.composeValueObject(id, name,
+				baseUrl, trunkPathPattern, branchPathPattern, maxRevision, username, password);
+
+		try {
+			repositoryService.modifyRepository(repository, MVUserDetails.of(principal));
+			return ok(repository);
+		} catch (final RuntimeException e) {
+			return internalServerError(e.getMessage());
+		}
+	}
+	
+	@RequestMapping(value="/repositories", method=RequestMethod.POST)
+	public ResponseEntity<SvnRepository> postRepository(final Principal principal,
+			@RequestParam("name") final String name,
+			@RequestParam("baseUrl") final String baseUrl,
+			@RequestParam("trunkPathPattern") final String trunkPathPattern,
+			@RequestParam("branchPathPattern") final String branchPathPattern,
+			@RequestParam("maxRevision") final int maxRevision,
+			@RequestParam("username") final String username,
+			@RequestParam("password") final char[] password) {
+		
+		final SvnRepository repository = repositoryService.composeValueObject(name,
+				baseUrl, trunkPathPattern, branchPathPattern, maxRevision, username, password);
+
+		try {
+			repositoryService.registerRepository(repository, MVUserDetails.of(principal));
+			return ok(repository);
+		} catch (final RuntimeException e) {
+			return internalServerError(e.getMessage());
+		}
+	}
+
+	@RequestMapping(value="/repositories/{id}", method=RequestMethod.DELETE)
+	public ResponseEntity<SvnRepository> deleteRepository(final Principal principal, @PathVariable("id") final int id) {
+		try {
+			repositoryService.removeRepository(id, MVUserDetails.of(principal));
+			return ok();
+			
+		} catch (final RuntimeException e) {
+			return internalServerError(e.getMessage());
+		}
 	}
 	
 	public static<T> ResponseEntity<T> ok() {
@@ -104,6 +153,13 @@ public class JsonController {
 	}
 	public static<T> ResponseEntity<T> notFound() {
 		return new ResponseEntity<T>(HttpStatus.NOT_FOUND);
+	}
+	public static<T> ResponseEntity<T> okOrNotFound(T value) {
+		if (value == null) {
+			return notFound();
+		} else {
+			return ok(value);
+		}
 	}
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public static<T> ResponseEntity<T> internalServerError(String message) {
