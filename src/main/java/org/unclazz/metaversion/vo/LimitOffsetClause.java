@@ -1,6 +1,4 @@
-package org.unclazz.metaversion.entity;
-
-import org.unclazz.metaversion.vo.Paging;
+package org.unclazz.metaversion.vo;
 
 public class LimitOffsetClause {
 	public static final LimitOffsetClause ALL = new LimitOffsetClause(0, 0);

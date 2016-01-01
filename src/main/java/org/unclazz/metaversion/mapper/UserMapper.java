@@ -8,9 +8,10 @@ import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
 import org.unclazz.metaversion.MVUserDetails;
-import org.unclazz.metaversion.entity.LimitOffsetClause;
-import org.unclazz.metaversion.entity.OrderByClause;
 import org.unclazz.metaversion.entity.User;
+import org.unclazz.metaversion.entity.UserHasNoPassword;
+import org.unclazz.metaversion.vo.LimitOffsetClause;
+import org.unclazz.metaversion.vo.OrderByClause;
 
 public interface UserMapper {
 	@Select("SELECT nextval('application_user_seq')")
@@ -19,8 +20,12 @@ public interface UserMapper {
 	@Select("SELECT count(1) FROM application_user")
 	int selectCount();
 	
-	@Select("SELECT id, name, password, admin FROM application_user ${orderBy} ${limitOffset} ")
-	List<User> selectAll(@Param("orderBy") OrderByClause orderBy, @Param("limitOffset") LimitOffsetClause limitOffset);
+	@Select("SELECT id, name, admin FROM application_user ${orderBy} ${limitOffset} ")
+	List<UserHasNoPassword> selectUserHasNoPasswordAll(@Param("orderBy") OrderByClause orderBy,
+			@Param("limitOffset") LimitOffsetClause limitOffset);
+	
+	@Select("SELECT id, name, admin FROM application_user WHERE id = #{id}")
+	UserHasNoPassword selectUserHasNoPasswordOneById(@Param("id") int id);
 	
 	@Select("SELECT id, name, password, admin FROM application_user WHERE id = #{id}")
 	User selectOneById(@Param("id") int id);

@@ -16,7 +16,7 @@ import org.unclazz.metaversion.service.MasterService.ApplicationMayBeAlreadyInit
 import org.unclazz.metaversion.service.UserService;
 
 @Controller
-public class RootController {
+public class HtmlController {
 	@Autowired
 	private UserService userService;
 	@Autowired

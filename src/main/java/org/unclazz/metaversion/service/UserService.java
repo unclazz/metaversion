@@ -7,12 +7,13 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.unclazz.metaversion.MVUserDetails;
-import org.unclazz.metaversion.entity.LimitOffsetClause;
-import org.unclazz.metaversion.entity.OrderByClause;
-import org.unclazz.metaversion.entity.OrderByClause.Order;
 import org.unclazz.metaversion.entity.User;
+import org.unclazz.metaversion.entity.UserHasNoPassword;
 import org.unclazz.metaversion.mapper.UserMapper;
+import org.unclazz.metaversion.vo.LimitOffsetClause;
+import org.unclazz.metaversion.vo.OrderByClause;
 import org.unclazz.metaversion.vo.Paging;
+import org.unclazz.metaversion.vo.OrderByClause.Order;
 
 @Service
 public class UserService {
@@ -46,9 +47,13 @@ public class UserService {
 		userMapper.delete(user.getId());
 	}
 	
-	public List<User> getUserList(Paging paging) {
+	public UserHasNoPassword getUser(final int id) {
+		return userMapper.selectUserHasNoPasswordOneById(id);
+	}
+	
+	public List<UserHasNoPassword> getUserList(Paging paging) {
 		final OrderByClause orderBy = OrderByClause.of("name", Order.ASC);
 		final LimitOffsetClause limitOffset = LimitOffsetClause.of(paging);
-		return userMapper.selectAll(orderBy, limitOffset);
+		return userMapper.selectUserHasNoPasswordAll(orderBy, limitOffset);
 	}
 }

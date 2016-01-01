@@ -1,4 +1,4 @@
-package org.unclazz.metaversion.entity;
+package org.unclazz.metaversion.vo;
 
 import java.util.regex.Pattern;
 
