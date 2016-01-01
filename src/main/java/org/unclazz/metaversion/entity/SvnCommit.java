@@ -2,10 +2,13 @@ package org.unclazz.metaversion.entity;
 
 import java.util.Date;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 public class SvnCommit {
 	private int id;
 	private int svnRepositoryId;
 	private int revision;
+	@JsonFormat(pattern="yyyy/MM/dd HH:mm:ss")
 	private Date commitDate;
 	private String comment;
 	private String committerName;

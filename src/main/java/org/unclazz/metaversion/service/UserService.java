@@ -7,8 +7,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.unclazz.metaversion.MVUserDetails;
+import org.unclazz.metaversion.MVUtils;
 import org.unclazz.metaversion.entity.User;
-import org.unclazz.metaversion.entity.UserHasNoPassword;
 import org.unclazz.metaversion.mapper.UserMapper;
 import org.unclazz.metaversion.vo.LimitOffsetClause;
 import org.unclazz.metaversion.vo.OrderByClause;
@@ -22,36 +22,45 @@ public class UserService {
     @Autowired
 	private UserMapper userMapper;
 	
-	@Transactional
-	public void registerUser(String name, CharSequence rawPassord, boolean admin, MVUserDetails auth) {
+	public User composeValueObject(final String username, final char[] password, final boolean admin) {
 		final User user = new User();
-		user.setId(userMapper.selectNextVal());
-		user.setName(name);
-		user.setPassword(passwordEncoder.encode(rawPassord));
+		user.setName(username);
+		user.setPassword(passwordEncoder.encode(MVUtils.charArrayToCharSequence(password)));
 		user.setAdmin(admin);
+		return user;
+	}
+	
+	public User composeValueObject(final int id, final String username, final char[] password, final boolean admin) {
+		final User user = composeValueObject(username, password, admin);
+		user.setId(id);
+		return user;
+	}
+	
+	@Transactional
+	public void registerUser(final User user, final MVUserDetails auth) {
+		user.setId(userMapper.selectNextVal());
 		userMapper.insert(user, auth);
 	}
 	
 	@Transactional
-	public void modifyUser(String name, CharSequence rawPassord, boolean admin, MVUserDetails auth) {
-		final User user = userMapper.selectOneByName(name);
-		user.setName(name);
-		user.setPassword(passwordEncoder.encode(rawPassord));
-		user.setAdmin(admin);
-		userMapper.update(user, auth);
+	public void modifyUser(final User user, final MVUserDetails auth) {
+		if (userMapper.update(user, auth) != 1) {
+			throw MVUtils.illegalArgument("Update target user(id=%s) is not found.", user.getId());
+		}
 	}
 	
 	@Transactional
-	public void removeUser(String name, MVUserDetails auth) {
-		final User user = userMapper.selectOneByName(name);
-		userMapper.delete(user.getId());
+	public void removeUser(final int id, final MVUserDetails auth) {
+		if (userMapper.delete(id) != 1) {
+			throw MVUtils.illegalArgument("Delete target user(id=%) is not found.", id);
+		}
 	}
 	
-	public UserHasNoPassword getUser(final int id) {
+	public User getUser(final int id) {
 		return userMapper.selectUserHasNoPasswordOneById(id);
 	}
 	
-	public List<UserHasNoPassword> getUserList(Paging paging) {
+	public List<User> getUserList(final Paging paging) {
 		final OrderByClause orderBy = OrderByClause.of("name", Order.ASC);
 		final LimitOffsetClause limitOffset = LimitOffsetClause.of(paging);
 		return userMapper.selectUserHasNoPasswordAll(orderBy, limitOffset);

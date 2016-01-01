@@ -9,7 +9,6 @@ import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
 import org.unclazz.metaversion.MVUserDetails;
 import org.unclazz.metaversion.entity.User;
-import org.unclazz.metaversion.entity.UserHasNoPassword;
 import org.unclazz.metaversion.vo.LimitOffsetClause;
 import org.unclazz.metaversion.vo.OrderByClause;
 
@@ -21,11 +20,11 @@ public interface UserMapper {
 	int selectCount();
 	
 	@Select("SELECT id, name, admin FROM application_user ${orderBy} ${limitOffset} ")
-	List<UserHasNoPassword> selectUserHasNoPasswordAll(@Param("orderBy") OrderByClause orderBy,
+	List<User> selectUserHasNoPasswordAll(@Param("orderBy") OrderByClause orderBy,
 			@Param("limitOffset") LimitOffsetClause limitOffset);
 	
 	@Select("SELECT id, name, admin FROM application_user WHERE id = #{id}")
-	UserHasNoPassword selectUserHasNoPasswordOneById(@Param("id") int id);
+	User selectUserHasNoPasswordOneById(@Param("id") int id);
 	
 	@Select("SELECT id, name, password, admin FROM application_user WHERE id = #{id}")
 	User selectOneById(@Param("id") int id);

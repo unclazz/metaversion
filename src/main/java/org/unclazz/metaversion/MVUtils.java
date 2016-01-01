@@ -45,7 +45,7 @@ public final class MVUtils {
 	public static RuntimeException sqlOperationIsFailed(String operation) {
 		return unexpectedResult("SQL operation is failed: %s .", operation);
 	}
-	public static CharSequence stackTraceToCharSequence(Throwable error) {
+	public static CharSequence stackTraceToCharSequence(final Throwable error) {
 		final String sep = System.getProperty("line.separator");
 		final StringBuilder buff = new StringBuilder();
 		for (final StackTraceElement e : error.getStackTrace()) {
@@ -56,5 +56,8 @@ public final class MVUtils {
 			.append(' ').append('(').append(e.getFileName()).append(':').append(e.getLineNumber()).append(')');
 		}
 		return buff;
+	}
+	public static CharSequence charArrayToCharSequence(final char[] charArray) {
+		return new StringBuilder().append(charArray);
 	}
 }

@@ -1,5 +1,7 @@
 package org.unclazz.metaversion.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 public class User {
 	
 	private int id;
@@ -25,6 +27,7 @@ public class User {
 	public void setName(String name) {
 		this.name = name;
 	}
+	@JsonIgnore
 	public String getPassword() {
 		return password;
 	}

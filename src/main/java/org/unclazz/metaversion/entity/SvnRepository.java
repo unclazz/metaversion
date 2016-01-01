@@ -1,5 +1,7 @@
 package org.unclazz.metaversion.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 public class SvnRepository {
 	private int id;
 	private String name;
@@ -45,6 +47,7 @@ public class SvnRepository {
 	public final void setUsername(String username) {
 		this.username = username;
 	}
+	@JsonIgnore
 	public final String getPassword() {
 		return password;
 	}
