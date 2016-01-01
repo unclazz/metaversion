@@ -9,6 +9,9 @@ import org.unclazz.metaversion.MVUserDetails;
 import org.unclazz.metaversion.MVUtils;
 import org.unclazz.metaversion.entity.SvnRepository;
 import org.unclazz.metaversion.mapper.SvnRepositoryMapper;
+import org.unclazz.metaversion.vo.LimitOffsetClause;
+import org.unclazz.metaversion.vo.OrderByClause;
+import org.unclazz.metaversion.vo.OrderByClause.Order;
 import org.unclazz.metaversion.vo.Paging;
 
 @Service
@@ -56,7 +59,9 @@ public class RepositoryService {
 		}
 	}
 	public List<SvnRepository> getRepositoryList(final Paging paging) {
-		return null; // TODO
+		final OrderByClause orderBy = OrderByClause.of("name", Order.ASC);
+		final LimitOffsetClause limitOffset = LimitOffsetClause.of(paging);
+		return svnRepositoryMapper.selectAll(orderBy, limitOffset);
 	}
 	public int getRepositoryCount() {
 		return svnRepositoryMapper.selectCount();
