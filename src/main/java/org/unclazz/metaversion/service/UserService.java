@@ -57,12 +57,16 @@ public class UserService {
 	}
 	
 	public User getUser(final int id) {
-		return userMapper.selectUserHasNoPasswordOneById(id);
+		return userMapper.selectOneById(id);
 	}
 	
 	public List<User> getUserList(final Paging paging) {
 		final OrderByClause orderBy = OrderByClause.of("name", Order.ASC);
 		final LimitOffsetClause limitOffset = LimitOffsetClause.of(paging);
-		return userMapper.selectUserHasNoPasswordAll(orderBy, limitOffset);
+		return userMapper.selectAll(orderBy, limitOffset);
+	}
+	
+	public int getUserCount() {
+		return userMapper.selectCount();
 	}
 }

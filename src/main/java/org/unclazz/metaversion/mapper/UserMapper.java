@@ -19,12 +19,9 @@ public interface UserMapper {
 	@Select("SELECT count(1) FROM application_user")
 	int selectCount();
 	
-	@Select("SELECT id, name, admin FROM application_user ${orderBy} ${limitOffset} ")
-	List<User> selectUserHasNoPasswordAll(@Param("orderBy") OrderByClause orderBy,
+	@Select("SELECT id, name, admin, password FROM application_user ${orderBy} ${limitOffset} ")
+	List<User> selectAll(@Param("orderBy") OrderByClause orderBy,
 			@Param("limitOffset") LimitOffsetClause limitOffset);
-	
-	@Select("SELECT id, name, admin FROM application_user WHERE id = #{id}")
-	User selectUserHasNoPasswordOneById(@Param("id") int id);
 	
 	@Select("SELECT id, name, password, admin FROM application_user WHERE id = #{id}")
 	User selectOneById(@Param("id") int id);

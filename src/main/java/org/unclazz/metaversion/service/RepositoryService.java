@@ -58,6 +58,9 @@ public class RepositoryService {
 	public List<SvnRepository> getRepositoryList(final Paging paging) {
 		return null; // TODO
 	}
+	public int getRepositoryCount() {
+		return svnRepositoryMapper.selectCount();
+	}
 	public SvnRepository getRepository(final int id) {
 		return svnRepositoryMapper.selectOneById(id);
 	}

@@ -2,6 +2,8 @@ package org.unclazz.metaversion.controller;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -17,6 +19,7 @@ import org.unclazz.metaversion.entity.SvnRepository;
 import org.unclazz.metaversion.entity.User;
 import org.unclazz.metaversion.service.RepositoryService;
 import org.unclazz.metaversion.service.UserService;
+import org.unclazz.metaversion.vo.Paginated;
 import org.unclazz.metaversion.vo.Paging;
 
 @RestController
@@ -28,9 +31,8 @@ public class JsonController {
 	private RepositoryService repositoryService;
 	
 	@RequestMapping(value="/users", method=RequestMethod.GET)
-	public List<User> getUserList(final Principal principal, @ModelAttribute final Paging paging) {
-		// TODO Paginatedの利用
-		return userService.getUserList(paging);
+	public Paginated<User> getUserList(final Principal principal, @ModelAttribute final Paging paging) {
+		return Paginated.of(paging, userService.getUserList(paging), userService.getUserCount());
 	}
 	
 	@RequestMapping(value="/users/{id}", method=RequestMethod.GET)
@@ -104,6 +106,17 @@ public class JsonController {
 			@RequestParam("username") final String username,
 			@RequestParam("password") final char[] password) {
 		
+		try {
+			// 正規表現パターンの検証を行う
+			Pattern.compile(trunkPathPattern);
+			Pattern.compile(branchPathPattern);
+			
+		} catch (final PatternSyntaxException ex) {
+			// 例外がスローされたら400 Bad Requestで返す
+			return badRequest(ex.getMessage());
+		}
+		
+		// リクエストパラメータからVOを生成
 		final SvnRepository repository = repositoryService.composeValueObject(id, name,
 				baseUrl, trunkPathPattern, branchPathPattern, maxRevision, username, password);
 
@@ -125,6 +138,17 @@ public class JsonController {
 			@RequestParam("username") final String username,
 			@RequestParam("password") final char[] password) {
 		
+		try {
+			// 正規表現パターンの検証を行う
+			Pattern.compile(trunkPathPattern);
+			Pattern.compile(branchPathPattern);
+			
+		} catch (final PatternSyntaxException ex) {
+			// 例外がスローされたら400 Bad Requestで返す
+			return badRequest(ex.getMessage());
+		}
+		
+		// リクエストパラメータからVOを生成
 		final SvnRepository repository = repositoryService.composeValueObject(name,
 				baseUrl, trunkPathPattern, branchPathPattern, maxRevision, username, password);
 
@@ -162,6 +186,12 @@ public class JsonController {
 		} else {
 			return ok(value);
 		}
+	}
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public static<T> ResponseEntity<T> badRequest(final String message) {
+		// 戻り値型を揃えるため強引にキャストを行う
+		// ＊イレイジャを前提としたトリック
+		return (ResponseEntity<T>) new ResponseEntity(message, HttpStatus.BAD_REQUEST);
 	}
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public static<T> ResponseEntity<T> internalServerError(final String message) {
