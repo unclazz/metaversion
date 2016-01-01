@@ -148,13 +148,13 @@ public class JsonController {
 	public static<T> ResponseEntity<T> ok() {
 		return new ResponseEntity<T>(HttpStatus.OK);
 	}
-	public static<T> ResponseEntity<T> ok(T value) {
+	public static<T> ResponseEntity<T> ok(final T value) {
 		return new ResponseEntity<T>(value, HttpStatus.OK);
 	}
 	public static<T> ResponseEntity<T> notFound() {
 		return new ResponseEntity<T>(HttpStatus.NOT_FOUND);
 	}
-	public static<T> ResponseEntity<T> okOrNotFound(T value) {
+	public static<T> ResponseEntity<T> okOrNotFound(final T value) {
 		if (value == null) {
 			return notFound();
 		} else {
@@ -162,7 +162,7 @@ public class JsonController {
 		}
 	}
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public static<T> ResponseEntity<T> internalServerError(String message) {
+	public static<T> ResponseEntity<T> internalServerError(final String message) {
 		// 戻り値型を揃えるため強引にキャストを行う
 		// ＊イレイジャを前提としたトリック
 		return (ResponseEntity<T>) new ResponseEntity(message, HttpStatus.INTERNAL_SERVER_ERROR);

@@ -52,7 +52,7 @@ public class UserService {
 	@Transactional
 	public void removeUser(final int id, final MVUserDetails auth) {
 		if (userMapper.delete(id) != 1) {
-			throw MVUtils.illegalArgument("Delete target user(id=%) is not found.", id);
+			throw MVUtils.illegalArgument("Delete target user(id=%s) is not found.", id);
 		}
 	}
 	

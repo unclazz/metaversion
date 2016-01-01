@@ -8,12 +8,15 @@ import org.springframework.stereotype.Service;
 import org.unclazz.metaversion.MVUserDetails;
 import org.unclazz.metaversion.MVUtils;
 import org.unclazz.metaversion.entity.SvnRepository;
+import org.unclazz.metaversion.mapper.SvnRepositoryMapper;
 import org.unclazz.metaversion.vo.Paging;
 
 @Service
 public class RepositoryService {
 	@Autowired
 	private PasswordEncoder passwordEncoder;
+	@Autowired
+	private SvnRepositoryMapper svnRepositoryMapper;
 	
 	public SvnRepository composeValueObject(final int id, final String name, final String baseUrl,
 			final String trunkPathPattern, final String branchPathPattern,
@@ -38,19 +41,24 @@ public class RepositoryService {
 		return r;
 	}
 	
-	public void registerRepository(SvnRepository repository, MVUserDetails auth) {
-		// TODO
+	public void registerRepository(final SvnRepository repository, final MVUserDetails auth) {
+		repository.setId(svnRepositoryMapper.selectNextVal());
+		svnRepositoryMapper.insert(repository, auth);
 	}
-	public void modifyRepository(SvnRepository repository, MVUserDetails auth) {
-		// TODO
+	public void modifyRepository(final SvnRepository repository, final MVUserDetails auth) {
+		if (svnRepositoryMapper.update(repository, auth) != 1) {
+			throw MVUtils.illegalArgument("Update target repository(id=%s) is not found.", repository.getId());
+		}
 	}
-	public void removeRepository(int id, MVUserDetails auth) {
-		// TODO
+	public void removeRepository(final int id, final MVUserDetails auth) {
+		if (svnRepositoryMapper.delete(id) != 1) {
+			throw MVUtils.illegalArgument("Delete target repository(id=%s) is not found.", id);
+		}
 	}
-	public List<SvnRepository> getRepositoryList(Paging paging) {
+	public List<SvnRepository> getRepositoryList(final Paging paging) {
 		return null; // TODO
 	}
-	public SvnRepository getRepository(int id) {
-		return null; // TODO
+	public SvnRepository getRepository(final int id) {
+		return svnRepositoryMapper.selectOneById(id);
 	}
 }
