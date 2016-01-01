@@ -43,6 +43,8 @@ public class LogImportService {
 	private OnlineBatchLogMapper onlineBatchLogMapper;
 	@Autowired
 	private OnlineBatchErrorMapper onlineBatchErrorMapper;
+	@Autowired
+	private SvnService svnService;
 
 	public static final class LogImportAlreadyRunning extends RuntimeException {
 		private static final long serialVersionUID = -4507775346531693192L;
@@ -178,10 +180,12 @@ public class LogImportService {
 		final int maxRevision = repository.getMaxRevision();
 		 
 		// SVNリポジトリ側の最新リビジョンを取得
-		final int headRevision = 100; // TODO SvnServiceから取得する
+		// ＊数秒を要する可能性あり
+		final int headRevision = svnService.getHeadRevision(repository);
 		
 		// 1トランザクションで取込みを行うリビジョンの単位（範囲）
-		final int increment = 10; // TODO プロパティファイルで定義する
+		// ＊500リビジョンあたり10秒前後かかる可能性あり
+		final int increment = 10; // TODO プロパティファイルで定義することを検討
 		
 		// インポート済みリビジョン+1を開始リビジョン、HEADリビジョンを終了リビジョンとして
 		// RevisionRangeリストを生成して、それを用いてループ処理を行う
@@ -195,8 +199,9 @@ public class LogImportService {
 	public void doLogImportForRevisionRange(final SvnRepository repository, 
 			final SvnRepositoryPathInfo pathInfo, final RevisionRange range, final MVUserDetails auth) {
 
-		// SVNKitを通じsvn log -r <start>:<end>コマンド実行
-		final List<SvnCommitAndItsPathList> commitAndPathListList = new LinkedList<SvnService.SvnCommitAndItsPathList>(); // TODO
+		// SVNKitを通じsvn log -r <start>:<end> -v <url>コマンド実行
+		final List<SvnCommitAndItsPathList> commitAndPathListList = svnService.
+				getCommitAndItsPathList(repository, range.getStart(), range.getEnd());
 		
 		// svn logエントリ中の最大リビジョン
 		final MaxRevision maxRevision = new MaxRevision(range.getStart());
