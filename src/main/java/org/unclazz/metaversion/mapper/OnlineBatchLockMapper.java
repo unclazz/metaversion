@@ -19,9 +19,9 @@ public interface OnlineBatchLockMapper {
 	OnlineBatchLock selectOneForUpdateNowaitByProgramId(@Param("programId") int programId,
 			@Param("locked") boolean locked, @Param("auth") MVUserDetails auth);
 	
-	@Update("UPDATE online_batch_lock SET locked = true WHERE id = #{id} ")
+	@Update("UPDATE online_batch_lock SET locked = true, last_lock_date = now() WHERE id = #{id} ")
 	int updateForLock(@Param("id") int id, @Param("auth") MVUserDetails auth);
 	
-	@Update("UPDATE online_batch_lock SET locked = false WHERE id = #{id} ")
+	@Update("UPDATE online_batch_lock SET locked = false, last_unlock_date = now() WHERE id = #{id} ")
 	int updateForUnlock(@Param("id") int id, @Param("auth") MVUserDetails auth);
 }
