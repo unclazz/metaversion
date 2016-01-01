@@ -2,12 +2,12 @@ package org.unclazz.metaversion.entity;
 
 import java.util.Date;
 
-public class LogImport {
+public class OnlineBatchLog {
 	private int id;
 	private Date startDate;
 	private Date endDate;
 	private int statusId;
-	private int repositoryId;
+	private int programId;
 	public final int getId() {
 		return id;
 	}
@@ -32,10 +32,10 @@ public class LogImport {
 	public final void setStatusId(int statusId) {
 		this.statusId = statusId;
 	}
-	public final int getRepositoryId() {
-		return repositoryId;
+	public final int getProgramId() {
+		return programId;
 	}
-	public final void setRepositoryId(int repositoryId) {
-		this.repositoryId = repositoryId;
+	public final void setProgramId(int programId) {
+		this.programId = programId;
 	}
 }

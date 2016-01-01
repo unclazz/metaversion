@@ -8,7 +8,6 @@ import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
 import org.unclazz.metaversion.MVUserDetails;
-import org.unclazz.metaversion.entity.DmlType;
 import org.unclazz.metaversion.entity.LimitOffsetClause;
 import org.unclazz.metaversion.entity.OrderByClause;
 import org.unclazz.metaversion.entity.User;
@@ -40,9 +39,4 @@ public interface UserMapper {
 
 	@Delete("DELETE FROM application_user WHERE id = #{id} ")
 	int delete(@Param("id") int id);
-	
-	@Insert("INSERT INTO application_user_history "
-			+ "SELECT 	*, now(), #{auth.id}, #{dmlType.id} "
-			+ "FROM 	application_user WHERE	id = #{user.id} ")
-	int insertHistory(@Param("id") int id, @Param("dmlType") DmlType dmlType,  @Param("auth") MVUserDetails auth);
 }

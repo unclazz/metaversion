@@ -1,16 +1,16 @@
 package org.unclazz.metaversion.entity;
 
-public enum ModifiationType {
-	ADD(1, "A", "ADD"),
-	DELETE(2, "D", "DELETE"),
-	MODIFY(3, "M", "MODIFY"),
-	REPLACE(4, "R", "REPLACE");
+public enum ChangeType {
+	ADD(1, "A", "Added"),
+	DELETE(2, "D", "Deleted"),
+	MODIFY(3, "M", "Modified"),
+	REPLACE(4, "R", "Replaced");
 	
 	private final int id;
 	private final String code;
 	private final String name;
 	
-	private ModifiationType(final int id, final String code, final String name) {
+	private ChangeType(final int id, final String code, final String name) {
 		this.id = id;
 		this.code = code;
 		this.name = name;
@@ -22,12 +22,12 @@ public enum ModifiationType {
 	public String getCode() {
 		return code;
 	}
-	public String getName() {
+	public String getStatusName() {
 		return name;
 	}
 	
-	public static ModifiationType valueOfCode(final String code) {
-		for (final ModifiationType t : values()) {
+	public static ChangeType valueOfCode(final String code) {
+		for (final ChangeType t : values()) {
 			if (t.code.equals(code)) {
 				return t;
 			}

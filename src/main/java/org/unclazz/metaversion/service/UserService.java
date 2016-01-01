@@ -7,7 +7,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.unclazz.metaversion.MVUserDetails;
-import org.unclazz.metaversion.entity.DmlType;
 import org.unclazz.metaversion.entity.LimitOffsetClause;
 import org.unclazz.metaversion.entity.OrderByClause;
 import org.unclazz.metaversion.entity.OrderByClause.Order;
@@ -38,14 +37,12 @@ public class UserService {
 		user.setName(name);
 		user.setPassword(passwordEncoder.encode(rawPassord));
 		user.setAdmin(admin);
-		userMapper.insertHistory(user.getId(), DmlType.UPDATE, auth);
 		userMapper.update(user, auth);
 	}
 	
 	@Transactional
 	public void removeUser(String name, MVUserDetails auth) {
 		final User user = userMapper.selectOneByName(name);
-		userMapper.insertHistory(user.getId(), DmlType.DELETE, auth);
 		userMapper.delete(user.getId());
 	}
 	
