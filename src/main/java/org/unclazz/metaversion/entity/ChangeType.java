@@ -1,6 +1,6 @@
 package org.unclazz.metaversion.entity;
 
-public enum ChangeType implements IChangeType {
+public enum ChangeType {
 	ADD(1, "A", "Added"),
 	DELETE(2, "D", "Deleted"),
 	MODIFY(3, "M", "Modified"),
