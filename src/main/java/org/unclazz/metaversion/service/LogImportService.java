@@ -1,40 +1,33 @@
 package org.unclazz.metaversion.service;
 
 import java.util.Collections;
-import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.unclazz.metaversion.MVProperties;
 import org.unclazz.metaversion.MVUserDetails;
 import org.unclazz.metaversion.MVUtils;
-import org.unclazz.metaversion.entity.OnlineBatchError;
-import org.unclazz.metaversion.entity.OnlineBatchLock;
-import org.unclazz.metaversion.entity.OnlineBatchLog;
 import org.unclazz.metaversion.entity.OnlineBatchProgram;
-import org.unclazz.metaversion.entity.OnlineBatchStatus;
 import org.unclazz.metaversion.entity.SvnCommit;
 import org.unclazz.metaversion.entity.SvnCommitPath;
 import org.unclazz.metaversion.entity.SvnRepository;
-import org.unclazz.metaversion.mapper.OnlineBatchErrorMapper;
-import org.unclazz.metaversion.mapper.OnlineBatchLockMapper;
-import org.unclazz.metaversion.mapper.OnlineBatchLogMapper;
 import org.unclazz.metaversion.mapper.SvnCommitMapper;
 import org.unclazz.metaversion.mapper.SvnCommitPathMapper;
 import org.unclazz.metaversion.mapper.SvnRepositoryMapper;
+import org.unclazz.metaversion.service.BatchExecutorService.Executable;
 import org.unclazz.metaversion.service.SvnService.RepositoryRootAndHeadRevision;
 import org.unclazz.metaversion.service.SvnService.SvnCommitAndItsPathList;
 
 @Service
 public class LogImportService {
-	@Autowired
-	private Logger logger;
+	private Logger logger = LoggerFactory.getLogger(this.getClass());
 	@Autowired
 	private SvnRepositoryMapper svnRepositoryMapper;
 	@Autowired
@@ -42,39 +35,12 @@ public class LogImportService {
 	@Autowired
 	private SvnCommitPathMapper svnCommitPathMapper;
 	@Autowired
-	private OnlineBatchLockMapper onlineBatchLockMapper;
-	@Autowired
-	private OnlineBatchLogMapper onlineBatchLogMapper;
-	@Autowired
-	private OnlineBatchErrorMapper onlineBatchErrorMapper;
-	@Autowired
 	private SvnService svnService;
 	@Autowired
 	private MVProperties props;
+	@Autowired
+	private BatchExecutorService executorService;
 
-	public static final class LogImportAlreadyRunning extends RuntimeException {
-		private static final long serialVersionUID = -4507775346531693192L;
-		private LogImportAlreadyRunning() {
-			super("Another process is already running.");
-		}
-		private LogImportAlreadyRunning(final Throwable cause) {
-			super("Another process is already running.", cause);
-		}
-	}
-	public static final class LockIdAndLogId {
-		private final int lockId;
-		private final int logId;
-		private LockIdAndLogId(final int lockId, final int logId) {
-			this.lockId = lockId;
-			this.logId = logId;
-		}
-		public final int getLockId() {
-			return lockId;
-		}
-		public final int getLogId() {
-			return logId;
-		}
-	}
 	public static final class SvnRepositoryPathInfo {
 		private final String baseUrlPathComponent;
 		private final Pattern compiledTrunkPathPattern;
@@ -139,33 +105,13 @@ public class LogImportService {
 	}
 	
 	public void doLogImport(final int repositoryId, final MVUserDetails auth) {
-		// 事前処理：online_batch_lockの行ロックを取得したあとonline_batch_logに1行INSERT
-		final LockIdAndLogId lockAndLog = doLogImportStart(auth);
-		
-		// メイン処理の状態・結果を示すOnlineBatchStatusのための変数
-		OnlineBatchStatus status = OnlineBatchStatus.ABENDED;
-		try {
-			// メイン処理：svn logコマンドを実行して結果得られたデータをsvn_commitテーブルほかにINSERT
-			doLogImportMain(repositoryId, auth);
-			// この行が実行されたということは処理は正常終了したということ
-			status = OnlineBatchStatus.ENDED;
-		} catch (final RuntimeException ex) {
-			// この行が実行されたということは処理は異常終了したということ
-			// 何はともあれログ出力
-			logger.error("Error has occurred at LogImportService.doLogImport.", ex);
-			// online_batch_errorに1レコードINSERT
-			final OnlineBatchError error = new OnlineBatchError();
-			error.setId(onlineBatchErrorMapper.selectNextVal());
-			error.setOnlineBatchLogId(lockAndLog.getLogId());
-			error.setErrorName(ex.getClass().getCanonicalName());
-			error.setErrorMessage(MVUtils.stackTraceToCharSequence(ex).toString());
-			onlineBatchErrorMapper.insert(error, auth);
-			
-			throw ex;
-		} finally {
-			// 事後処理：online_batch_log -> online_batch_lockの順でUPDATE
-			doLogImportEnd(lockAndLog, status, auth);
-		}
+		executorService.execute(OnlineBatchProgram.LOG_IMPORT,
+				new Executable() {
+					@Override
+					public void execute() {
+						doLogImportMain(repositoryId, auth);
+					}
+		}, auth);
 	}
 	
 	public void doLogImportMain(int repositoryId, final MVUserDetails auth) {
@@ -284,41 +230,6 @@ public class LogImportService {
 		svnRepositoryMapper.update(repository, auth);
 	}
 	
-	@Transactional
-	public LockIdAndLogId doLogImportStart(final MVUserDetails auth) {
-		// online_batch_lockレコードを格納する変数を宣言
-		final OnlineBatchLock lock;
-		try {
-			// SELECT FOR UPDATE NOWAITを実行
-			lock = onlineBatchLockMapper.
-					selectOneForUpdateNowaitByProgramId(OnlineBatchProgram.LOG_IMPORT.getId(), false, auth);
-			// 結果値がnull（＝レコード0件）なら他のプロセスが起動中
-			if (lock == null) {
-				// 例外スローで処理を終える
-				throw new LogImportAlreadyRunning();
-			}
-		} catch (final RuntimeException ex) {
-			// SELECT FOR UPDATE NOWAIT実行により例外がスローされた場合
-			// ほぼ同時に他のプロセスが起動中ということなので例外スローで処理を終える
-			throw new LogImportAlreadyRunning(ex);
-		}
-		
-		// online_batch_logレコードを新規作成
-		final OnlineBatchLog log = new OnlineBatchLog();
-		log.setId(onlineBatchLogMapper.selectNextVal());
-		log.setStartDate(new Date());
-		log.setEndDate(null);
-		log.setProgramId(OnlineBatchProgram.LOG_IMPORT.getId());
-		log.setStatusId(OnlineBatchStatus.RUNNING.getId());
-		
-		// online_batch_log -> online_batch_lockの順にDML実行
-		onlineBatchLogMapper.insert(log, auth);
-		onlineBatchLockMapper.updateForLock(lock.getId(), auth);
-		
-		// ロックIDとログIDをVOに詰めて呼び出し元に返す
-		return new LockIdAndLogId(lock.getId(), log.getId());
-	}
-	
 	public List<RevisionRange> makeRevisionRangeList(final int start, final int end, final int size) {
 		// リビジョン番号としてまた増分としていずれも1より小さい数値はNG
 		if (start < 1 || end < 1 || size < 1) {
@@ -343,20 +254,5 @@ public class LogImportService {
 		}
 		// 結果を呼び出し元に返す
 		return result;
-	}
-	
-	@Transactional
-	public void doLogImportEnd(final LockIdAndLogId lockAndLog, final OnlineBatchStatus status, final MVUserDetails auth) {
-		try {
-			// online_batch_logレコードを取得し終了日時やステータスを変更
-			final OnlineBatchLog log = onlineBatchLogMapper.selectOneById(lockAndLog.getLogId());
-			log.setEndDate(new Date());
-			log.setStatusId(status.getId());
-			
-			// online_batch_log -> online_batch_lockの順にDML実行
-			onlineBatchLogMapper.update(log, auth);
-		} finally {
-			onlineBatchLockMapper.updateForUnlock(lockAndLog.getLockId(), auth);
-		}
 	}
 }

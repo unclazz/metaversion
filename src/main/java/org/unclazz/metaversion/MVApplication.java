@@ -5,8 +5,6 @@ import javax.sql.DataSource;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionFactoryBean;
 import org.mybatis.spring.mapper.MapperScannerConfigurer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.*;
 import org.springframework.boot.autoconfigure.*;
@@ -35,11 +33,6 @@ public class MVApplication {
     	msc.setBasePackage(MAPPER_SCAN_BASE_PACKAGE);
     	msc.afterPropertiesSet();
     	return msc;
-    }
-    
-    @Bean
-    public Logger logger() {
-    	return LoggerFactory.getLogger(MVApplication.class.getPackage().getName());
     }
     
     public static void main(String[] args) throws Exception {

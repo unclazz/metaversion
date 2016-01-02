@@ -5,7 +5,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.tmatesoft.svn.core.ISVNLogEntryHandler;
 import org.tmatesoft.svn.core.SVNException;
@@ -27,8 +27,7 @@ import org.unclazz.metaversion.entity.SvnRepository;
 
 @Service
 public class SvnService {
-	@Autowired
-	private Logger logger;
+	private Logger logger = LoggerFactory.getLogger(this.getClass());
 	
 	public static final class SvnCommitAndItsPathList extends SvnCommit {
 		private final List<SvnCommitPath> pathList = new LinkedList<SvnCommitPath>();
