@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.unclazz.metaversion.MVProperties;
 import org.unclazz.metaversion.MVUserDetails;
 import org.unclazz.metaversion.MVUtils;
 import org.unclazz.metaversion.entity.OnlineBatchError;
@@ -48,6 +49,8 @@ public class LogImportService {
 	private OnlineBatchErrorMapper onlineBatchErrorMapper;
 	@Autowired
 	private SvnService svnService;
+	@Autowired
+	private MVProperties props;
 
 	public static final class LogImportAlreadyRunning extends RuntimeException {
 		private static final long serialVersionUID = -4507775346531693192L;
@@ -178,7 +181,7 @@ public class LogImportService {
 		
 		// 1トランザクションで取込みを行うリビジョンの単位（範囲）
 		// ＊500リビジョンあたり10秒前後かかる可能性あり
-		final int increment = 10; // TODO プロパティファイルで定義することを検討
+		final int increment = props.getLogimportRevisionRange();
 		
 		// インポート済みリビジョン+1を開始リビジョン、HEADリビジョンを終了リビジョンとして
 		// RevisionRangeリストを生成して、それを用いてループ処理を行う
