@@ -8,7 +8,7 @@ public class SvnCommit {
 	private int id;
 	private int svnRepositoryId;
 	private int revision;
-	@JsonFormat(pattern="yyyy/MM/dd HH:mm:ss")
+	@JsonFormat(pattern="yyyy/MM/dd HH:mm:ss.SSS")
 	private Date commitDate;
 	private String commitMessage;
 	private String committerName;
