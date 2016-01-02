@@ -601,6 +601,14 @@ ALTER TABLE ONLY project_svn_commit
 
 
 --
+-- Name: project_svn_commit_fk1; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY project_svn_commit
+    ADD CONSTRAINT project_svn_commit_fk1 FOREIGN KEY (svn_commit_id) REFERENCES svn_commit(id);
+
+
+--
 -- Name: project_svn_commit_fk2; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
