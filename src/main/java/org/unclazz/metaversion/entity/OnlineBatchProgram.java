@@ -1,7 +1,8 @@
 package org.unclazz.metaversion.entity;
 
 public enum OnlineBatchProgram {
-	LOG_IMPORT(1, "LogImport");
+	LOG_IMPORT(1, "LogImport"),
+	COMMIT_LINK(2, "CommitLink");
 	
 	private final int id;
 	private final String programName;

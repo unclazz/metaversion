@@ -164,7 +164,7 @@ public class LogImportService {
 			throw ex;
 		} finally {
 			// 事後処理：online_batch_log -> online_batch_lockの順でUPDATE
-			doImportEnd(lockAndLog, status, auth);
+			doLogImportEnd(lockAndLog, status, auth);
 		}
 	}
 	
@@ -346,7 +346,7 @@ public class LogImportService {
 	}
 	
 	@Transactional
-	public void doImportEnd(final LockIdAndLogId lockAndLog, final OnlineBatchStatus status, final MVUserDetails auth) {
+	public void doLogImportEnd(final LockIdAndLogId lockAndLog, final OnlineBatchStatus status, final MVUserDetails auth) {
 		try {
 			// online_batch_logレコードを取得し終了日時やステータスを変更
 			final OnlineBatchLog log = onlineBatchLogMapper.selectOneById(lockAndLog.getLogId());
