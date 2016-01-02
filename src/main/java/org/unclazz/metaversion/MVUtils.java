@@ -85,6 +85,9 @@ public final class MVUtils {
 		// ＊イレイジャを前提としたトリック
 		return (ResponseEntity<T>) new ResponseEntity(message, HttpStatus.BAD_REQUEST);
 	}
+	public static<T> ResponseEntity<T> httpResponseOfInternalServerError(final T value) {
+		return new ResponseEntity<T>(value, HttpStatus.INTERNAL_SERVER_ERROR);
+	}
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public static<T> ResponseEntity<T> httpResponseOfInternalServerError(final String message) {
 		// 戻り値型を揃えるため強引にキャストを行う
