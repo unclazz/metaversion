@@ -1,5 +1,8 @@
 package org.unclazz.metaversion;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+
 public final class MVUtils {
 	private MVUtils() {}
 	
@@ -59,5 +62,33 @@ public final class MVUtils {
 	}
 	public static CharSequence charArrayToCharSequence(final char[] charArray) {
 		return new StringBuilder().append(charArray);
+	}
+	public static<T> ResponseEntity<T> httpResponseOfOk() {
+		return new ResponseEntity<T>(HttpStatus.OK);
+	}
+	public static<T> ResponseEntity<T> httpResponseOfOk(final T value) {
+		return new ResponseEntity<T>(value, HttpStatus.OK);
+	}
+	public static<T> ResponseEntity<T> httpResponseOfNotFound() {
+		return new ResponseEntity<T>(HttpStatus.NOT_FOUND);
+	}
+	public static<T> ResponseEntity<T> httpResponseOfOkOrNotFound(final T value) {
+		if (value == null) {
+			return httpResponseOfNotFound();
+		} else {
+			return httpResponseOfOk(value);
+		}
+	}
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public static<T> ResponseEntity<T> httpResponseOfBadRequest(final String message) {
+		// 戻り値型を揃えるため強引にキャストを行う
+		// ＊イレイジャを前提としたトリック
+		return (ResponseEntity<T>) new ResponseEntity(message, HttpStatus.BAD_REQUEST);
+	}
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public static<T> ResponseEntity<T> httpResponseOfInternalServerError(final String message) {
+		// 戻り値型を揃えるため強引にキャストを行う
+		// ＊イレイジャを前提としたトリック
+		return (ResponseEntity<T>) new ResponseEntity(message, HttpStatus.INTERNAL_SERVER_ERROR);
 	}
 }
