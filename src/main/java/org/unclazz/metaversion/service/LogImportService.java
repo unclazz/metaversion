@@ -61,6 +61,12 @@ public class LogImportService {
 		final SvnRepositoryInfo svnInfo = svnService.getRepositoryInfo(repository);
 		final SvnRepositoryPathInfo svnRepositoryPathInfo = SvnRepositoryPathInfo.composedOf(svnInfo, repository);
 		
+		// インポート済みのリビジョン番号とSVNリポジトリ本体の最新リビジョン番号を比較
+		if (maxRevision >= svnInfo.getHeadRevision()) {
+			// インポート済みがすでに最新ならここで処理を終える
+			return;
+		}
+		
 		// 1トランザクションで取込みを行うリビジョンの単位（範囲）
 		// ＊500リビジョンあたり10秒前後かかる可能性あり
 		final List<RevisionRange> rangeList = RevisionRange
