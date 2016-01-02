@@ -62,12 +62,12 @@ public class CommitLinkService {
 			final MaxRevision maxRevision = MaxRevision.startsWith(obsoleted.getLastRevision());
 			
 			for (final SvnCommit commit : commitList) {
+				maxRevision.trySetNewValue(commit.getRevision());
 				final Matcher matcher = compiledPattern.matcher(commit.getCommitMessage());
 				if (!matcher.find()) {
 					continue;
 				}
 				projectSvnCommitMapper.insert(projectId, commit.getId(), auth);
-				maxRevision.trySetNewValue(commit.getRevision());
 			}
 			
 			obsoleted.setLastRevision(maxRevision.getValue());
