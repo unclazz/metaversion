@@ -1,5 +1,6 @@
 package org.unclazz.metaversion.service;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
@@ -109,7 +110,7 @@ public class SvnService {
 			// svn logコマンドを実行する
 			client.doLog(getSVNURL(repository),
 					/* paths= */ new String[0],
-					/* pegRevision= */ SVNRevision.UNDEFINED,
+					/* pegRevision= */ SVNRevision.HEAD,
 					/* startRevision= */ SVNRevision.create(range.getStart()),
 					/* endRevision= */ SVNRevision.create(range.getEnd()),
 					/* stopOnCopy= */ false,
@@ -154,7 +155,12 @@ public class SvnService {
 			});
 			// 結果を呼び出し元に返す
 			return commitAndPathListList;
-		} catch (final Exception e) {
+		} catch (final SVNException e) {
+			if (e.getErrorMessage().getErrorCode().getCode() == 195012) {
+				// E195012: Unable to find repository location for '...'
+				// このエラーのときはエラーではなく単に「該当コミットなし」とする
+				return Collections.emptyList();
+			}
 			// SVNKitのAPIから例外がスローされた場合はラップして再スローする
 			throw new SvnOperationFailed("'svn log' command failed.", e);
 		}
