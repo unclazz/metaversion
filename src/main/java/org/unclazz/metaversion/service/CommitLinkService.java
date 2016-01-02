@@ -18,27 +18,10 @@ import org.unclazz.metaversion.mapper.ProjectSvnCommitMapper;
 import org.unclazz.metaversion.mapper.ProjectSvnRepositoryMapper;
 import org.unclazz.metaversion.mapper.SvnCommitMapper;
 import org.unclazz.metaversion.service.BatchExecutorService.Executable;
+import org.unclazz.metaversion.vo.MaxRevision;
 
 @Service
 public class CommitLinkService {
-	public static final class MaxRevision {
-		private int max;
-		private MaxRevision(final int initial) {
-			max = initial;
-		}
-		public boolean trySetNewValue(final int value) {
-			if (max < value) {
-				max = value;
-				return true;
-			} else {
-				return false;
-			}
-		}
-		public int getValue() {
-			return max;
-		}
-	}
-	
 	@Autowired
 	private ProjectMapper projectMapper;
 	@Autowired
@@ -76,7 +59,7 @@ public class CommitLinkService {
 		for (final ProjectSvnRepository obsoleted : obsoletedList) {
 			final List<SvnCommit> commitList = svnCommitMapper.
 					selectForMatchingByProjectIdAndRepositoryId(projectId, obsoleted.getSvnRepositoryId());
-			final MaxRevision maxRevision = new MaxRevision(obsoleted.getLastRevision());
+			final MaxRevision maxRevision = MaxRevision.startsWith(obsoleted.getLastRevision());
 			
 			for (final SvnCommit commit : commitList) {
 				final Matcher matcher = compiledPattern.matcher(commit.getCommitMessage());

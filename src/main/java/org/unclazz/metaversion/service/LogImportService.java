@@ -1,10 +1,7 @@
 package org.unclazz.metaversion.service;
 
-import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,7 +10,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.unclazz.metaversion.MVProperties;
 import org.unclazz.metaversion.MVUserDetails;
-import org.unclazz.metaversion.MVUtils;
 import org.unclazz.metaversion.entity.OnlineBatchProgram;
 import org.unclazz.metaversion.entity.SvnCommit;
 import org.unclazz.metaversion.entity.SvnCommitPath;
@@ -22,8 +18,11 @@ import org.unclazz.metaversion.mapper.SvnCommitMapper;
 import org.unclazz.metaversion.mapper.SvnCommitPathMapper;
 import org.unclazz.metaversion.mapper.SvnRepositoryMapper;
 import org.unclazz.metaversion.service.BatchExecutorService.Executable;
-import org.unclazz.metaversion.service.SvnService.RepositoryRootAndHeadRevision;
 import org.unclazz.metaversion.service.SvnService.SvnCommitAndItsPathList;
+import org.unclazz.metaversion.vo.MaxRevision;
+import org.unclazz.metaversion.vo.RevisionRange;
+import org.unclazz.metaversion.vo.SvnRepositoryInfo;
+import org.unclazz.metaversion.vo.SvnRepositoryPathInfo;
 
 @Service
 public class LogImportService {
@@ -40,69 +39,6 @@ public class LogImportService {
 	private MVProperties props;
 	@Autowired
 	private BatchExecutorService executorService;
-
-	public static final class SvnRepositoryPathInfo {
-		private final String baseUrlPathComponent;
-		private final Pattern compiledTrunkPathPattern;
-		private final Pattern compliedBranchPathPattern;
-		private SvnRepositoryPathInfo(final SvnRepository repository, final String rootUrl) {
-			// リビジョンのベースURLからパス部分を切り出す
-			if (!repository.getBaseUrl().startsWith(rootUrl)) {
-				throw MVUtils.illegalArgument("Invalid base url. "
-						+ "The url does not start with repository's root url"
-						+ "(base url=%s, root url=%s).", repository.getBaseUrl(), rootUrl);
-			}
-			baseUrlPathComponent = repository.getBaseUrl().substring(rootUrl.length());
-			// trunkパス部分にマッチする正規表現パターンを初期化
-			compiledTrunkPathPattern = Pattern.compile(repository.getTrunkPathPattern());
-			// branchパス部分にマッチする正規表現パターンを初期化
-			compliedBranchPathPattern = Pattern.compile(repository.getBranchPathPattern());
-		}
-		public final String getBaseUrlPathComponent() {
-			return baseUrlPathComponent;
-		}
-		public final Pattern getCompiledTrunkPathPattern() {
-			return compiledTrunkPathPattern;
-		}
-		public final Pattern getCompliedBranchPathPattern() {
-			return compliedBranchPathPattern;
-		}
-	}
-	
-	public static final class RevisionRange {
-		private final int start;
-		private final int end;
-		private RevisionRange(final int start, final int end) {
-			this.start = start;
-			this.end = end;
-		}
-		public int getStart() {
-			return start;
-		}
-		public int getEnd() {
-			return end;
-		}
-		public int getEndExclusive() {
-			return end + 1;
-		}
-	}
-	public static final class MaxRevision {
-		private int max;
-		private MaxRevision(final int initial) {
-			max = initial;
-		}
-		public boolean trySetNewValue(final int value) {
-			if (max < value) {
-				max = value;
-				return true;
-			} else {
-				return false;
-			}
-		}
-		public int getValue() {
-			return max;
-		}
-	}
 	
 	public void doLogImport(final int repositoryId, final MVUserDetails auth) {
 		executorService.execute(OnlineBatchProgram.LOG_IMPORT,
@@ -122,18 +58,20 @@ public class LogImportService {
 		 
 		// SVNリポジトリ側のルートURLと最新リビジョンを取得
 		// ＊数秒を要する可能性あり
-		final RepositoryRootAndHeadRevision rootAndHead = svnService.getRepositoryRootAndHeadRevision(repository);
-		final SvnRepositoryPathInfo pathInfo = new SvnRepositoryPathInfo(repository, rootAndHead.getRepositoryRootUrl());
+		final SvnRepositoryInfo svnInfo = svnService.getRepositoryInfo(repository);
+		final SvnRepositoryPathInfo svnRepositoryPathInfo = SvnRepositoryPathInfo.composedOf(svnInfo, repository);
 		
 		// 1トランザクションで取込みを行うリビジョンの単位（範囲）
 		// ＊500リビジョンあたり10秒前後かかる可能性あり
-		final int increment = props.getLogimportRevisionRange();
+		final List<RevisionRange> rangeList = RevisionRange
+				.ofBetween(maxRevision + 1, svnInfo.getHeadRevision())
+				.withStep(props.getLogimportRevisionRange());
 		
 		// インポート済みリビジョン+1を開始リビジョン、HEADリビジョンを終了リビジョンとして
 		// RevisionRangeリストを生成して、それを用いてループ処理を行う
-		for (final RevisionRange range : makeRevisionRangeList(maxRevision + 1, rootAndHead.getHeadRevision(), increment)) {
+		for (final RevisionRange range : rangeList) {
 			// RevisionRangeで示されるリビジョン範囲ごとにsvn logを実行して結果をDBに登録する
-			doLogImportForRevisionRange(repository, pathInfo, range, auth);
+			doLogImportForRevisionRange(repository, svnRepositoryPathInfo, range, auth);
 		}
 	}
 	
@@ -150,7 +88,7 @@ public class LogImportService {
 				getCommitAndItsPathList(repository, range.getStart(), range.getEnd());
 		
 		// svn logエントリ中の最大リビジョン
-		final MaxRevision maxRevision = new MaxRevision(range.getStart());
+		final MaxRevision maxRevision = MaxRevision.startsWith(range.getStart());
 		
 		// svn logエントリ情報ごとのループ
 		for (final SvnCommitAndItsPathList commitAndPathList : commitAndPathListList) {
@@ -228,31 +166,5 @@ public class LogImportService {
 		// Maxリビジョンでsvn_repositoryをUPDATE
 		repository.setMaxRevision(maxRevision.getValue());
 		svnRepositoryMapper.update(repository, auth);
-	}
-	
-	public List<RevisionRange> makeRevisionRangeList(final int start, final int end, final int size) {
-		// リビジョン番号としてまた増分としていずれも1より小さい数値はNG
-		if (start < 1 || end < 1 || size < 1) {
-			throw new IllegalArgumentException();
-		}
-		// 開始リビジョンのほうが大きい場合
-		if (start > end) {
-			// 空のリストを返すだけで処理を終える
-			return Collections.emptyList();
-		}
-		// 続くfor文のために排他の上限値を定義
-		final int endExclusive = end + 1;
-		// 結果値となるリストを初期化
-		final List<RevisionRange> result = new LinkedList<LogImportService.RevisionRange>();
-		// 指定された増分を用いて繰り返しRevisionRangeを作成
-		for (int i = start; i < endExclusive; i += size) {
-			// 指定された増分を用いて終了リビジョンを単純計算
-			final int iPlusSizeMinus1 = i + size - 1;
-			// リストにRevisionRangeを追加
-			// 単純計算した個別の終了リビジョンが全体の終了リビジョンを超える場合は後者を採用
-			result.add(new RevisionRange(i, iPlusSizeMinus1 < end ? iPlusSizeMinus1 : end));
-		}
-		// 結果を呼び出し元に返す
-		return result;
 	}
 }

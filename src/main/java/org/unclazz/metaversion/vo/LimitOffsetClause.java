@@ -1,6 +1,6 @@
 package org.unclazz.metaversion.vo;
 
-public class LimitOffsetClause {
+public final class LimitOffsetClause {
 	public static final LimitOffsetClause ALL = new LimitOffsetClause(0, 0);
 	public static LimitOffsetClause of(final int limit, final int offset) {
 		return new LimitOffsetClause(limit, offset);

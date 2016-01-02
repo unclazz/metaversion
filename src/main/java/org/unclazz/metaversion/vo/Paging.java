@@ -1,6 +1,6 @@
 package org.unclazz.metaversion.vo;
 
-public class Paging {
+public final class Paging {
 	private int page = 1;
 	private int size = 25;
 	public final int getPage() {

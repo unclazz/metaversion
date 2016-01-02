@@ -2,7 +2,7 @@ package org.unclazz.metaversion.vo;
 
 import java.util.List;
 
-public class Paginated<T> {
+public final class Paginated<T> {
 	public static<T> Paginated<T> of(Paging paging, List<T> list, int total) {
 		return new Paginated<T>(paging, list, total);
 	}

@@ -24,6 +24,7 @@ import org.unclazz.metaversion.entity.ChangeType;
 import org.unclazz.metaversion.entity.SvnCommit;
 import org.unclazz.metaversion.entity.SvnCommitPath;
 import org.unclazz.metaversion.entity.SvnRepository;
+import org.unclazz.metaversion.vo.SvnRepositoryInfo;
 
 @Service
 public class SvnService {
@@ -33,20 +34,6 @@ public class SvnService {
 		private final List<SvnCommitPath> pathList = new LinkedList<SvnCommitPath>();
 		public List<SvnCommitPath> getPathList() {
 			return pathList;
-		}
-	}
-	public static final class RepositoryRootAndHeadRevision {
-		private final String repositoryRootUrl;
-		private final int headRevision;
-		private RepositoryRootAndHeadRevision(final String url, final int revision) {
-			this.repositoryRootUrl = url;
-			this.headRevision = revision;
-		}
-		public String getRepositoryRootUrl() {
-			return repositoryRootUrl;
-		}
-		public int getHeadRevision() {
-			return headRevision;
 		}
 	}
 	public static final class SvnOperationFailed extends RuntimeException {
@@ -89,14 +76,12 @@ public class SvnService {
 	 * @param repository リポジトリ情報
 	 * @return ルートURLとHEADリビジョン
 	 */
-	public RepositoryRootAndHeadRevision getRepositoryRootAndHeadRevision(SvnRepository repository) {
+	public SvnRepositoryInfo getRepositoryInfo(SvnRepository repository) {
 		final SVNClientManager manager = getSVNClientManager(repository);
 		final SVNWCClient client = manager.getWCClient();
 		try {
 			final SVNInfo info = client.doInfo(getSVNURL(repository), SVNRevision.HEAD, SVNRevision.HEAD);
-			return new RepositoryRootAndHeadRevision(
-					info.getRepositoryRootURL().toDecodedString(),
-					(int) info.getRevision().getNumber());
+			return SvnRepositoryInfo.of(info);
 		} catch (final Exception e) {
 			// SVNKitのAPIから例外がスローされた場合はラップして再スローする
 			throw new SvnOperationFailed("'svn info' command failed.", e);
@@ -146,8 +131,7 @@ public class SvnService {
 							final SvnCommitAndItsPathList commitAndPathList = new SvnCommitAndItsPathList();
 							// SVNKitは独自拡張したDate型を返すのでこれを純正のDate型に変換する
 							// ＊こうしないとPostgreSQLのドライバでエラーが発生する
-							final Date javaUtilDate = new Date();
-							javaUtilDate.setTime(logEntry.getDate().getTime());
+							final Date javaUtilDate = new Date(logEntry.getDate().getTime());
 							// コミット情報を転写
 							commitAndPathList.setCommitMessage(logEntry.getMessage());
 							commitAndPathList.setCommitDate(javaUtilDate);

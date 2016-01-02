@@ -2,7 +2,7 @@ package org.unclazz.metaversion.vo;
 
 import java.util.regex.Pattern;
 
-public class OrderByClause {
+public final class OrderByClause {
 	public static enum Order {
 		ASC, DESC;
 		public String toString() { return this == ASC ? "ASC" : "DESC"; }
