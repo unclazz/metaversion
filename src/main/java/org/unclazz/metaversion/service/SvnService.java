@@ -24,6 +24,7 @@ import org.unclazz.metaversion.entity.ChangeType;
 import org.unclazz.metaversion.entity.SvnCommit;
 import org.unclazz.metaversion.entity.SvnCommitPath;
 import org.unclazz.metaversion.entity.SvnRepository;
+import org.unclazz.metaversion.vo.RevisionRange;
 import org.unclazz.metaversion.vo.SvnRepositoryInfo;
 
 @Service
@@ -98,7 +99,7 @@ public class SvnService {
 	 * @return コミットとコミットで変更されたリソースの情報
 	 */
 	public List<SvnCommitAndItsPathList> getCommitAndItsPathList(final SvnRepository repository,
-			int startRevision, final int endRevision) {
+			final RevisionRange range) {
 		// VOを初期化
 		final List<SvnCommitAndItsPathList> commitAndPathListList = new LinkedList<SvnCommitAndItsPathList>();
 		// svn logコマンド用のクライアントを初期化
@@ -109,12 +110,12 @@ public class SvnService {
 			client.doLog(getSVNURL(repository),
 					/* paths= */ new String[0],
 					/* pegRevision= */ SVNRevision.UNDEFINED,
-					/* startRevision= */ SVNRevision.create(startRevision),
-					/* endRevision= */ SVNRevision.create(endRevision),
+					/* startRevision= */ SVNRevision.create(range.getStart()),
+					/* endRevision= */ SVNRevision.create(range.getEnd()),
 					/* stopOnCopy= */ false,
 					/* discoverChangedPaths= */ true,
 					/* includeMergedRevisions= */ true,
-					/* limit= */ endRevision + 1 - startRevision,
+					/* limit= */ range.getWidth(),
 					/* revisionProperties */ new String[0],
 					new ISVNLogEntryHandler() {
 						@Override

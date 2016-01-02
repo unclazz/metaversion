@@ -1,12 +1,14 @@
 package org.unclazz.metaversion.vo;
 
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import org.unclazz.metaversion.MVUtils;
 
-public final class RevisionRange {
+public final class RevisionRange implements Iterable<Integer> {
 	public static RevisionRange ofBetween(final int start, final int end) {
 		return new RevisionRange(start, end);
 	}
@@ -34,6 +36,9 @@ public final class RevisionRange {
 	public int getEndExclusive() {
 		return end + 1;
 	}
+	public int getWidth() {
+		return getEndExclusive() - getStart();
+	}
 	public List<RevisionRange> withStep(final int step) {
 		// リビジョン番号としてまた増分としていずれも1より小さい数値はNG
 		if (step < 1) {
@@ -58,5 +63,25 @@ public final class RevisionRange {
 		}
 		// 結果を呼び出し元に返す
 		return result;
+	}
+	@Override
+	public Iterator<Integer> iterator() {
+		return new Iterator<Integer>() {
+			private int current = RevisionRange.this.getStart() - 1;
+			private int end = RevisionRange.this.getEnd();
+			@Override
+			public boolean hasNext() {
+				return current < end;
+			}
+			@Override
+			public Integer next() {
+				if (hasNext()) {
+					current += 1;
+					return current;
+				} else {
+					throw new NoSuchElementException();
+				}
+			}
+		};
 	}
 }

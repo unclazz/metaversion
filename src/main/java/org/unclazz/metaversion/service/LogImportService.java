@@ -85,7 +85,7 @@ public class LogImportService {
 		
 		// SVNKitを通じsvn log -r <start>:<end> -v <url>コマンド実行
 		final List<SvnCommitAndItsPathList> commitAndPathListList = svnService.
-				getCommitAndItsPathList(repository, range.getStart(), range.getEnd());
+				getCommitAndItsPathList(repository, range);
 		
 		// svn logエントリ中の最大リビジョン
 		final MaxRevision maxRevision = MaxRevision.startsWith(range.getStart());
