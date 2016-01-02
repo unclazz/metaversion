@@ -1,8 +1,11 @@
 package org.unclazz.metaversion.service;
 
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.tmatesoft.svn.core.ISVNLogEntryHandler;
 import org.tmatesoft.svn.core.SVNException;
@@ -24,10 +27,27 @@ import org.unclazz.metaversion.entity.SvnRepository;
 
 @Service
 public class SvnService {
+	@Autowired
+	private Logger logger;
+	
 	public static final class SvnCommitAndItsPathList extends SvnCommit {
 		private final List<SvnCommitPath> pathList = new LinkedList<SvnCommitPath>();
 		public List<SvnCommitPath> getPathList() {
 			return pathList;
+		}
+	}
+	public static final class RepositoryRootAndHeadRevision {
+		private final String repositoryRootUrl;
+		private final int headRevision;
+		private RepositoryRootAndHeadRevision(final String url, final int revision) {
+			this.repositoryRootUrl = url;
+			this.headRevision = revision;
+		}
+		public String getRepositoryRootUrl() {
+			return repositoryRootUrl;
+		}
+		public int getHeadRevision() {
+			return headRevision;
 		}
 	}
 	public static final class SvnOperationFailed extends RuntimeException {
@@ -64,18 +84,20 @@ public class SvnService {
 	}
 	
 	/**
-	 * {@code svn info <url>}コマンドを実行して得られたHEADリビジョン番号を返す.
+	 * {@code svn info <url>}コマンドを実行して得られたルートURLとHEADリビジョン番号を返す.
 	 * メソッドの処理時間は、接続先のSVNサーバの応答時間とSVNKitのAPIの処理時間の合算値となり、
 	 * HEADリビジョンの番号取得に数秒かかることがある。
-	 * @param repository
-	 * @return
+	 * @param repository リポジトリ情報
+	 * @return ルートURLとHEADリビジョン
 	 */
-	public int getHeadRevision(SvnRepository repository) {
+	public RepositoryRootAndHeadRevision getRepositoryRootAndHeadRevision(SvnRepository repository) {
 		final SVNClientManager manager = getSVNClientManager(repository);
 		final SVNWCClient client = manager.getWCClient();
 		try {
 			final SVNInfo info = client.doInfo(getSVNURL(repository), SVNRevision.HEAD, SVNRevision.HEAD);
-			return (int) info.getRevision().getNumber();
+			return new RepositoryRootAndHeadRevision(
+					info.getRepositoryRootURL().toDecodedString(),
+					(int) info.getRevision().getNumber());
 		} catch (final Exception e) {
 			// SVNKitのAPIから例外がスローされた場合はラップして再スローする
 			throw new SvnOperationFailed("'svn info' command failed.", e);
@@ -113,11 +135,23 @@ public class SvnService {
 					new ISVNLogEntryHandler() {
 						@Override
 						public void handleLogEntry(final SVNLogEntry logEntry) throws SVNException {
+							logger.info("process a svn log entry: revision={} author={} date={} paths={}. ",
+									logEntry.getRevision(), logEntry.getAuthor(), logEntry.getDate(),
+									logEntry.getChangedPaths().size());
+							if (logEntry.getDate() == null) {
+								logger.info("last entry was skipped because its date property is null.");
+								return;
+							}
+							
 							// VOを初期化
 							final SvnCommitAndItsPathList commitAndPathList = new SvnCommitAndItsPathList();
+							// SVNKitは独自拡張したDate型を返すのでこれを純正のDate型に変換する
+							// ＊こうしないとPostgreSQLのドライバでエラーが発生する
+							final Date javaUtilDate = new Date();
+							javaUtilDate.setTime(logEntry.getDate().getTime());
 							// コミット情報を転写
-							commitAndPathList.setComment(logEntry.getMessage());
-							commitAndPathList.setCommitDate(logEntry.getDate());
+							commitAndPathList.setCommitMessage(logEntry.getMessage());
+							commitAndPathList.setCommitDate(javaUtilDate);
 							commitAndPathList.setCommitterName(logEntry.getAuthor());
 							commitAndPathList.setRevision((int) logEntry.getRevision());
 							// コミットにより変更されたパスをループ処理

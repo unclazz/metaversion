@@ -8,12 +8,15 @@ import org.unclazz.metaversion.MVUserDetails;
 import org.unclazz.metaversion.entity.OnlineBatchLock;
 
 public interface OnlineBatchLockMapper {
+	@Select("SELECT nextval('online_batch_lock_seq') ")
+	int selectNextVal();
+	
 	@Insert("INSERT INTO online_batch_lock (id, program_id, locked, last_lock_date, last_unlock_date) "
 			+ "VALUES (#{lock.id}, #{lock.programId}, #{lock.locked}, #{lock.lastLockDate}, #{lock.lastUnlockDate}) ")
 	int insert(OnlineBatchLock lock);
 	
 	@Select("SELECT id, program_id programId, locked, last_lock_date lastLockDate, last_unlock_date lastUnlockDate "
-			+ "FROM online_batch_lock"
+			+ "FROM online_batch_lock "
 			+ "WHERE program_id = #{programId} AND locked = #{locked} "
 			+ "FOR UPDATE NOWAIT ")
 	OnlineBatchLock selectOneForUpdateNowaitByProgramId(@Param("programId") int programId,

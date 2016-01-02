@@ -11,12 +11,13 @@ public interface OnlineBatchLogMapper {
 	@Select("SELECT nextval('online_batch_log_seq') ")
 	int selectNextVal();
 	
-	@Select("SELECT id, program_id programId, start_date startDate, end_date endDate, status_id, statusId "
+	@Select("SELECT id, program_id programId, start_date startDate, end_date endDate, status_id statusId "
+			+ "FROM online_batch_log "
 			+ "WHERE id = #{id} ")
 	OnlineBatchLog selectOneById(@Param("id") int id);
 	
-	@Insert("INSERT INTO online_batch_log (id, program_id, start_date, end_date, status_id) "
-			+ "VALUES (#{log.id}, #{log.programId}, #{log.startDate}, #{log.endDate}, #{log.statusId}) ")
+	@Insert("INSERT INTO online_batch_log (id, program_id, start_date, end_date, status_id, create_user_id) "
+			+ "VALUES (#{log.id}, #{log.programId}, #{log.startDate}, #{log.endDate}, #{log.statusId}, #{auth.id}) ")
 	int insert(@Param("log") OnlineBatchLog log, @Param("auth") MVUserDetails auth);
 
 	@Update("UPDATE online_batch_log SET program_id = #{log.programId}, start_date = #{log.startDate}, "

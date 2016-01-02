@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,10 +27,13 @@ import org.unclazz.metaversion.mapper.OnlineBatchLogMapper;
 import org.unclazz.metaversion.mapper.SvnCommitMapper;
 import org.unclazz.metaversion.mapper.SvnCommitPathMapper;
 import org.unclazz.metaversion.mapper.SvnRepositoryMapper;
+import org.unclazz.metaversion.service.SvnService.RepositoryRootAndHeadRevision;
 import org.unclazz.metaversion.service.SvnService.SvnCommitAndItsPathList;
 
 @Service
 public class LogImportService {
+	@Autowired
+	private Logger logger;
 	@Autowired
 	private SvnRepositoryMapper svnRepositoryMapper;
 	@Autowired
@@ -72,9 +76,14 @@ public class LogImportService {
 		private final String baseUrlPathComponent;
 		private final Pattern compiledTrunkPathPattern;
 		private final Pattern compliedBranchPathPattern;
-		private SvnRepositoryPathInfo(final SvnRepository repository) {
+		private SvnRepositoryPathInfo(final SvnRepository repository, final String rootUrl) {
 			// リビジョンのベースURLからパス部分を切り出す
-			baseUrlPathComponent = clipPathComponentFromUrl(repository.getBaseUrl());
+			if (!repository.getBaseUrl().startsWith(rootUrl)) {
+				throw MVUtils.illegalArgument("Invalid base url. "
+						+ "The url does not start with repository's root url"
+						+ "(base url=%s, root url=%s).", repository.getBaseUrl(), rootUrl);
+			}
+			baseUrlPathComponent = repository.getBaseUrl().substring(rootUrl.length());
 			// trunkパス部分にマッチする正規表現パターンを初期化
 			compiledTrunkPathPattern = Pattern.compile(repository.getTrunkPathPattern());
 			// branchパス部分にマッチする正規表現パターンを初期化
@@ -89,21 +98,8 @@ public class LogImportService {
 		public final Pattern getCompliedBranchPathPattern() {
 			return compliedBranchPathPattern;
 		}
-		private static String clipPathComponentFromUrl(final String url) {
-			final int slasla = url.indexOf("//");
-			if (slasla == -1) {
-				throw new IllegalArgumentException();
-			}
-			final int sla = url.indexOf('/', slasla + 2);
-			if (sla == -1) {
-				return "";
-			} else if (sla == url.length() - 1) {
-				return "";
-			} else {
-				return url.substring(sla);
-			}
-		}
 	}
+	
 	public static final class RevisionRange {
 		private final int start;
 		private final int end;
@@ -144,7 +140,7 @@ public class LogImportService {
 		final LockIdAndLogId lockAndLog = doLogImportStart(auth);
 		
 		// メイン処理の状態・結果を示すOnlineBatchStatusのための変数
-		OnlineBatchStatus status = null;
+		OnlineBatchStatus status = OnlineBatchStatus.ABENDED;
 		try {
 			// メイン処理：svn logコマンドを実行して結果得られたデータをsvn_commitテーブルほかにINSERT
 			doLogImportMain(repositoryId, auth);
@@ -152,7 +148,8 @@ public class LogImportService {
 			status = OnlineBatchStatus.ENDED;
 		} catch (final RuntimeException ex) {
 			// この行が実行されたということは処理は異常終了したということ
-			status = OnlineBatchStatus.ABENDED;
+			// 何はともあれログ出力
+			logger.error("Error has occurred at LogImportService.doLogImport.", ex);
 			// online_batch_errorに1レコードINSERT
 			final OnlineBatchError error = new OnlineBatchError();
 			error.setId(onlineBatchErrorMapper.selectNextVal());
@@ -160,22 +157,24 @@ public class LogImportService {
 			error.setErrorName(ex.getClass().getCanonicalName());
 			error.setErrorMessage(MVUtils.stackTraceToCharSequence(ex).toString());
 			onlineBatchErrorMapper.insert(error, auth);
+			
+			throw ex;
+		} finally {
+			// 事後処理：online_batch_log -> online_batch_lockの順でUPDATE
+			doImportEnd(lockAndLog, status, auth);
 		}
-		
-		// 事後処理：online_batch_log -> online_batch_lockの順でUPDATE
-		doImportEnd(lockAndLog, status, auth);
 	}
 	
 	public void doLogImportMain(int repositoryId, final MVUserDetails auth) {
 		final SvnRepository repository = svnRepositoryMapper.selectOneById(repositoryId);
-		final SvnRepositoryPathInfo pathInfo = new SvnRepositoryPathInfo(repository);
 		
 		// インポート済みのリビジョン番号を取得
 		final int maxRevision = repository.getMaxRevision();
 		 
-		// SVNリポジトリ側の最新リビジョンを取得
+		// SVNリポジトリ側のルートURLと最新リビジョンを取得
 		// ＊数秒を要する可能性あり
-		final int headRevision = svnService.getHeadRevision(repository);
+		final RepositoryRootAndHeadRevision rootAndHead = svnService.getRepositoryRootAndHeadRevision(repository);
+		final SvnRepositoryPathInfo pathInfo = new SvnRepositoryPathInfo(repository, rootAndHead.getRepositoryRootUrl());
 		
 		// 1トランザクションで取込みを行うリビジョンの単位（範囲）
 		// ＊500リビジョンあたり10秒前後かかる可能性あり
@@ -183,7 +182,7 @@ public class LogImportService {
 		
 		// インポート済みリビジョン+1を開始リビジョン、HEADリビジョンを終了リビジョンとして
 		// RevisionRangeリストを生成して、それを用いてループ処理を行う
-		for (final RevisionRange range : makeRevisionRangeList(maxRevision + 1, headRevision, increment)) {
+		for (final RevisionRange range : makeRevisionRangeList(maxRevision + 1, rootAndHead.getHeadRevision(), increment)) {
 			// RevisionRangeで示されるリビジョン範囲ごとにsvn logを実行して結果をDBに登録する
 			doLogImportForRevisionRange(repository, pathInfo, range, auth);
 		}
@@ -193,6 +192,10 @@ public class LogImportService {
 	public void doLogImportForRevisionRange(final SvnRepository repository, 
 			final SvnRepositoryPathInfo pathInfo, final RevisionRange range, final MVUserDetails auth) {
 
+		logger.info("取込み対象のベースパス（≠リポジトリルート）： {}", pathInfo.getBaseUrlPathComponent());
+		logger.info("trunk部分パスの正規表現パターン： {} ", pathInfo.getCompiledTrunkPathPattern());
+		logger.info("branches部分パスの正規表現パターン： {}", pathInfo.getCompliedBranchPathPattern());
+		
 		// SVNKitを通じsvn log -r <start>:<end> -v <url>コマンド実行
 		final List<SvnCommitAndItsPathList> commitAndPathListList = svnService.
 				getCommitAndItsPathList(repository, range.getStart(), range.getEnd());
@@ -210,7 +213,7 @@ public class LogImportService {
 			// svn logエントリ情報からsvn_commitレコードを作成
 			final SvnCommit commit = new SvnCommit();
 			commit.setId(svnCommitMapper.selectNextVal());
-			commit.setComment(commitAndPathList.getComment());
+			commit.setCommitMessage(commitAndPathList.getCommitMessage());
 			commit.setCommitDate(commitAndPathList.getCommitDate());
 			commit.setCommitterName(commitAndPathList.getCommitterName());
 			commit.setRevision(currentRevision);
@@ -219,6 +222,8 @@ public class LogImportService {
 			
 			// svn logエントリのパス情報ごとのループ
 			for (final SvnCommitPath path : commitAndPathList.getPathList()) {
+				logger.info("URL正規化まえ： {} ", path.getPath());
+				
 				// SVNから返されたパスがアプリのリポジトリ設定にあるURLのベースパスで始まるのかチェック
 				if (!path.getPath().startsWith(pathInfo.getBaseUrlPathComponent())) {
 					// 結果NGの場合はインポート対象でないのでスキップ
@@ -228,6 +233,9 @@ public class LogImportService {
 				// SVNから返されたパスからアプリのリポジトリ設定にあるURLのベースパスを除去
 				final CharSequence pathAfterBaseUrl = new StringBuilder(path.getPath())
 						.subSequence(pathInfo.getBaseUrlPathComponent().length(), path.getPath().length());
+
+				// ログ：URL正規化の結果
+				logger.info("URL正規化あと リポジトリベースURL部分の除去： {} ", pathAfterBaseUrl);
 				
 				// trunkやbranchの部分パスを除去した正規化済みURLが格納される変数
 				final CharSequence normalizedUrl;
@@ -253,12 +261,15 @@ public class LogImportService {
 					}
 				}
 				
+				logger.info("URL正規化あと trunk/branches部分パスの除去: {} ", normalizedUrl);
+				
 				// 念のため想定外の内容でないかチェック
 				if (normalizedUrl.length() < 2 || normalizedUrl.charAt(0) != '/') {
 					continue;
 				}
 				
 				// svn logエントリのパス情報からsvn_commit_pathレコードを作成
+				path.setId(svnCommitPathMapper.selectNextVal());
 				path.setSvnCommitId(commit.getId());
 				path.setPath(normalizedUrl.toString());
 				svnCommitPathMapper.insert(path, auth);
@@ -333,13 +344,16 @@ public class LogImportService {
 	
 	@Transactional
 	public void doImportEnd(final LockIdAndLogId lockAndLog, final OnlineBatchStatus status, final MVUserDetails auth) {
-		// online_batch_logレコードを取得し終了日時やステータスを変更
-		final OnlineBatchLog log = onlineBatchLogMapper.selectOneById(lockAndLog.getLogId());
-		log.setEndDate(new Date());
-		log.setStatusId(status.getId());
-		
-		// online_batch_log -> online_batch_lockの順にDML実行
-		onlineBatchLogMapper.update(log, auth);
-		onlineBatchLockMapper.updateForUnlock(lockAndLog.getLockId(), auth);
+		try {
+			// online_batch_logレコードを取得し終了日時やステータスを変更
+			final OnlineBatchLog log = onlineBatchLogMapper.selectOneById(lockAndLog.getLogId());
+			log.setEndDate(new Date());
+			log.setStatusId(status.getId());
+			
+			// online_batch_log -> online_batch_lockの順にDML実行
+			onlineBatchLogMapper.update(log, auth);
+		} finally {
+			onlineBatchLockMapper.updateForUnlock(lockAndLog.getLockId(), auth);
+		}
 	}
 }

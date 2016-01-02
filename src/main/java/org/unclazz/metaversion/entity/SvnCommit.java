@@ -10,7 +10,7 @@ public class SvnCommit {
 	private int revision;
 	@JsonFormat(pattern="yyyy/MM/dd HH:mm:ss")
 	private Date commitDate;
-	private String comment;
+	private String commitMessage;
 	private String committerName;
 	public final int getId() {
 		return id;
@@ -36,11 +36,11 @@ public class SvnCommit {
 	public final void setCommitDate(Date commitDate) {
 		this.commitDate = commitDate;
 	}
-	public final String getComment() {
-		return comment;
+	public final String getCommitMessage() {
+		return commitMessage;
 	}
-	public final void setComment(String comment) {
-		this.comment = comment;
+	public final void setCommitMessage(String commitMessage) {
+		this.commitMessage = commitMessage;
 	}
 	public final String getCommitterName() {
 		return committerName;

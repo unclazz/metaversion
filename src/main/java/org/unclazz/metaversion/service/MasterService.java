@@ -1,5 +1,7 @@
 package org.unclazz.metaversion.service;
 
+import java.util.Date;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -7,10 +9,12 @@ import org.springframework.transaction.annotation.Transactional;
 import org.unclazz.metaversion.MVProperties;
 import org.unclazz.metaversion.MVUserDetails;
 import org.unclazz.metaversion.entity.ChangeType;
+import org.unclazz.metaversion.entity.OnlineBatchLock;
 import org.unclazz.metaversion.entity.OnlineBatchProgram;
 import org.unclazz.metaversion.entity.OnlineBatchStatus;
 import org.unclazz.metaversion.entity.User;
 import org.unclazz.metaversion.mapper.ChangeTypeMapper;
+import org.unclazz.metaversion.mapper.OnlineBatchLockMapper;
 import org.unclazz.metaversion.mapper.OnlineBatchProgramMapper;
 import org.unclazz.metaversion.mapper.OnlineBatchStatusMapper;
 import org.unclazz.metaversion.mapper.UserMapper;
@@ -30,6 +34,8 @@ public class MasterService {
 	private OnlineBatchProgramMapper onlineBatchProgramMapper;
 	@Autowired
 	private OnlineBatchStatusMapper onlineBatchStatusMapper;
+	@Autowired
+	private OnlineBatchLockMapper onlineBatchLockMapper;
 	@Autowired
 	private UserMapper userMapper;
 	@Autowired
@@ -57,16 +63,20 @@ public class MasterService {
 			throw new ApplicationMayBeAlreadyInitialized(e);
 		}
 		
-		
 		for (final ChangeType value : ChangeType.values()) {
 			chageTypeMapper.insert(value);
 		}
 		for (final OnlineBatchProgram value : OnlineBatchProgram.values()) {
 			onlineBatchProgramMapper.insert(value);
+			final OnlineBatchLock lock = new OnlineBatchLock();
+			lock.setId(onlineBatchLockMapper.selectNextVal());
+			lock.setLastLockDate(new Date());
+			lock.setLastUnlockDate(new Date());
+			lock.setLocked(false);
+			lock.setProgramId(value.getId());
 		}
 		for (final OnlineBatchStatus value : OnlineBatchStatus.values()) {
 			onlineBatchStatusMapper.insert(value);
 		}
-		
 	}
 }
