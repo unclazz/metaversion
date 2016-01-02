@@ -90,6 +90,40 @@ public class SvnService {
 		}
 	}
 	
+	public int getFirstRevision(final SvnRepository repository) {
+		// svn logコマンド用のクライアントを初期化
+		final SVNClientManager manager = getSVNClientManager(repository);
+		final SVNLogClient client = manager.getLogClient();
+		// 取得したリビジョン番号を格納するリスト
+		final List<Integer> revisions = new LinkedList<Integer>();
+		// svn logコマンドを実行する
+		// ＊stopOnCopy=trueにしないとbranch作成などのパス変動を跨いだ履歴追跡が行われてしまう
+		// ＊limit=1にしないとおびただしい数のエントリが返されてしまう可能性がある
+		try {
+			client.doLog(getSVNURL(repository),
+					/* paths= */ new String[0],
+					/* pegRevision= */ SVNRevision.HEAD,
+					/* startRevision= */ SVNRevision.create(1),
+					/* endRevision= */ SVNRevision.HEAD,
+					/* stopOnCopy= */ true,
+					/* discoverChangedPaths= */ true,
+					/* includeMergedRevisions= */ true,
+					/* limit= */ 1,
+					/* revisionProperties */ new String[0],
+					new ISVNLogEntryHandler() {
+						@Override
+						public void handleLogEntry(final SVNLogEntry logEntry) throws SVNException {
+							revisions.add((int) logEntry.getRevision());
+						}
+			});
+			
+			return revisions.get(0);
+		} catch (final SVNException e) {
+			// SVNKitのAPIから例外がスローされた場合はラップして再スローする
+			throw new SvnOperationFailed("'svn log' command failed.", e);
+		}
+	}
+	
 	/**
 	 * {@code svn log -r <start>:<end> -v <url>}コマンドを実行して得られたコミット情報を返す.
 	 * メソッドの処理時間は、接続先のSVNサーバの応答時間とSVNKitのAPIの処理時間の合算値となり、
@@ -108,12 +142,13 @@ public class SvnService {
 		final SVNLogClient client = manager.getLogClient();
 		try {
 			// svn logコマンドを実行する
+			// ＊stopOnCopyをtrueにしないとbranch作成などのパス変動を跨いだ履歴追跡が行われてしまう
 			client.doLog(getSVNURL(repository),
 					/* paths= */ new String[0],
 					/* pegRevision= */ SVNRevision.HEAD,
 					/* startRevision= */ SVNRevision.create(range.getStart()),
 					/* endRevision= */ SVNRevision.create(range.getEnd()),
-					/* stopOnCopy= */ false,
+					/* stopOnCopy= */ true,
 					/* discoverChangedPaths= */ true,
 					/* includeMergedRevisions= */ true,
 					/* limit= */ range.getWidth(),
