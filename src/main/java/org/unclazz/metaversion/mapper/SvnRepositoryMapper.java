@@ -29,7 +29,6 @@ public interface SvnRepositoryMapper {
 			+ "trunk_path_pattern trunkPathPattern, branch_path_pattern branchPathPattern, "
 			+ "max_revision maxRevision, username, password "
 			+ "FROM svn_repository "
-			+ "WHERE id = #{id} "
 			+ "${orderBy} ${limitOffset} ")
 	List<SvnRepository> selectAll(@Param("orderBy") OrderByClause orderBy,
 			@Param("limitOffset") LimitOffsetClause limitOffset);
