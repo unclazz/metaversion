@@ -20,6 +20,8 @@ public class RepositoryService {
 	private PasswordEncoder passwordEncoder;
 	@Autowired
 	private SvnRepositoryMapper svnRepositoryMapper;
+	@Autowired
+	private SvnService svnService;
 	
 	public SvnRepository composeValueObject(final int id, final String name, final String baseUrl,
 			final String trunkPathPattern, final String branchPathPattern,
@@ -45,6 +47,10 @@ public class RepositoryService {
 	}
 	
 	public void registerRepository(final SvnRepository repository, final MVUserDetails auth) {
+		final int firstRevision = svnService.getFirstRevision(repository);
+		if (repository.getMaxRevision() < firstRevision) {
+			repository.setMaxRevision(firstRevision);
+		}
 		repository.setId(svnRepositoryMapper.selectNextVal());
 		svnRepositoryMapper.insert(repository, auth);
 	}

@@ -55,7 +55,7 @@ public class LogImportService {
 		
 		// インポート済みのリビジョン番号を取得
 		final int maxRevision = repository.getMaxRevision();
-		 
+		
 		// SVNリポジトリ側のルートURLと最新リビジョンを取得
 		// ＊数秒を要する可能性あり
 		final SvnRepositoryInfo svnInfo = svnService.getRepositoryInfo(repository);
@@ -67,10 +67,16 @@ public class LogImportService {
 			return;
 		}
 		
+		// ベースパス配下のSVNにおける最初（最古）のリビジョンを取得
+		final int firstRevision = svnService.getFirstRevision(repository);
+		// 開始リビジョンの決定
+		// ＊無駄を避けるためインポート済み番号よりも最初（最古）のリビジョンが大きい場合は後者を採用する
+		final int startRevision = (firstRevision > maxRevision ? firstRevision : maxRevision) + 1;
+		
 		// 1トランザクションで取込みを行うリビジョンの単位（範囲）
 		// ＊500リビジョンあたり10秒前後かかる可能性あり
 		final List<RevisionRange> rangeList = RevisionRange
-				.ofBetween(maxRevision + 1, svnInfo.getHeadRevision())
+				.ofBetween(startRevision, svnInfo.getHeadRevision())
 				.withStep(props.getLogimportRevisionRange());
 		
 		// インポート済みリビジョン+1を開始リビジョン、HEADリビジョンを終了リビジョンとして
