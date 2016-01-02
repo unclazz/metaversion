@@ -50,11 +50,11 @@ public class RepositoriesJsonController {
 			@PathVariable("id") final int id,
 			@RequestParam("name") final String name,
 			@RequestParam("baseUrl") final String baseUrl,
-			@RequestParam("trunkPathPattern") final String trunkPathPattern,
-			@RequestParam("branchPathPattern") final String branchPathPattern,
-			@RequestParam("maxRevision") final int maxRevision,
-			@RequestParam("username") final String username,
-			@RequestParam("password") final char[] password) {
+			@RequestParam(value="trunkPathPattern", defaultValue="/trunk") final String trunkPathPattern,
+			@RequestParam(value="branchPathPattern", defaultValue="/branches/\\w+") final String branchPathPattern,
+			@RequestParam(value="maxRevision", defaultValue="0") final int maxRevision,
+			@RequestParam(value="username", required=false) final String username,
+			@RequestParam(value="password", required=false) final char[] password) {
 		
 		try {
 			// 正規表現パターンの検証を行う
@@ -88,11 +88,11 @@ public class RepositoriesJsonController {
 	public ResponseEntity<SvnRepository> postRepository(final Principal principal,
 			@RequestParam("name") final String name,
 			@RequestParam("baseUrl") final String baseUrl,
-			@RequestParam("trunkPathPattern") final String trunkPathPattern,
-			@RequestParam("branchPathPattern") final String branchPathPattern,
-			@RequestParam("maxRevision") final int maxRevision,
-			@RequestParam("username") final String username,
-			@RequestParam("password") final char[] password) {
+			@RequestParam(value="trunkPathPattern", defaultValue="/trunk") final String trunkPathPattern,
+			@RequestParam(value="branchPathPattern", defaultValue="/branches/\\w+") final String branchPathPattern,
+			@RequestParam(value="maxRevision", defaultValue="0") final int maxRevision,
+			@RequestParam(value="username", required=false) final String username,
+			@RequestParam(value="password", required=false) final char[] password) {
 		
 		try {
 			// 正規表現パターンの検証を行う
