@@ -205,15 +205,20 @@ public class RepositoriesJsonController {
 	 * 
 	 * @param principal 認証情報
 	 * @param id リポジトリID
+	 * @param unlinked プロジェクト紐付けされていないもののみを対象とするかどうか
 	 * @param paging リクエストパラメータ{@code page}と{@code size}の情報を格納したオブジェクト
 	 * @return コミット情報の一覧
 	 */
 	@RequestMapping(value="/repositories/{id}/commits", method=RequestMethod.GET)
 	public Paginated<SvnCommit> getRepositorysCommits(final Principal principal,
 			@PathVariable("id") final int id,
+			@RequestParam(value="unlinked", defaultValue="false") final boolean unlinked,
 			@ModelAttribute final Paging paging) {
-		
-		return commitService.getCommitListByRepositoryId(id, paging);
+		if (unlinked) {
+			return commitService.getProjectUndeterminedCommitList(id, paging);
+		} else {
+			return commitService.getCommitListByRepositoryId(id, paging);
+		}
 	}
 	
 	/**
