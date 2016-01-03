@@ -11,6 +11,7 @@ import org.unclazz.metaversion.MVUserDetails;
 import org.unclazz.metaversion.MVUtils;
 import org.unclazz.metaversion.entity.OnlineBatchProgram;
 import org.unclazz.metaversion.entity.Project;
+import org.unclazz.metaversion.entity.ProjectSvnCommit;
 import org.unclazz.metaversion.entity.ProjectSvnRepository;
 import org.unclazz.metaversion.entity.SvnCommit;
 import org.unclazz.metaversion.mapper.ProjectMapper;
@@ -72,6 +73,24 @@ public class CommitLinkService {
 			
 			obsoleted.setLastRevision(maxRevision.getValue());
 			projectSvnRepositoryMapper.update(obsoleted, auth);
+		}
+	}
+	
+	public void registerCommitLink(final ProjectSvnCommit projectSvnCommit, final MVUserDetails auth) {
+		if (projectSvnCommitMapper.insert(projectSvnCommit, auth) != 1) {
+			
+			throw MVUtils.unexpectedResult("Unexpected error has occurred while "
+					+ "linking between a project(id=%s) and a commit(id=%s). ",
+					projectSvnCommit.getProjectId(), projectSvnCommit.getSvnCommitId());
+		}
+	}
+	
+	public void removeCommitLink(final ProjectSvnCommit projectSvnCommit, final MVUserDetails auth) {
+		if (projectSvnCommitMapper.delete(projectSvnCommit) != 1) {
+			
+			throw MVUtils.unexpectedResult("Unexpected error has occurred while "
+					+ "unlinking between a project(id=%s) and a commit(id=%s). ",
+					projectSvnCommit.getProjectId(), projectSvnCommit.getSvnCommitId());
 		}
 	}
 }

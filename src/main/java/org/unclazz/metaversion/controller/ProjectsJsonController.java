@@ -4,6 +4,7 @@ import java.security.Principal;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.ibatis.exceptions.PersistenceException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -16,7 +17,9 @@ import org.springframework.web.bind.annotation.RestController;
 import org.unclazz.metaversion.MVUserDetails;
 import org.unclazz.metaversion.entity.PathAndItsSvnRepository;
 import org.unclazz.metaversion.entity.Project;
+import org.unclazz.metaversion.entity.ProjectSvnCommit;
 import org.unclazz.metaversion.entity.SvnCommit;
+import org.unclazz.metaversion.service.CommitLinkService;
 import org.unclazz.metaversion.service.CommitService;
 import org.unclazz.metaversion.service.ProjectService;
 import org.unclazz.metaversion.vo.Paginated;
@@ -30,6 +33,8 @@ public class ProjectsJsonController {
 	private ProjectService projectService;
 	@Autowired
 	private CommitService commitService;
+	@Autowired
+	private CommitLinkService commitLinkService;
 	
 	/**
 	 * 引数で指定された部分文字列を使用してプロジェクトを検索してその名称の一覧を返す.
@@ -158,6 +163,59 @@ public class ProjectsJsonController {
 	public Paginated<SvnCommit> getProjectsCommits(final Principal principal,
 			@PathVariable("id") final int id, @ModelAttribute final Paging paging) {
 		return commitService.getCommitListByProjectId(id, paging);
+	}
+
+	/**
+	 * IDで指定されたプロジェクトとコミットとを紐付ける.
+	 * すでに紐付けが行われていた場合は{@code 400 Bad Request}を返す。
+	 * 
+	 * @param principal 認証情報
+	 * @param projectId プロジェクトID
+	 * @param commitId コミットID
+	 * @return 登録された紐付け情報
+	 */
+	@RequestMapping(value="/projects/{projectId}/commits", method=RequestMethod.POST)
+	public ResponseEntity<ProjectSvnCommit> postProjectsCommits(final Principal principal,
+			@PathVariable("projectId") final int projectId, @RequestParam("commitId") final int commitId) {
+		
+		final ProjectSvnCommit vo = new ProjectSvnCommit();
+		vo.setProjectId(projectId);
+		vo.setSvnCommitId(commitId);
+		
+		try {
+			commitLinkService.registerCommitLink(vo, MVUserDetails.of(principal));
+			return httpResponseOfOk(vo);
+			
+		} catch (final PersistenceException e) {
+			return httpResponseOfBadRequest(e.getMessage());
+		} catch (final RuntimeException e) {
+			return httpResponseOfInternalServerError(e.getMessage());
+		}
+	}
+	
+	/**
+	 * IDで指定されたプロジェクトとコミットとの紐付けを解除する.
+	 * 
+	 * @param principal 認証情報
+	 * @param projectId プロジェクトID
+	 * @param commitId コミットID
+	 * @return 削除された紐付け情報
+	 */
+	@RequestMapping(value="/projects/{projectId}/commits/{commitId}", method=RequestMethod.DELETE)
+	public ResponseEntity<ProjectSvnCommit> deleteProjectsCommits(final Principal principal,
+			@PathVariable("projectId") final int projectId, 
+			@PathVariable("commitId") final int commitId) {
+		
+		final ProjectSvnCommit vo = new ProjectSvnCommit();
+		vo.setProjectId(projectId);
+		vo.setSvnCommitId(commitId);
+		
+		try {
+			commitLinkService.removeCommitLink(vo, MVUserDetails.of(principal));
+			return httpResponseOfOk(vo);
+		} catch (final Exception e) {
+			return httpResponseOfInternalServerError(e.getMessage());
+		}
 	}
 	
 	/**
