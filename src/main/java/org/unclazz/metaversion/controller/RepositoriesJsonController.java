@@ -34,17 +34,48 @@ public class RepositoriesJsonController {
 	@Autowired
 	private SvnService svnService;
 	
+	/**
+	 * リポジトリ情報の一覧を返す.
+	 * @param principal 認証情報
+	 * @param paging リクエストパラメータ{@code page}と{@code size}の情報を格納したオブジェクト
+	 * @return リポジトリ情報の一覧
+	 */
 	@RequestMapping(value="/repositories", method=RequestMethod.GET)
-	public Paginated<SvnRepository> getRepositoryLsit(final Principal principal, @ModelAttribute final Paging paging) {
+	public Paginated<SvnRepository> getRepositoryLsit(final Principal principal,
+			@ModelAttribute final Paging paging) {
+		
 		return Paginated.of(paging, repositoryService.getRepositoryList(paging),
 				repositoryService.getRepositoryCount());
 	}
 	
+	/**
+	 * IDで指定されたリポジトリ情報を返す.
+	 * 該当するユーザ情報が見つからなかった場合は{@code 404 Not Found}を返す.
+	 * @param principal 認証情報
+	 * @param id ID
+	 * @return リポジトリ情報
+	 */
 	@RequestMapping(value="/repositories/{id}", method=RequestMethod.GET)
 	public ResponseEntity<SvnRepository> getRepository(final Principal principal, @PathVariable("id") final int id) {
 		return httpResponseOfOkOrNotFound(repositoryService.getRepository(id));
 	}
 	
+	/**
+	 * リクエストパラメータをもとにリポジトリ情報を更新する.
+	 * 正規表現パターンの不正やSVNリポジトリ接続チェックNGの場合{@code 400 Bad Request}を返す。
+	 * 何らかの理由で更新に失敗した場合は{@code 500 Internal Server Error}を返す。
+	 * 
+	 * @param principal 認証情報
+	 * @param id リポジトリID
+	 * @param name リポジトリ名
+	 * @param baseUrl ベースURL
+	 * @param trunkPathPattern trunk部分パス正規表現パターン
+	 * @param branchPathPattern branches部分パス正規表現パターン
+	 * @param maxRevision 取り込み済み最大リビジョン番号
+	 * @param username ユーザ名
+	 * @param password パスワード
+	 * @return 更新結果のリポジトリ情報
+	 */
 	@RequestMapping(value="/repositories/{id}", method=RequestMethod.PUT)
 	public ResponseEntity<SvnRepository> putRepository(final Principal principal,
 			@PathVariable("id") final int id,
@@ -84,6 +115,23 @@ public class RepositoriesJsonController {
 		}
 	}
 	
+	/**
+	 * リクエストパラメータをもとにリポジトリ情報を登録する.
+	 * 正規表現パターンの不正やSVNリポジトリ接続チェックNGの場合{@code 400 Bad Request}を返す。
+	 * 何らかの理由で更新に失敗した場合は{@code 500 Internal Server Error}を返す。
+	 * 取り込み済み最大リビジョン番号は登録直前に実際のSVN側の情報をもとに調整され、
+	 * ベースURLが指すパスが存在し始めた最初（最古）のリビジョン番号で上書きされます。
+	 * 
+	 * @param principal 認証情報
+	 * @param name リポジトリ名
+	 * @param baseUrl ベースURL
+	 * @param trunkPathPattern trunk部分パス正規表現パターン
+	 * @param branchPathPattern branches部分パス正規表現パターン
+	 * @param maxRevision 取り込み済み最大リビジョン番号
+	 * @param username ユーザ名
+	 * @param password パスワード
+	 * @return 更新結果のリポジトリ情報
+	 */
 	@RequestMapping(value="/repositories", method=RequestMethod.POST)
 	public ResponseEntity<SvnRepository> postRepository(final Principal principal,
 			@RequestParam("name") final String name,
@@ -136,6 +184,7 @@ public class RepositoriesJsonController {
 		}
 	}
 
+	// TODO レコード削除方法と外部キー制約との関係の検討が必要
 	@RequestMapping(value="/repositories/{id}", method=RequestMethod.DELETE)
 	public ResponseEntity<SvnRepository> deleteRepository(final Principal principal, @PathVariable("id") final int id) {
 		try {
