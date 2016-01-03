@@ -1,7 +1,6 @@
 package org.unclazz.metaversion.controller;
 
 import java.security.Principal;
-import java.util.List;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -201,10 +200,37 @@ public class RepositoriesJsonController {
 		}
 	}
 	
+	/**
+	 * IDで指定されたリポジトリのコミット情報の一覧を返す.
+	 * 
+	 * @param principal 認証情報
+	 * @param id リポジトリID
+	 * @param paging リクエストパラメータ{@code page}と{@code size}の情報を格納したオブジェクト
+	 * @return コミット情報の一覧
+	 */
 	@RequestMapping(value="/repositories/{id}/commits", method=RequestMethod.GET)
 	public Paginated<SvnCommit> getRepositorysCommits(final Principal principal,
 			@PathVariable("id") final int id,
 			@ModelAttribute final Paging paging) {
+		
 		return commitService.getCommitListByRepositoryId(id, paging);
+	}
+	
+	/**
+	 * IDで指定されたコミットにより変更されたパスの一覧を返す.
+	 * 
+	 * @param principal 認証情報
+	 * @param repositoryId リポジトリID
+	 * @param commitId コミットID
+	 * @param paging リクエストパラメータ{@code page}と{@code size}の情報を格納したオブジェクト
+	 * @return コミットにより変更されたパスの一覧
+	 */
+	@RequestMapping(value="/repositories/{repositoryId}/commits/{commitId}/changedpaths", method=RequestMethod.GET)
+	public Paginated<SvnCommitPath> getRepositorysCommitsChangedPaths(final Principal principal,
+			@PathVariable("repositoryId") final int repositoryId,
+			@PathVariable("commitId") final int commitId,
+			@ModelAttribute final Paging paging) {
+		
+		return commitService.getChangedPathListByRepositoryIdAndCommitId(repositoryId, commitId, paging);
 	}
 }
