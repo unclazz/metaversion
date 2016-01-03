@@ -1,10 +1,15 @@
 package org.unclazz.metaversion.entity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class Project {
 	private int id;
+	@JsonProperty(required=true)
 	private String code;
+	@JsonProperty(required=true)
 	private String name;
 	private String responsiblePerson;
+	@JsonProperty(required=true)
 	private String commitSignPattern;
 	public final int getId() {
 		return id;
