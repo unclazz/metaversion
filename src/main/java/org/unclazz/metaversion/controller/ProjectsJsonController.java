@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.unclazz.metaversion.MVUserDetails;
 import org.unclazz.metaversion.entity.Project;
+import org.unclazz.metaversion.entity.SvnCommit;
+import org.unclazz.metaversion.service.CommitService;
 import org.unclazz.metaversion.service.ProjectService;
 import org.unclazz.metaversion.vo.Paginated;
 import org.unclazz.metaversion.vo.Paging;
@@ -25,6 +27,8 @@ import static org.unclazz.metaversion.MVUtils.*;
 public class ProjectsJsonController {
 	@Autowired
 	private ProjectService projectService;
+	@Autowired
+	private CommitService commitService;
 	
 	/**
 	 * 引数で指定された部分文字列を使用してプロジェクトを検索してその名称の一覧を返す.
@@ -139,5 +143,11 @@ public class ProjectsJsonController {
 		} catch (final RuntimeException e) {
 			return httpResponseOfInternalServerError(e.getMessage());
 		}
+	}
+	
+	@RequestMapping(value="/projects/{id}/commits", method=RequestMethod.GET)
+	public Paginated<SvnCommit> getProjectsCommits(final Principal principal,
+			@PathVariable("id") final int id, @ModelAttribute final Paging paging) {
+		return commitService.getCommitListByProjectId(id, paging);
 	}
 }

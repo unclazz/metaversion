@@ -38,6 +38,17 @@ public class CommitService {
 		
 	}
 	
+	public Paginated<SvnCommit> getCommitListByProjectId(final int projectId, final Paging paging) {
+		final OrderByClause orderBy = OrderByClause.of("revision", Order.DESC);
+		final LimitOffsetClause limitOffset = LimitOffsetClause.of(paging);
+
+		// コミット情報を検索する
+		return Paginated.of(paging, 
+				svnCommitMapper.selectByProjectId(projectId, orderBy, limitOffset),
+				svnCommitMapper.selectCountByProjectId(projectId));
+		
+	}
+	
 	public Paginated<SvnCommitPath> getChangedPathListByRepositoryIdAndCommitId(
 			final int repositoryId, final int commitId, final Paging paging) {
 		// ＊検索にはリポジトリIDは利用しないが概念的に親子関係（親＝リポジトリ、子＝コミット）にあるため

@@ -61,6 +61,24 @@ public interface SvnCommitMapper {
 			+ "WHERE c.svn_repository_id = #{svnRepositoryId} ")
 	int selectCountByRepositoryId(@Param("svnRepositoryId") int svnRepositoryId);
 	
+	@Select(" SELECT c.id, c.svn_repository_id svnRepositoryId, c.commit_message commitMessage, "
+			+ "c.commit_date commitDate, c.committer_name committerName, c.revision "
+			+ "FROM svn_commit c "
+			+ "INNER JOIN project_svn_commit pc "
+			+ "ON c.id = pc.svn_commit_id "
+			+ "WHERE pc.project_id = #{projectId} "
+			+ "${orderBy} ${limitOffset} ")
+	List<SvnCommit> selectByProjectId(
+			@Param("projectId") int projectId,
+			@Param("orderBy") OrderByClause orderBy,
+			@Param("limitOffset") LimitOffsetClause limitOffset);
+	
+	@Select(" SELECT count(1) FROM svn_commit c "
+			+ "INNER JOIN project_svn_commit pc "
+			+ "ON c.id = pc.svn_commit_id "
+			+ "WHERE pc.project_id = #{projectId} ")
+	int selectCountByProjectId(@Param("projectId") int projectId);
+	
 	@Insert("INSERT INTO svn_commit (id, svn_repository_id, commit_message, "
 			+ "commit_date, committer_name, revision, create_user_id) "
 			+ "VALUES (#{commit.id}, #{commit.svnRepositoryId}, #{commit.commitMessage}, "
