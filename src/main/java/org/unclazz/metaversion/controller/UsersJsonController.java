@@ -98,6 +98,7 @@ public class UsersJsonController {
 		}
 	}
 	
+	// TODO 外部キー制約で縛られたレコードをどのようにするかが課題
 	@RequestMapping(value="/users/{id}", method=RequestMethod.DELETE)
 	public ResponseEntity<User> deleteUser(final Principal principal, @PathVariable("id") final int id) {
 		try {
