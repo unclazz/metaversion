@@ -1,6 +1,6 @@
 package org.unclazz.metaversion.entity;
 
-public enum OnlineBatchStatus {
+public enum OnlineBatchStatus implements IOnlineBatchStatus {
 	RUNNING(1, "Running"),
 	ENDED(2, "Ended"),
 	ABENDED(3, "Abended"),
@@ -14,9 +14,11 @@ public enum OnlineBatchStatus {
 		this.name = name;
 	}
 	
+	@Override
 	public int getId() {
 		return id;
 	}
+	@Override
 	public String getStatusName() {
 		return name;
 	}

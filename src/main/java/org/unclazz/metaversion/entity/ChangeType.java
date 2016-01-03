@@ -1,6 +1,6 @@
 package org.unclazz.metaversion.entity;
 
-public enum ChangeType {
+public enum ChangeType implements IChangeType {
 	ADD(1, "A", "Added"),
 	DELETE(2, "D", "Deleted"),
 	MODIFY(3, "M", "Modified"),
@@ -16,13 +16,16 @@ public enum ChangeType {
 		this.name = name;
 	}
 	
+	@Override
 	public int getId() {
 		return id;
 	}
+	@Override
 	public String getCode() {
 		return code;
 	}
-	public String getName() {
+	@Override
+	public String getTypeName() {
 		return name;
 	}
 	
@@ -34,6 +37,7 @@ public enum ChangeType {
 		}
 		throw new IllegalArgumentException();
 	}
+	
 	public static ChangeType valueOfCode(final char code) {
 		for (final ChangeType t : values()) {
 			if (t.code.charAt(0) == code) {
