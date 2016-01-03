@@ -18,7 +18,7 @@ import org.unclazz.metaversion.mapper.SvnCommitMapper;
 import org.unclazz.metaversion.mapper.SvnCommitPathMapper;
 import org.unclazz.metaversion.mapper.SvnRepositoryMapper;
 import org.unclazz.metaversion.service.BatchExecutorService.Executable;
-import org.unclazz.metaversion.service.SvnService.SvnCommitAndItsPathList;
+import org.unclazz.metaversion.service.SvnCommandService.SvnCommitAndItsPathList;
 import org.unclazz.metaversion.vo.MaxRevision;
 import org.unclazz.metaversion.vo.RevisionRange;
 import org.unclazz.metaversion.vo.SvnRepositoryInfo;
@@ -34,7 +34,7 @@ public class LogImportService {
 	@Autowired
 	private SvnCommitPathMapper svnCommitPathMapper;
 	@Autowired
-	private SvnService svnService;
+	private SvnCommandService svnService;
 	@Autowired
 	private MVProperties props;
 	@Autowired

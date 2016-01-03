@@ -1,7 +1,7 @@
 package org.unclazz.metaversion.controller;
 
 import java.security.Principal;
-
+import java.util.List;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -16,9 +16,12 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.unclazz.metaversion.MVUserDetails;
+import org.unclazz.metaversion.entity.SvnCommit;
+import org.unclazz.metaversion.entity.SvnCommitPath;
 import org.unclazz.metaversion.entity.SvnRepository;
+import org.unclazz.metaversion.service.CommitService;
 import org.unclazz.metaversion.service.RepositoryService;
-import org.unclazz.metaversion.service.SvnService;
+import org.unclazz.metaversion.service.SvnCommandService;
 import org.unclazz.metaversion.vo.Paginated;
 import org.unclazz.metaversion.vo.Paging;
 import org.unclazz.metaversion.vo.SvnRepositoryInfo;
@@ -32,7 +35,9 @@ public class RepositoriesJsonController {
 	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
-	private SvnService svnService;
+	private CommitService commitService;
+	@Autowired
+	private SvnCommandService svnCommandService;
 	
 	/**
 	 * リポジトリ情報の一覧を返す.
@@ -173,7 +178,7 @@ public class RepositoriesJsonController {
 	private void checkConnectivity(final SvnRepository r) {
 		try {
 			logger.debug("リポジトリ接続を試行");
-			final SvnRepositoryInfo info = svnService.getRepositoryInfo(r);
+			final SvnRepositoryInfo info = svnCommandService.getRepositoryInfo(r);
 			logger.debug("リポジトリ接続 結果OK");
 			logger.debug("ルートURL： {}", info.getRootUrl());
 			logger.debug("UUID： {}", info.getUuid());
@@ -194,5 +199,12 @@ public class RepositoriesJsonController {
 		} catch (final RuntimeException e) {
 			return httpResponseOfInternalServerError(e.getMessage());
 		}
+	}
+	
+	@RequestMapping(value="/repositories/{id}/commits", method=RequestMethod.GET)
+	public Paginated<SvnCommit> getRepositorysCommits(final Principal principal,
+			@PathVariable("id") final int id,
+			@ModelAttribute final Paging paging) {
+		return commitService.getCommitListByRepositoryId(id, paging);
 	}
 }

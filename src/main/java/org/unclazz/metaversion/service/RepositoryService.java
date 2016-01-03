@@ -21,7 +21,7 @@ public class RepositoryService {
 	@Autowired
 	private SvnRepositoryMapper svnRepositoryMapper;
 	@Autowired
-	private SvnService svnService;
+	private SvnCommandService svnService;
 	
 	public SvnRepository composeValueObject(final int id, final String name, final String baseUrl,
 			final String trunkPathPattern, final String branchPathPattern,

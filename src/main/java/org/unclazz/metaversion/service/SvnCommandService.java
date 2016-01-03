@@ -29,7 +29,7 @@ import org.unclazz.metaversion.vo.RevisionRange;
 import org.unclazz.metaversion.vo.SvnRepositoryInfo;
 
 @Service
-public class SvnService {
+public class SvnCommandService {
 	private Logger logger = LoggerFactory.getLogger(this.getClass());
 	
 	public static final class SvnCommitAndItsPathList extends SvnCommit {
