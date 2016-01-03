@@ -60,18 +60,48 @@ public final class MVUtils {
 		}
 		return buff;
 	}
+	
+	/**
+	 * {@code char[]}を{@code CharSequence}に変換する.
+	 * @param charArray 変換前
+	 * @return 変換後
+	 */
 	public static CharSequence charArrayToCharSequence(final char[] charArray) {
 		return new StringBuilder().append(charArray);
 	}
+	
+	/**
+	 * HTTPステータスコード{@code 200 OK}を返すためのレスポンスエンティティを生成する.
+	 * @return レスポンスエンティティ
+	 */
 	public static<T> ResponseEntity<T> httpResponseOfOk() {
 		return new ResponseEntity<T>(HttpStatus.OK);
 	}
+	
+	/**
+	 * HTTPステータスコード{@code 200 OK}を返すためのレスポンスエンティティを生成する.
+	 * @param value オブジェクト
+	 * @return レスポンスエンティティ
+	 */
 	public static<T> ResponseEntity<T> httpResponseOfOk(final T value) {
 		return new ResponseEntity<T>(value, HttpStatus.OK);
 	}
+	
+	/**
+	 * HTTPステータスコード{@code 404 Not Found}を返すためのレスポンスエンティティを生成する.
+	 * @return レスポンスエンティティ
+	 */
 	public static<T> ResponseEntity<T> httpResponseOfNotFound() {
 		return new ResponseEntity<T>(HttpStatus.NOT_FOUND);
 	}
+	
+	/**
+	 * 引数が{@code null}の場合HTTPステータスコード{@code 404 Not Found}のレスポンスエンティティを生成する.
+	 * そうでない場合はHTTPステータスコード{@code 200 OK}のレスポンスエンティティを生成する.
+	 * 
+	 * @param value オブジェクト
+	 * @return レスポンスエンティティ
+	 */
 	public static<T> ResponseEntity<T> httpResponseOfOkOrNotFound(final T value) {
 		if (value == null) {
 			return httpResponseOfNotFound();
@@ -79,15 +109,33 @@ public final class MVUtils {
 			return httpResponseOfOk(value);
 		}
 	}
+	
+	/**
+	 * HTTPステータスコード{@code 400 Bad Request}を返すためのレスポンスエンティティを生成する.
+	 * @param message メッセージ
+	 * @return レスポンスエンティティ
+	 */
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public static<T> ResponseEntity<T> httpResponseOfBadRequest(final String message) {
 		// 戻り値型を揃えるため強引にキャストを行う
 		// ＊イレイジャを前提としたトリック
 		return (ResponseEntity<T>) new ResponseEntity(message, HttpStatus.BAD_REQUEST);
 	}
+	
+	/**
+	 * HTTPステータスコード{@code 500 Internal Server Error}を返すためのレスポンスエンティティを生成する.
+	 * @param value オブジェクト
+	 * @return レスポンスエンティティ
+	 */
 	public static<T> ResponseEntity<T> httpResponseOfInternalServerError(final T value) {
 		return new ResponseEntity<T>(value, HttpStatus.INTERNAL_SERVER_ERROR);
 	}
+	
+	/**
+	 * HTTPステータスコード{@code 500 Internal Server Error}を返すためのレスポンスエンティティを生成する.
+	 * @param message メッセージ
+	 * @return レスポンスエンティティ
+	 */
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public static<T> ResponseEntity<T> httpResponseOfInternalServerError(final String message) {
 		// 戻り値型を揃えるため強引にキャストを行う
