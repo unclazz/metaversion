@@ -41,7 +41,7 @@ public class LogImportService {
 	private BatchExecutorService executorService;
 	
 	public void doLogImport(final int repositoryId, final MVUserDetails auth) {
-		executorService.execute(OnlineBatchProgram.LOG_IMPORT,
+		executorService.execute(OnlineBatchProgram.LOG_IMPORTER,
 				new Executable() {
 					@Override
 					public void execute() {

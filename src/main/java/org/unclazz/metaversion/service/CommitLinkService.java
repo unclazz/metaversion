@@ -34,7 +34,7 @@ public class CommitLinkService {
 	private BatchExecutorService executorService;
 	
 	public void doCommitLink(final int projectId, final MVUserDetails auth) {
-		executorService.execute(OnlineBatchProgram.COMMIT_LINK,
+		executorService.execute(OnlineBatchProgram.P2C_LINKER,
 				new Executable() {
 					@Override
 					public void execute() {
