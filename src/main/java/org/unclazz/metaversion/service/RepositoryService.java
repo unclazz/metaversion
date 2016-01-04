@@ -3,10 +3,15 @@ package org.unclazz.metaversion.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.unclazz.metaversion.MVUserDetails;
 import org.unclazz.metaversion.MVUtils;
 import org.unclazz.metaversion.entity.SvnRepository;
 import org.unclazz.metaversion.entity.SvnRepositoryStats;
+import org.unclazz.metaversion.mapper.ProjectSvnCommitMapper;
+import org.unclazz.metaversion.mapper.ProjectSvnRepositoryMapper;
+import org.unclazz.metaversion.mapper.SvnCommitMapper;
+import org.unclazz.metaversion.mapper.SvnCommitPathMapper;
 import org.unclazz.metaversion.mapper.SvnRepositoryMapper;
 import org.unclazz.metaversion.vo.LimitOffsetClause;
 import org.unclazz.metaversion.vo.OrderByClause;
@@ -20,6 +25,14 @@ public class RepositoryService {
 	private PasswordEncoder passwordEncoder;
 	@Autowired
 	private SvnRepositoryMapper svnRepositoryMapper;
+	@Autowired
+	private ProjectSvnCommitMapper projectSvnCommitMapper;
+	@Autowired
+	private ProjectSvnRepositoryMapper projectSvnRepositoryMapper;
+	@Autowired
+	private SvnCommitMapper svnCommitMapper;
+	@Autowired
+	private SvnCommitPathMapper svnCommitPathMapper;
 	@Autowired
 	private SvnCommandService svnService;
 	
@@ -59,7 +72,14 @@ public class RepositoryService {
 			throw MVUtils.illegalArgument("Update target repository(id=%s) is not found.", repository.getId());
 		}
 	}
+	
+	@Transactional
 	public void removeRepository(final int id, final MVUserDetails auth) {
+		projectSvnCommitMapper.deleteBySvnRepositoryId(id);
+		projectSvnRepositoryMapper.deleteBySvnRepositoryId(id);
+		svnCommitPathMapper.deleteBySvnRepositoryId(id);
+		svnCommitMapper.deleteBySvnRepositoryId(id);
+		
 		if (svnRepositoryMapper.delete(id) != 1) {
 			throw MVUtils.illegalArgument("Delete target repository(id=%s) is not found.", id);
 		}

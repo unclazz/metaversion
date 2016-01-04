@@ -23,4 +23,11 @@ public interface ProjectSvnCommitMapper {
 	
 	@Delete("DELETE FROM project_svn_commit WHERE project_id = #{projectId} ")
 	int deleteByProjectId(@Param("projectId") int projectId);
+	
+	@Delete("DELETE FROM project_svn_commit "
+			+ "WHERE svn_commit_id IN ( "
+			+ "	SELECT id "
+			+ "	FROM svn_commit "
+			+ "	WHERE svn_repository_id = #{svnRepositoryId}) ")
+	int deleteBySvnRepositoryId(@Param("svnRepositoryId") int svnRepositoryId);
 }

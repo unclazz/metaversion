@@ -2,6 +2,7 @@ package org.unclazz.metaversion.mapper;
 
 import java.util.List;
 
+import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
@@ -84,4 +85,7 @@ public interface SvnCommitMapper {
 			+ "VALUES (#{commit.id}, #{commit.svnRepositoryId}, #{commit.commitMessage}, "
 			+ "#{commit.commitDate}, #{commit.committerName}, #{commit.revision}, #{auth.id}) ")
 	int insert(@Param("commit") SvnCommit commit, @Param("auth") MVUserDetails auth);
+	
+	@Delete("DELETE FROM svn_commit WHERE svn_repository_id = #{svnRepositoryId} ")
+	int deleteBySvnRepositoryId(@Param("svnRepositoryId") int svnRepositoryId);
 }
