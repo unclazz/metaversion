@@ -18,6 +18,7 @@ import org.unclazz.metaversion.MVUserDetails;
 import org.unclazz.metaversion.entity.SvnCommit;
 import org.unclazz.metaversion.entity.SvnCommitPath;
 import org.unclazz.metaversion.entity.SvnRepository;
+import org.unclazz.metaversion.entity.SvnRepositoryStats;
 import org.unclazz.metaversion.service.CommitService;
 import org.unclazz.metaversion.service.RepositoryService;
 import org.unclazz.metaversion.service.SvnCommandService;
@@ -45,11 +46,23 @@ public class RepositoriesJsonController {
 	 * @return リポジトリ情報の一覧
 	 */
 	@RequestMapping(value="/repositories", method=RequestMethod.GET)
-	public Paginated<SvnRepository> getRepositoryLsit(final Principal principal,
+	public Paginated<SvnRepository> getRepositoryList(final Principal principal,
 			@ModelAttribute final Paging paging) {
 		
-		return Paginated.of(paging, repositoryService.getRepositoryList(paging),
-				repositoryService.getRepositoryCount());
+		return repositoryService.getRepositoryList(paging);
+	}
+	
+	/**
+	 * リポジトリとその統計情報の一覧を返す.
+	 * @param principal 認証情報
+	 * @param paging リクエストパラメータ{@code page}と{@code size}の情報を格納したオブジェクト
+	 * @return リポジトリとその統計情報の一覧
+	 */
+	@RequestMapping(value="/repositorystats", method=RequestMethod.GET)
+	public Paginated<SvnRepositoryStats> getRepositoryStatsList(final Principal principal,
+			@ModelAttribute final Paging paging) {
+		
+		return repositoryService.getRepositoryStatsList(paging);
 	}
 	
 	/**

@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.unclazz.metaversion.MVUserDetails;
 import org.unclazz.metaversion.MVUtils;
 import org.unclazz.metaversion.entity.Project;
+import org.unclazz.metaversion.entity.ProjectStats;
 import org.unclazz.metaversion.mapper.ProjectMapper;
 import org.unclazz.metaversion.vo.LimitOffsetClause;
 import org.unclazz.metaversion.vo.OrderByClause;
@@ -24,8 +25,12 @@ public class ProjectService {
 		return projectMapper.selectNameByPartialName(partialName, limitOffset);
 	}
 	
-	public Project getProjectByProjectId(final int id) {
+	public Project getProjectById(final int id) {
 		return projectMapper.selectOneById(id);
+	}
+	
+	public ProjectStats getProjectStatsById(final int id) {
+		return projectMapper.selectStatsOneById(id);
 	}
 	
 	public Paginated<Project> getProjectListAll(final Paging paging) {

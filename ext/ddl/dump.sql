@@ -194,20 +194,6 @@ CREATE TABLE project (
 ALTER TABLE project OWNER TO postgres;
 
 --
--- Name: project_seq; Type: SEQUENCE; Schema: public; Owner: postgres
---
-
-CREATE SEQUENCE project_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER TABLE project_seq OWNER TO postgres;
-
---
 -- Name: project_svn_commit; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -220,23 +206,6 @@ CREATE TABLE project_svn_commit (
 
 
 ALTER TABLE project_svn_commit OWNER TO postgres;
-
---
--- Name: project_svn_repository; Type: TABLE; Schema: public; Owner: postgres
---
-
-CREATE TABLE project_svn_repository (
-    project_id integer NOT NULL,
-    svn_repository_id integer NOT NULL,
-    last_revision integer DEFAULT 0 NOT NULL,
-    create_date timestamp without time zone DEFAULT now() NOT NULL,
-    create_user_id integer NOT NULL,
-    update_date timestamp without time zone DEFAULT now() NOT NULL,
-    update_user_id integer NOT NULL
-);
-
-
-ALTER TABLE project_svn_repository OWNER TO postgres;
 
 --
 -- Name: svn_commit; Type: TABLE; Schema: public; Owner: postgres
@@ -273,6 +242,106 @@ CREATE TABLE svn_commit_path (
 ALTER TABLE svn_commit_path OWNER TO postgres;
 
 --
+-- Name: svn_repository; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE svn_repository (
+    id integer NOT NULL,
+    name text NOT NULL,
+    base_url text NOT NULL,
+    trunk_path_pattern text NOT NULL,
+    branch_path_pattern text NOT NULL,
+    username text,
+    password text,
+    max_revision integer DEFAULT 0 NOT NULL,
+    create_date timestamp without time zone DEFAULT now() NOT NULL,
+    create_user_id integer NOT NULL,
+    update_date timestamp without time zone DEFAULT now() NOT NULL,
+    update_user_id integer NOT NULL
+);
+
+
+ALTER TABLE svn_repository OWNER TO postgres;
+
+--
+-- Name: project_changedpath_view; Type: VIEW; Schema: public; Owner: postgres
+--
+
+CREATE VIEW project_changedpath_view AS
+ SELECT pc.project_id,
+    cp.path,
+    r.id AS svn_repository_id,
+    r.name AS svn_repository_name,
+    count(1) AS commit_count,
+    min(c.revision) AS min_revision,
+    max(c.revision) AS max_revision,
+    min(c.commit_date) AS min_commit_date,
+    max(c.commit_date) AS max_commit_date
+   FROM (((svn_commit_path cp
+     JOIN svn_commit c ON ((cp.svn_commit_id = c.id)))
+     JOIN svn_repository r ON ((c.svn_repository_id = r.id)))
+     JOIN project_svn_commit pc ON ((pc.svn_commit_id = cp.svn_commit_id)))
+  GROUP BY pc.project_id, cp.path, r.id, r.name;
+
+
+ALTER TABLE project_changedpath_view OWNER TO postgres;
+
+--
+-- Name: project_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE project_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE project_seq OWNER TO postgres;
+
+--
+-- Name: project_stats_view; Type: VIEW; Schema: public; Owner: postgres
+--
+
+CREATE VIEW project_stats_view AS
+ SELECT p.id,
+    p.code,
+    p.name,
+    p.responsible_person,
+    p.commit_sign_pattern,
+    count(c.id) AS commit_count,
+    min(c.commit_date) AS min_commit_date,
+    max(c.commit_date) AS max_commit_date,
+    ( SELECT count(1) AS count
+           FROM project_changedpath_view pcp
+          WHERE (pcp.project_id = p.id)) AS path_count
+   FROM ((project p
+     LEFT JOIN project_svn_commit pc ON ((p.id = pc.project_id)))
+     LEFT JOIN svn_commit c ON ((pc.svn_commit_id = c.id)))
+  GROUP BY p.id, p.code, p.name, p.responsible_person, p.commit_sign_pattern;
+
+
+ALTER TABLE project_stats_view OWNER TO postgres;
+
+--
+-- Name: project_svn_repository; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE project_svn_repository (
+    project_id integer NOT NULL,
+    svn_repository_id integer NOT NULL,
+    last_revision integer DEFAULT 0 NOT NULL,
+    create_date timestamp without time zone DEFAULT now() NOT NULL,
+    create_user_id integer NOT NULL,
+    update_date timestamp without time zone DEFAULT now() NOT NULL,
+    update_user_id integer NOT NULL
+);
+
+
+ALTER TABLE project_svn_repository OWNER TO postgres;
+
+--
 -- Name: svn_commit_path_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
@@ -301,26 +370,18 @@ CREATE SEQUENCE svn_commit_seq
 ALTER TABLE svn_commit_seq OWNER TO postgres;
 
 --
--- Name: svn_repository; Type: TABLE; Schema: public; Owner: postgres
+-- Name: svn_repository_path_view; Type: VIEW; Schema: public; Owner: postgres
 --
 
-CREATE TABLE svn_repository (
-    id integer NOT NULL,
-    name text NOT NULL,
-    base_url text NOT NULL,
-    trunk_path_pattern text NOT NULL,
-    branch_path_pattern text NOT NULL,
-    username text,
-    password text,
-    max_revision integer DEFAULT 0 NOT NULL,
-    create_date timestamp without time zone DEFAULT now() NOT NULL,
-    create_user_id integer NOT NULL,
-    update_date timestamp without time zone DEFAULT now() NOT NULL,
-    update_user_id integer NOT NULL
-);
+CREATE VIEW svn_repository_path_view AS
+ SELECT c.svn_repository_id,
+    cp.path
+   FROM (svn_commit c
+     JOIN svn_commit_path cp ON ((c.id = cp.svn_commit_id)))
+  GROUP BY c.svn_repository_id, cp.path;
 
 
-ALTER TABLE svn_repository OWNER TO postgres;
+ALTER TABLE svn_repository_path_view OWNER TO postgres;
 
 --
 -- Name: svn_repository_seq; Type: SEQUENCE; Schema: public; Owner: postgres
@@ -335,6 +396,26 @@ CREATE SEQUENCE svn_repository_seq
 
 
 ALTER TABLE svn_repository_seq OWNER TO postgres;
+
+--
+-- Name: svn_repository_stats_view; Type: VIEW; Schema: public; Owner: postgres
+--
+
+CREATE VIEW svn_repository_stats_view AS
+ SELECT r.id,
+    r.name,
+    r.base_url,
+    r.max_revision,
+    ( SELECT count(c.id) AS count
+           FROM svn_commit c
+          WHERE (r.id = c.svn_repository_id)) AS commit_count,
+    ( SELECT count(rp.path) AS count
+           FROM svn_repository_path_view rp
+          WHERE (r.id = rp.svn_repository_id)) AS path_count
+   FROM svn_repository r;
+
+
+ALTER TABLE svn_repository_stats_view OWNER TO postgres;
 
 --
 -- Name: change_type_pk; Type: CONSTRAINT; Schema: public; Owner: postgres

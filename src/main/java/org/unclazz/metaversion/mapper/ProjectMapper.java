@@ -8,6 +8,7 @@ import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
 import org.unclazz.metaversion.MVUserDetails;
 import org.unclazz.metaversion.entity.Project;
+import org.unclazz.metaversion.entity.ProjectStats;
 import org.unclazz.metaversion.vo.LimitOffsetClause;
 import org.unclazz.metaversion.vo.OrderByClause;
 
@@ -23,6 +24,13 @@ public interface ProjectMapper {
 	@Select("SELECT id, code, name, responsible_person responsiblePerson, commit_sign_pattern commitSignPattern "
 			+ "FROM project WHERE id = #{id} ")
 	Project selectOneById(@Param("id") int id);
+	
+	@Select("SELECT id, code, name, responsible_person responsiblePerson, commit_sign_pattern commitSignPattern,"
+			+ "commit_count commitCount, min_commit_date minCommitDate, max_commit_date maxCommitDate, "
+			+ "path_count pathCount "
+			+ "FROM project_stats_view "
+			+ "WHERE id = #{id} ")
+	ProjectStats selectStatsOneById(@Param("id") int id);
 	
 	@Select("SELECT id, code, name, responsible_person responsiblePerson, commit_sign_pattern commitSignPattern "
 			+ "FROM project ${orderBy} ${limitOffset} ")

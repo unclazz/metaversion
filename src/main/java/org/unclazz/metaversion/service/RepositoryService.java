@@ -1,17 +1,17 @@
 package org.unclazz.metaversion.service;
 
-import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.unclazz.metaversion.MVUserDetails;
 import org.unclazz.metaversion.MVUtils;
 import org.unclazz.metaversion.entity.SvnRepository;
+import org.unclazz.metaversion.entity.SvnRepositoryStats;
 import org.unclazz.metaversion.mapper.SvnRepositoryMapper;
 import org.unclazz.metaversion.vo.LimitOffsetClause;
 import org.unclazz.metaversion.vo.OrderByClause;
 import org.unclazz.metaversion.vo.OrderByClause.Order;
+import org.unclazz.metaversion.vo.Paginated;
 import org.unclazz.metaversion.vo.Paging;
 
 @Service
@@ -64,13 +64,19 @@ public class RepositoryService {
 			throw MVUtils.illegalArgument("Delete target repository(id=%s) is not found.", id);
 		}
 	}
-	public List<SvnRepository> getRepositoryList(final Paging paging) {
+	public Paginated<SvnRepository> getRepositoryList(final Paging paging) {
 		final OrderByClause orderBy = OrderByClause.of("name", Order.ASC);
 		final LimitOffsetClause limitOffset = LimitOffsetClause.of(paging);
-		return svnRepositoryMapper.selectAll(orderBy, limitOffset);
+		return Paginated.of(paging,
+				svnRepositoryMapper.selectAll(orderBy, limitOffset),
+				svnRepositoryMapper.selectCount());
 	}
-	public int getRepositoryCount() {
-		return svnRepositoryMapper.selectCount();
+	public Paginated<SvnRepositoryStats> getRepositoryStatsList(final Paging paging) {
+		final OrderByClause orderBy = OrderByClause.of("name", Order.ASC);
+		final LimitOffsetClause limitOffset = LimitOffsetClause.of(paging);
+		return Paginated.of(paging,
+				svnRepositoryMapper.selectStatsAll(orderBy, limitOffset),
+				svnRepositoryMapper.selectCountStatsAll());
 	}
 	public SvnRepository getRepository(final int id) {
 		return svnRepositoryMapper.selectOneById(id);

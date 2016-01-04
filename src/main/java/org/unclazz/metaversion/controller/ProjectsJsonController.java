@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.unclazz.metaversion.MVUserDetails;
 import org.unclazz.metaversion.entity.PathAndItsSvnRepository;
 import org.unclazz.metaversion.entity.Project;
+import org.unclazz.metaversion.entity.ProjectStats;
 import org.unclazz.metaversion.entity.ProjectSvnCommit;
 import org.unclazz.metaversion.entity.SvnCommit;
 import org.unclazz.metaversion.service.CommitLinkService;
@@ -79,7 +80,6 @@ public class ProjectsJsonController {
 		} else {
 			return projectService.getProjectListByPartialName(likeTrimmed, paging);
 		}
-		
 	}
 	
 	/**
@@ -90,8 +90,20 @@ public class ProjectsJsonController {
 	 * @return  プロジェクト情報
 	 */
 	@RequestMapping(value="/projects/{id}", method=RequestMethod.GET)
-	public ResponseEntity<Project> getUser(final Principal principal, @PathVariable("id") final int id) {
-		return httpResponseOfOkOrNotFound(projectService.getProjectByProjectId(id));
+	public ResponseEntity<Project> getProjects(final Principal principal, @PathVariable("id") final int id) {
+		return httpResponseOfOkOrNotFound(projectService.getProjectById(id));
+	}
+	
+	/**
+	 * IDで指定されたプロジェクトとその統計情報を取得して返す.
+	 * 該当するプロジェクト情報が見つからなかった場合は{@code 404 Not Found}を返す.
+	 * @param principal 認証情報
+	 * @param id ID
+	 * @return  プロジェクトとその統計情報
+	 */
+	@RequestMapping(value="/projectstats/{id}", method=RequestMethod.GET)
+	public ResponseEntity<ProjectStats> getProjectsStats(final Principal principal, @PathVariable("id") final int id) {
+		return httpResponseOfOkOrNotFound(projectService.getProjectStatsById(id));
 	}
 	
 	/**

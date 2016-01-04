@@ -8,15 +8,13 @@ import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
 import org.unclazz.metaversion.MVUserDetails;
 import org.unclazz.metaversion.entity.SvnRepository;
+import org.unclazz.metaversion.entity.SvnRepositoryStats;
 import org.unclazz.metaversion.vo.LimitOffsetClause;
 import org.unclazz.metaversion.vo.OrderByClause;
 
 public interface SvnRepositoryMapper {
 	@Select("SELECT nextval('svn_repository_seq') ")
 	int selectNextVal();
-	
-	@Select("SELECT count(1) FROM svn_repository")
-	int selectCount();
 	
 	@Select("SELECT id, name, base_url baseUrl, "
 			+ "trunk_path_pattern trunkPathPattern, branch_path_pattern branchPathPattern, "
@@ -32,6 +30,19 @@ public interface SvnRepositoryMapper {
 			+ "${orderBy} ${limitOffset} ")
 	List<SvnRepository> selectAll(@Param("orderBy") OrderByClause orderBy,
 			@Param("limitOffset") LimitOffsetClause limitOffset);
+	
+	@Select("SELECT count(1) FROM svn_repository")
+	int selectCount();
+	
+	@Select("SELECT id, name, base_url baseUrl, max_revision maxRevision, "
+			+ "commit_count commitCount, path_count pathCount "
+			+ "FROM svn_repository_stats_view "
+			+ "${orderBy} ${limitOffset} ")
+	List<SvnRepositoryStats> selectStatsAll(@Param("orderBy") OrderByClause orderBy,
+			@Param("limitOffset") LimitOffsetClause limitOffset);
+	
+	@Select("SELECT count(1) FROM svn_repository_stats_view ")
+	int selectCountStatsAll();
 	
 	@Insert("INSERT INTO svn_repository "
 			+ "(id, name, base_url, trunk_path_pattern, branch_path_pattern, "

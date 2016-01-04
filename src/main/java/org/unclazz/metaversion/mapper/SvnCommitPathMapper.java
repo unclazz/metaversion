@@ -42,34 +42,20 @@ public interface SvnCommitPathMapper {
 	@Select("SELECT count(1) FROM svn_commit_path WHERE svn_commit_id = #{svnCommitId} ")
 	int selectCountBySvnCommitId(@Param("svnCommitId") int svnCommitId);
 	
-	@Select("select cp.path, r.id repositoryId, r.name repositoryName, " 
-			+ "count(1) commitCount, min(c.revision) minRevision, max(c.revision) maxRevision, " 
-			+ "min(c.commit_date) minCommitDate, max(c.commit_date) maxCommitDate " 
-			+ "from svn_commit_path cp " 
-			+ "INNER join svn_commit c " 
-			+ "on cp.svn_commit_id = c.id " 
-			+ "INNER JOIN svn_repository r " 
-			+ "on c.svn_repository_id = r.id " 
-			+ "inner join project_svn_commit pc " 
-			+ "on pc.svn_commit_id = cp.svn_commit_id " 
-			+ "where pc.project_id = #{projectId} " 
-			+ "group by cp.path, r.id, r.name "
+	@Select("SELECT path, svb_repository_id svnRepositoryId, svn_repository_name svnRepositoryName, " 
+			+ "commit_count commitCount, min_revision minRevision, max_revision maxRevision, " 
+			+ "min_commit_date minCommitDate, max_commit_date maxCommitDate " 
+			+ "FROM project_changedpath_view " 
+			+ "WHERE project_id = #{projectId} " 
 			+ "${orderBy} ${limitOffset} ")
 	List<PathAndItsSvnRepository> selectByProjectId(
 			@Param("projectId") int projectId,
 			@Param("orderBy") OrderByClause orderBy,
 			@Param("limitOffset") LimitOffsetClause limitOffset);
 	
-	@Select("select count(1) " 
-			+ "from svn_commit_path cp " 
-			+ "INNER join svn_commit c " 
-			+ "on cp.svn_commit_id = c.id " 
-			+ "INNER JOIN svn_repository r " 
-			+ "on c.svn_repository_id = r.id " 
-			+ "inner join project_svn_commit pc " 
-			+ "on pc.svn_commit_id = cp.svn_commit_id " 
-			+ "where pc.project_id = #{projectId} " 
-			+ "group by cp.path, r.id, r.name ")
+	@Select("SELECT count(1) " 
+			+ "FROM  project_changedpath_view " 
+			+ "WHERE project_id = #{projectId} ")
 	int selectCountByProjectId(@Param("projectId") int projectId);
 	
 	@Insert("INSERT INTO svn_commit_path (id, svn_commit_id, change_type_id, path, create_user_id) "

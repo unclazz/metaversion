@@ -6,8 +6,8 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 
 public class PathAndItsSvnRepository {
 	private String path;
-	private int repositoryId;
-	private String repositoryName;
+	private int svnRepositoryId;
+	private String svnRepositoryName;
 	private int commitCount;
 	private int minRevision;
 	private int maxRevision;
@@ -21,17 +21,17 @@ public class PathAndItsSvnRepository {
 	public final void setPath(String path) {
 		this.path = path;
 	}
-	public final int getRepositoryId() {
-		return repositoryId;
+	public final int getSvnRepositoryId() {
+		return svnRepositoryId;
 	}
-	public final void setRepositoryId(int repositoryId) {
-		this.repositoryId = repositoryId;
+	public final void setSvnRepositoryId(int repositoryId) {
+		this.svnRepositoryId = repositoryId;
 	}
-	public final String getRepositoryName() {
-		return repositoryName;
+	public final String getSvnRepositoryName() {
+		return svnRepositoryName;
 	}
-	public final void setRepositoryName(String repositoryName) {
-		this.repositoryName = repositoryName;
+	public final void setSvnRepositoryName(String repositoryName) {
+		this.svnRepositoryName = repositoryName;
 	}
 	public final int getCommitCount() {
 		return commitCount;
