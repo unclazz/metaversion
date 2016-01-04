@@ -129,8 +129,10 @@ CREATE TABLE online_batch_log (
     status_id integer NOT NULL,
     start_date timestamp without time zone DEFAULT now() NOT NULL,
     end_date timestamp without time zone DEFAULT now(),
+    create_user_id integer NOT NULL,
     create_date timestamp without time zone DEFAULT now() NOT NULL,
-    create_user_id integer NOT NULL
+    update_date timestamp without time zone DEFAULT now() NOT NULL,
+    update_user_id integer NOT NULL
 );
 
 
@@ -602,35 +604,11 @@ ALTER TABLE ONLY online_batch_error
 
 
 --
--- Name: online_batch_error_fk1; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY online_batch_error
-    ADD CONSTRAINT online_batch_error_fk1 FOREIGN KEY (create_user_id) REFERENCES application_user(id);
-
-
---
 -- Name: online_batch_lock_fk0; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY online_batch_lock
     ADD CONSTRAINT online_batch_lock_fk0 FOREIGN KEY (program_id) REFERENCES online_batch_program(id);
-
-
---
--- Name: online_batch_lock_fk1; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY online_batch_lock
-    ADD CONSTRAINT online_batch_lock_fk1 FOREIGN KEY (last_lock_user_id) REFERENCES application_user(id);
-
-
---
--- Name: online_batch_lock_fk2; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY online_batch_lock
-    ADD CONSTRAINT online_batch_lock_fk2 FOREIGN KEY (last_unlock_user_id) REFERENCES application_user(id);
 
 
 --
@@ -647,14 +625,6 @@ ALTER TABLE ONLY online_batch_log
 
 ALTER TABLE ONLY online_batch_log
     ADD CONSTRAINT online_batch_log_fk1 FOREIGN KEY (status_id) REFERENCES online_batch_status(id);
-
-
---
--- Name: online_batch_log_fk2; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY online_batch_log
-    ADD CONSTRAINT online_batch_log_fk2 FOREIGN KEY (create_user_id) REFERENCES application_user(id);
 
 
 --
@@ -690,14 +660,6 @@ ALTER TABLE ONLY project_svn_commit
 
 
 --
--- Name: project_svn_commit_fk2; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY project_svn_commit
-    ADD CONSTRAINT project_svn_commit_fk2 FOREIGN KEY (create_user_id) REFERENCES application_user(id);
-
-
---
 -- Name: project_svn_repository_fk0; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -714,35 +676,11 @@ ALTER TABLE ONLY project_svn_repository
 
 
 --
--- Name: project_svn_repository_fk2; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY project_svn_repository
-    ADD CONSTRAINT project_svn_repository_fk2 FOREIGN KEY (create_user_id) REFERENCES application_user(id);
-
-
---
--- Name: project_svn_repository_fk3; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY project_svn_repository
-    ADD CONSTRAINT project_svn_repository_fk3 FOREIGN KEY (update_user_id) REFERENCES application_user(id);
-
-
---
 -- Name: svn_commit_fk0; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY svn_commit
     ADD CONSTRAINT svn_commit_fk0 FOREIGN KEY (svn_repository_id) REFERENCES svn_repository(id);
-
-
---
--- Name: svn_commit_fk1; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY svn_commit
-    ADD CONSTRAINT svn_commit_fk1 FOREIGN KEY (create_user_id) REFERENCES application_user(id);
 
 
 --
@@ -759,30 +697,6 @@ ALTER TABLE ONLY svn_commit_path
 
 ALTER TABLE ONLY svn_commit_path
     ADD CONSTRAINT svn_commit_path_fk1 FOREIGN KEY (change_type_id) REFERENCES change_type(id);
-
-
---
--- Name: svn_commit_path_fk2; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY svn_commit_path
-    ADD CONSTRAINT svn_commit_path_fk2 FOREIGN KEY (create_user_id) REFERENCES application_user(id);
-
-
---
--- Name: svn_repository_fk0; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY svn_repository
-    ADD CONSTRAINT svn_repository_fk0 FOREIGN KEY (create_user_id) REFERENCES application_user(id);
-
-
---
--- Name: svn_repository_fk1; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY svn_repository
-    ADD CONSTRAINT svn_repository_fk1 FOREIGN KEY (update_user_id) REFERENCES application_user(id);
 
 
 --
