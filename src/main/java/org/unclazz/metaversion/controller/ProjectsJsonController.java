@@ -151,11 +151,10 @@ public class ProjectsJsonController {
 		}
 	}
 	
-	// TODO 外部キー制約で縛られたレコードをどのようにするかが課題
 	@RequestMapping(value="/projects/{id}", method=RequestMethod.DELETE)
 	public ResponseEntity<Project> deleteProjects(final Principal principal, @PathVariable("id") final int id) {
 		try {
-			// TODO
+			projectService.removeProjectById(id);
 			return httpResponseOfOk();
 			
 		} catch (final RuntimeException e) {

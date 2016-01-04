@@ -201,7 +201,6 @@ public class RepositoriesJsonController {
 		}
 	}
 
-	// TODO レコード削除方法と外部キー制約との関係の検討が必要
 	@RequestMapping(value="/repositories/{id}", method=RequestMethod.DELETE)
 	public ResponseEntity<SvnRepository> deleteRepository(final Principal principal, @PathVariable("id") final int id) {
 		try {
