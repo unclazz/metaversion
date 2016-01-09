@@ -25,19 +25,25 @@ public class MVSecurityConfiguration extends WebSecurityConfigurerAdapter {
     protected void configure(final HttpSecurity http) throws Exception {
         http.csrf().disable()
             .authorizeRequests()
+            	// TODO 管理者のみアクセスを許されるパスの定義
             	.antMatchers("/foo").hasAuthority(MVGrantedAuthority.NAME_ADMINISTRATOR)
-            	.antMatchers("/init").permitAll()
+            	// HttpSecurityレベルではREST APIのパスへのアクセスはすべて許可する
+            	// ＊ただしインターセプターにより認証済みユーザ以外へは403を返すようにしている
+            	.antMatchers(MVApplication.REST_API_PATH_PREFIX + "/*").permitAll()
+            	// マスタデータ等の初期化のためのパスへのアクセスはすべて許可する
+            	.antMatchers(MVApplication.INIT_PAGE_PATH).permitAll()
+            	// その他のパスへのアクセスには認証パスが必要とする
                 .anyRequest().authenticated()
                 .and()
             .formLogin()
-                .loginPage("/login")
-                .failureUrl("/login")
-                .defaultSuccessUrl("/index", true)
+                .loginPage(MVApplication.LOGIN_PAGE_PATH)
+                .failureUrl(MVApplication.LOGIN_PAGE_PATH)
+                .defaultSuccessUrl(MVApplication.TOP_PAGE_PATH, true)
                 .permitAll()
                 .and()
             .logout()
-                .logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
-                .logoutSuccessUrl("/login")
+                .logoutRequestMatcher(new AntPathRequestMatcher(MVApplication.LOGOUT_PAGE_PATH))
+                .logoutSuccessUrl(MVApplication.LOGIN_PAGE_PATH)
                 .permitAll();
     }
     

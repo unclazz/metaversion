@@ -36,7 +36,7 @@ public class HtmlController {
         return "login";
     }
     
-    @RequestMapping("/index")
+    @RequestMapping({"/", "/index"})
     public String index(Principal principal, Model model) {
     	model.addAttribute("username", MVUserDetails.of(principal).getUsername());
         return "index";
