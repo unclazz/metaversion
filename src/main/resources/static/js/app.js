@@ -1,7 +1,7 @@
 angular
 .module('restapi-tester', ['ui.bootstrap'])
 .controller("main", function($scope, $location, $http, $filter, $log){
-	var REQUEST_METHODS = ['GET', 'POST'];
+	var REQUEST_METHODS = ['GET', 'POST', 'PUT', 'DELETE'];
 	var REQUEST_PREFIX = null;
 	
 	if ($location.protocol() === 'file') {
@@ -10,7 +10,7 @@ angular
 		REQUEST_PREFIX = $location.absUrl().slice(0, restapiEndpointIndex) + '/static';
 	} else {
 		var absUrl = $location.absUrl();
-		var restapiEndpointIndex = absUrl.indexOf('/restapi-tester');
+		var restapiEndpointIndex = absUrl.indexOf('/apitester');
 		REQUEST_PREFIX = $location.absUrl().slice(0, restapiEndpointIndex);
 	}
 	
@@ -23,8 +23,8 @@ angular
 	$scope.requestSubmitClick = function() {
 		var conf = {};
 		conf.method = $scope.requestMethod;
-		conf.url = $scope.requestPrefix + $scope.requestPath;
-		if (conf.method === 'POST') {
+		conf.url = $scope.requestPath;
+		if (conf.method === 'POST' || conf.method === 'PUT') {
 			conf.data = $scope.requestBody;
 		}
 		
