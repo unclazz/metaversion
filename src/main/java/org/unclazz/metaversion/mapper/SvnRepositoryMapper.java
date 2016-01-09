@@ -18,14 +18,14 @@ public interface SvnRepositoryMapper {
 	
 	@Select("SELECT id, name, base_url baseUrl, "
 			+ "trunk_path_pattern trunkPathPattern, branch_path_pattern branchPathPattern, "
-			+ "max_revision maxRevision, username, password "
+			+ "max_revision maxRevision, username, password encodedPassword "
 			+ "FROM svn_repository "
 			+ "WHERE id = #{id} ")
 	SvnRepository selectOneById(int id);
 
 	@Select("SELECT id, name, base_url baseUrl, "
 			+ "trunk_path_pattern trunkPathPattern, branch_path_pattern branchPathPattern, "
-			+ "max_revision maxRevision, username, password "
+			+ "max_revision maxRevision, username, password encodedPassword "
 			+ "FROM svn_repository "
 			+ "${orderBy} ${limitOffset} ")
 	List<SvnRepository> selectAll(@Param("orderBy") OrderByClause orderBy,
@@ -48,13 +48,13 @@ public interface SvnRepositoryMapper {
 			+ "(id, name, base_url, trunk_path_pattern, branch_path_pattern, "
 			+ "max_revision, username, password, create_user_id, update_user_id) "
 			+ "VALUES (#{repo.id}, #{repo.name}, #{repo.baseUrl}, #{repo.trunkPathPattern}, #{repo.branchPathPattern}, "
-			+ "#{repo.maxRevision}, #{repo.username}, #{repo.password}, #{auth.id}, #{auth.id}) ")
+			+ "#{repo.maxRevision}, #{repo.username}, #{repo.encodedPassword}, #{auth.id}, #{auth.id}) ")
 	int insert(@Param("repo") SvnRepository repo, @Param("auth") MVUserDetails auth);
 	
 	@Update("UPDATE svn_repository "
 			+ "SET name = #{repo.name}, base_url = #{repo.baseUrl}, "
 			+ "trunk_path_pattern = #{repo.trunkPathPattern}, branch_path_pattern = #{repo.branchPathPattern}, "
-			+ "max_revision = #{repo.maxRevision}, username = #{repo.username}, password = #{repo.password},  "
+			+ "max_revision = #{repo.maxRevision}, username = #{repo.username}, password = #{repo.encodedPassword},  "
 			+ "update_date = now(), update_user_id = #{auth.id} "
 			+ "WHERE id = #{repo.id} ")
 	int update(@Param("repo") SvnRepository repo, @Param("auth") MVUserDetails auth);

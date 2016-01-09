@@ -23,6 +23,9 @@ public class UserService {
 	private UserMapper userMapper;
 	
 	public void doPasswordEncode(final User user) {
+		if (user.getPassword() == null) {
+			return;
+		}
 		user.setEncodedPassword(passwordEncoder.encode(MVUtils.charArrayToCharSequence(user.getPassword())));
 	}
 	

@@ -35,28 +35,13 @@ public class RepositoryService {
 	private SvnCommitPathMapper svnCommitPathMapper;
 	@Autowired
 	private SvnCommandService svnService;
-	
-	public SvnRepository composeValueObject(final int id, final String name, final String baseUrl,
-			final String trunkPathPattern, final String branchPathPattern,
-			final int maxRevision, final String username, final char[] password) {
-		final SvnRepository r = composeValueObject(name, baseUrl, trunkPathPattern,
-				branchPathPattern, maxRevision, username, password);
-		r.setId(id);
-		return r;
-	}
-	
-	public SvnRepository composeValueObject(final String name, final String baseUrl,
-			final String trunkPathPattern, final String branchPathPattern,
-			final int maxRevision, final String username, final char[] password) {
-		final SvnRepository r = new SvnRepository();
-		r.setName(name);
-		r.setBaseUrl(baseUrl);
-		r.setTrunkPathPattern(trunkPathPattern);
-		r.setBranchPathPattern(branchPathPattern);
-		r.setMaxRevision(maxRevision);
-		r.setUsername(username);
-		r.setPassword(passwordEncoder.encode(MVUtils.charArrayToCharSequence(password)));
-		return r;
+		
+	public void doPasswordEncode(final SvnRepository repository) {
+		if (repository.getPassword() == null) {
+			return;
+		}
+		repository.setEncodedPassword(passwordEncoder.encode(MVUtils.
+				charArrayToCharSequence(repository.getPassword())));
 	}
 	
 	public void registerRepository(final SvnRepository repository, final MVUserDetails auth) {

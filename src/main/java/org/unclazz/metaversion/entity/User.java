@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class User {
 	
 	private int id;
+	@JsonProperty(required=true)
 	private String name;
 	private String encodedPassword;
 	private char[] password;

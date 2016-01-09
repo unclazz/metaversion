@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.unclazz.metaversion.MVApplication;
 import org.unclazz.metaversion.MVUserDetails;
 import org.unclazz.metaversion.entity.PathAndItsSvnRepository;
 import org.unclazz.metaversion.entity.Project;
@@ -28,7 +29,7 @@ import org.unclazz.metaversion.vo.Paging;
 import static org.unclazz.metaversion.MVUtils.*;
 
 @RestController
-@RequestMapping("/rest")
+@RequestMapping(MVApplication.REST_API_PATH_PREFIX)
 public class ProjectsJsonController {
 	@Autowired
 	private ProjectService projectService;

@@ -10,10 +10,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.unclazz.metaversion.MVApplication;
 import org.unclazz.metaversion.MVUserDetails;
 import org.unclazz.metaversion.entity.SvnCommit;
 import org.unclazz.metaversion.entity.SvnCommitPath;
@@ -29,7 +31,7 @@ import org.unclazz.metaversion.vo.SvnRepositoryInfo;
 import static org.unclazz.metaversion.MVUtils.*;
 
 @RestController
-@RequestMapping("/rest")
+@RequestMapping(MVApplication.REST_API_PATH_PREFIX)
 public class RepositoriesJsonController {
 	private final Logger logger = LoggerFactory.getLogger(this.getClass());
 	@Autowired
@@ -96,18 +98,12 @@ public class RepositoriesJsonController {
 	@RequestMapping(value="/repositories/{id}", method=RequestMethod.PUT)
 	public ResponseEntity<SvnRepository> putRepository(final Principal principal,
 			@PathVariable("id") final int id,
-			@RequestParam("name") final String name,
-			@RequestParam("baseUrl") final String baseUrl,
-			@RequestParam(value="trunkPathPattern", defaultValue="/trunk") final String trunkPathPattern,
-			@RequestParam(value="branchPathPattern", defaultValue="/branches/\\w+") final String branchPathPattern,
-			@RequestParam(value="maxRevision", defaultValue="0") final int maxRevision,
-			@RequestParam(value="username", required=false) final String username,
-			@RequestParam(value="password", required=false) final char[] password) {
+			@RequestBody final SvnRepository repository) {
 		
 		try {
 			// 正規表現パターンの検証を行う
-			Pattern.compile(trunkPathPattern);
-			Pattern.compile(branchPathPattern);
+			Pattern.compile(repository.getTrunkPathPattern());
+			Pattern.compile(repository.getBranchPathPattern());
 			
 		} catch (final PatternSyntaxException ex) {
 			// 例外がスローされたら400 Bad Requestで返す
@@ -115,8 +111,7 @@ public class RepositoriesJsonController {
 		}
 		
 		// リクエストパラメータからVOを生成
-		final SvnRepository repository = repositoryService.composeValueObject(id, name,
-				baseUrl, trunkPathPattern, branchPathPattern, maxRevision, username, password);
+		repositoryService.doPasswordEncode(repository);
 
 		try {
 			checkConnectivity(repository);
@@ -151,18 +146,12 @@ public class RepositoriesJsonController {
 	 */
 	@RequestMapping(value="/repositories", method=RequestMethod.POST)
 	public ResponseEntity<SvnRepository> postRepository(final Principal principal,
-			@RequestParam("name") final String name,
-			@RequestParam("baseUrl") final String baseUrl,
-			@RequestParam(value="trunkPathPattern", defaultValue="/trunk") final String trunkPathPattern,
-			@RequestParam(value="branchPathPattern", defaultValue="/branches/\\w+") final String branchPathPattern,
-			@RequestParam(value="maxRevision", defaultValue="0") final int maxRevision,
-			@RequestParam(value="username", required=false) final String username,
-			@RequestParam(value="password", required=false) final char[] password) {
+			@RequestBody SvnRepository repository) {
 		
 		try {
 			// 正規表現パターンの検証を行う
-			Pattern.compile(trunkPathPattern);
-			Pattern.compile(branchPathPattern);
+			Pattern.compile(repository.getTrunkPathPattern());
+			Pattern.compile(repository.getBranchPathPattern());
 			
 		} catch (final PatternSyntaxException ex) {
 			// 例外がスローされたら400 Bad Requestで返す
@@ -170,8 +159,7 @@ public class RepositoriesJsonController {
 		}
 		
 		// リクエストパラメータからVOを生成
-		final SvnRepository repository = repositoryService.composeValueObject(name,
-				baseUrl, trunkPathPattern, branchPathPattern, maxRevision, username, password);
+		repositoryService.doPasswordEncode(repository);
 
 		try {
 			checkConnectivity(repository);
@@ -202,7 +190,7 @@ public class RepositoriesJsonController {
 	}
 
 	@RequestMapping(value="/repositories/{id}", method=RequestMethod.DELETE)
-	public ResponseEntity<SvnRepository> deleteRepository(final Principal principal, @PathVariable("id") final int id) {
+	public ResponseEntity<SvnRepository> deleteRepositories(final Principal principal, @PathVariable("id") final int id) {
 		try {
 			repositoryService.removeRepository(id, MVUserDetails.of(principal));
 			return httpResponseOfOk();
@@ -222,7 +210,7 @@ public class RepositoriesJsonController {
 	 * @return コミット情報の一覧
 	 */
 	@RequestMapping(value="/repositories/{id}/commits", method=RequestMethod.GET)
-	public Paginated<SvnCommit> getRepositorysCommits(final Principal principal,
+	public Paginated<SvnCommit> getRepositoriesCommits(final Principal principal,
 			@PathVariable("id") final int id,
 			@RequestParam(value="unlinked", defaultValue="false") final boolean unlinked,
 			@ModelAttribute final Paging paging) {

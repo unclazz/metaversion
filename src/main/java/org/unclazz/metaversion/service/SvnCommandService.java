@@ -21,6 +21,7 @@ import org.tmatesoft.svn.core.wc.SVNLogClient;
 import org.tmatesoft.svn.core.wc.SVNRevision;
 import org.tmatesoft.svn.core.wc.SVNWCClient;
 import org.tmatesoft.svn.core.wc.SVNWCUtil;
+import org.unclazz.metaversion.MVUtils;
 import org.unclazz.metaversion.entity.ChangeType;
 import org.unclazz.metaversion.entity.SvnCommit;
 import org.unclazz.metaversion.entity.SvnCommitPath;
@@ -52,7 +53,7 @@ public class SvnCommandService {
 	 */
 	private SVNClientManager getSVNClientManager(final SvnRepository repository) {
 		final String username = repository.getUsername();
-		final String password = repository.getPassword();
+		final String password = MVUtils.charArrayToCharSequence(repository.getPassword()).toString();
 		final DefaultSVNOptions options = SVNWCUtil.createDefaultOptions(true);
 		if (username == null || username.isEmpty()) {
 			return SVNClientManager.newInstance(options);

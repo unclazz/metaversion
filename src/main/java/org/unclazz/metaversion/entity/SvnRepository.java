@@ -1,16 +1,23 @@
 package org.unclazz.metaversion.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class SvnRepository {
-	private int id;
+	private static final String defaultTrunkPathPattern = "/trunk/";
+	private static final String defaultBranchPathPattern = "/branches/\\w+";
+	
+	private int id = 0;
+	@JsonProperty(required=true)
 	private String name;
+	@JsonProperty(required=true)
 	private String baseUrl;
-	private String trunkPathPattern;
-	private String branchPathPattern;
+	private String trunkPathPattern = defaultTrunkPathPattern;
+	private String branchPathPattern = defaultBranchPathPattern;
 	private String username;
-	private String password;
-	private int maxRevision;
+	private char[] password;
+	private String encodedPassword;
+	private int maxRevision = 0;
 	public final int getId() {
 		return id;
 	}
@@ -48,16 +55,24 @@ public class SvnRepository {
 		this.username = username;
 	}
 	@JsonIgnore
-	public final String getPassword() {
-		return password;
+	public final String getEncodedPassword() {
+		return encodedPassword;
 	}
-	public final void setPassword(String password) {
-		this.password = password;
+	public final void setEncodedPassword(String password) {
+		this.encodedPassword = password;
 	}
 	public int getMaxRevision() {
 		return maxRevision;
 	}
 	public void setMaxRevision(int maxRevision) {
 		this.maxRevision = maxRevision;
+	}
+	@JsonIgnore
+	public char[] getPassword() {
+		return password;
+	}
+	@JsonProperty("password")
+	public void setPassword(char[] password) {
+		this.password = password;
 	}
 }

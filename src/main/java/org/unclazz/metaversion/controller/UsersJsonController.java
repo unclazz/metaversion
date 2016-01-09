@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
+import org.unclazz.metaversion.MVApplication;
 import org.unclazz.metaversion.MVUserDetails;
 import org.unclazz.metaversion.entity.User;
 import org.unclazz.metaversion.service.UserService;
@@ -18,7 +19,7 @@ import org.unclazz.metaversion.vo.Paging;
 import static org.unclazz.metaversion.MVUtils.*;
 
 @RestController
-@RequestMapping("/rest")
+@RequestMapping(MVApplication.REST_API_PATH_PREFIX)
 public class UsersJsonController {
 	@Autowired
 	private UserService userService;

@@ -9,10 +9,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.unclazz.metaversion.MVApplication;
 import org.unclazz.metaversion.service.PathNameService;
 
 @RestController
-@RequestMapping("/rest")
+@RequestMapping(MVApplication.REST_API_PATH_PREFIX)
 public class PathNamesJsonController {
 	@Autowired
 	private PathNameService pathNameService;
