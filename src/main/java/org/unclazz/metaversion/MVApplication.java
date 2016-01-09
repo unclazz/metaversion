@@ -17,7 +17,7 @@ public class MVApplication {
 	public static final String APPLICATION_BASE_PACKAGE = MVApplication.class.getPackage().getName();
 	public static final String MAPPER_SCAN_BASE_PACKAGE = APPLICATION_BASE_PACKAGE + ".mapper";
 	public static final String TYPE_ALIASES_PACKAGE = APPLICATION_BASE_PACKAGE + ".entity";
-	public static final String REST_API_PATH_PREFIX = "/rest";
+	public static final String REST_API_PATH_PREFIX = "/api";
 	public static final String INIT_PAGE_PATH = "/init";
 	public static final String LOGIN_PAGE_PATH = "/login";
 	public static final String LOGOUT_PAGE_PATH = "/logout";
