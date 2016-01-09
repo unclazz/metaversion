@@ -51,10 +51,7 @@ public class UsersJsonController {
 	 * {@link User}オブジェクトのプロパティのうちパスワードが未設定の場合、データベースの内容が自動設定される。
 	 * 何らかの理由で更新に失敗した場合は{@code 500 Internal Server Error}を返す。
 	 * @param principal 認証情報
-	 * @param id ユーザID
-	 * @param username ユーザ名
-	 * @param password パスワード
-	 * @param admin 管理者かどうか
+	 * @param user ユーザ情報
 	 * @return 更新結果のユーザ情報
 	 */
 	@RequestMapping(value="/users/{id}", method=RequestMethod.PUT)
@@ -78,9 +75,7 @@ public class UsersJsonController {
 	 * リクエストパラメータをもとにユーザ情報を登録する.
 	 * 何らかの理由で登録に失敗した場合は{@code 500 Internal Server Error}を返す。
 	 * @param principal 認証情報
-	 * @param username ユーザ名
-	 * @param password パスワード
-	 * @param admin 管理者かどうか
+	 * @param user ユーザ情報
 	 * @return 登録結果のユーザ情報
 	 */
 	@RequestMapping(value="/users", method=RequestMethod.POST)
