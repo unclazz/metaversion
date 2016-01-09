@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.unclazz.metaversion.MVUserDetails;
 import org.unclazz.metaversion.MVUtils;
 import org.unclazz.metaversion.service.MasterService;
@@ -34,22 +35,16 @@ public class HtmlController {
     public String login() {
         return "login";
     }
+    
     @RequestMapping("/index")
     public String index(Principal principal, Model model) {
     	model.addAttribute("username", MVUserDetails.of(principal).getUsername());
         return "index";
     }
-//    @RequestMapping("/foo")
-//    public String foo(Principal principal, Model model,
-//    		@RequestParam("username") String username,
-//    		@RequestParam("password") char[] password) {
-//    	final MetaVersionUserDetails ud = MetaVersionUserDetails.of(principal);
-////    	if (!ud.isAdmin()) {
-////    		throw new RuntimeException("Access denied!!");
-////    	}
-//    	model.addAttribute("username", ud.getUsername());
-//    	userService.registerUser(username, new StringBuilder().append(password), false, ud);
-//    	
-//        return "index";
-//    }
+    
+    @RequestMapping(value="/apitester", method=RequestMethod.GET)
+    public String getApiTester() {
+        return "apitester";
+    }
+    
 }

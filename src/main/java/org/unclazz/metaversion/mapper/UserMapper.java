@@ -19,22 +19,22 @@ public interface UserMapper {
 	@Select("SELECT count(1) FROM application_user")
 	int selectCount();
 	
-	@Select("SELECT id, name, admin, password FROM application_user ${orderBy} ${limitOffset} ")
+	@Select("SELECT id, name, admin, password encodedPassword FROM application_user ${orderBy} ${limitOffset} ")
 	List<User> selectAll(@Param("orderBy") OrderByClause orderBy,
 			@Param("limitOffset") LimitOffsetClause limitOffset);
 	
-	@Select("SELECT id, name, password, admin FROM application_user WHERE id = #{id}")
+	@Select("SELECT id, name, password encodedPassword, admin FROM application_user WHERE id = #{id}")
 	User selectOneById(@Param("id") int id);
 	
-	@Select("SELECT id, name, password, admin FROM application_user WHERE name = #{name}")
+	@Select("SELECT id, name, password encodedPassword, admin FROM application_user WHERE name = #{name}")
 	User selectOneByName(@Param("name") String name);
 	
 	@Insert("INSERT INTO application_user (id, name, password, admin, create_user_id, update_user_id) "
-			+ "VALUES (#{user.id}, #{user.name}, #{user.password}, #{user.admin}, #{auth.id}, #{auth.id})")
+			+ "VALUES (#{user.id}, #{user.name}, #{user.encodedPassword}, #{user.admin}, #{auth.id}, #{auth.id})")
 	int insert(@Param("user") User user, @Param("auth") MVUserDetails auth);
 
 	@Update("UPDATE application_user "
-			+ "SET name = #{user.name}, password = #{user.password}, admin = #{user.admin}, "
+			+ "SET name = #{user.name}, password = #{user.encodedPassword}, admin = #{user.admin}, "
 			+ "update_date = now(), update_user_id = #{auth.id} "
 			+ "WHERE id = #{user.id} ")
 	int update(@Param("user") User user, @Param("auth") MVUserDetails auth);

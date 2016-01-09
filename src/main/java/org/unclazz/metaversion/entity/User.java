@@ -1,12 +1,14 @@
 package org.unclazz.metaversion.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class User {
 	
 	private int id;
 	private String name;
-	private String password;
+	private String encodedPassword;
+	private char[] password;
 	private boolean admin;
 	
 	public boolean isAdmin() {
@@ -28,10 +30,18 @@ public class User {
 		this.name = name;
 	}
 	@JsonIgnore
-	public String getPassword() {
+	public String getEncodedPassword() {
+		return encodedPassword;
+	}
+	public void setEncodedPassword(String password) {
+		this.encodedPassword = password;
+	}
+	@JsonIgnore
+	public char[] getPassword() {
 		return password;
 	}
-	public void setPassword(String password) {
-		this.password = password;
+	@JsonProperty("password")
+	public void setPassword(char[] rawPassword) {
+		this.password = rawPassword;
 	}
 }

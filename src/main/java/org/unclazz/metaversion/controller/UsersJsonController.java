@@ -6,9 +6,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.unclazz.metaversion.MVUserDetails;
 import org.unclazz.metaversion.entity.User;
@@ -48,6 +48,7 @@ public class UsersJsonController {
 	
 	/**
 	 * リクエストパラメータをもとにユーザ情報を更新する.
+	 * {@link User}オブジェクトのプロパティのうちパスワードが未設定の場合、データベースの内容が自動設定される。
 	 * 何らかの理由で更新に失敗した場合は{@code 500 Internal Server Error}を返す。
 	 * @param principal 認証情報
 	 * @param id ユーザID
@@ -57,19 +58,19 @@ public class UsersJsonController {
 	 * @return 更新結果のユーザ情報
 	 */
 	@RequestMapping(value="/users/{id}", method=RequestMethod.PUT)
-	public ResponseEntity<User> putUser(final Principal principal,
-			@PathVariable("id") final int id,
-			@RequestParam("username") final String username, 
-			@RequestParam("password") final char[] password, 
-			@RequestParam("admin") final boolean admin) {
+	public ResponseEntity<User> putUser(final Principal principal, @RequestBody final User user) {
 		
 		try {
-			final User user = userService.composeValueObject(id, username, password, admin);
+			if (user.getPassword() == null) {
+				userService.doPasswordSupplement(user);
+			} else {
+				userService.doPasswordEncode(user);
+			}
 			userService.modifyUser(user, MVUserDetails.of(principal));
 			return httpResponseOfOk(user);
 			
 		} catch (final RuntimeException e) {
-			return httpResponseOfInternalServerError(e.getMessage());
+			return httpResponseOfInternalServerError(e);
 		}
 	}
 	
@@ -83,18 +84,15 @@ public class UsersJsonController {
 	 * @return 登録結果のユーザ情報
 	 */
 	@RequestMapping(value="/users", method=RequestMethod.POST)
-	public ResponseEntity<User> postUser(final Principal principal,
-			@RequestParam("username") final String username, 
-			@RequestParam("password") final char[] password, 
-			@RequestParam("admin") final boolean admin) {
+	public ResponseEntity<User> postUser(final Principal principal, @RequestBody final User user) {
 		
 		try {
-			final User user = userService.composeValueObject(username, password, admin);
+			userService.doPasswordEncode(user);
 			userService.registerUser(user, MVUserDetails.of(principal));
 			return httpResponseOfOk(user);
 			
 		} catch (final RuntimeException e) {
-			return httpResponseOfInternalServerError(e.getMessage());
+			return httpResponseOfInternalServerError(e);
 		}
 	}
 	
@@ -105,7 +103,7 @@ public class UsersJsonController {
 			return httpResponseOfOk();
 			
 		} catch (final RuntimeException e) {
-			return httpResponseOfInternalServerError(e.getMessage());
+			return httpResponseOfInternalServerError(e);
 		}
 	}
 }

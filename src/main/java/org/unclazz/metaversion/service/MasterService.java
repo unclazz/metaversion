@@ -53,7 +53,7 @@ public class MasterService {
 		final User defaultAdmin = new User();
 		defaultAdmin.setId(0);
 		defaultAdmin.setName(props.getDefaultAdminName());
-		defaultAdmin.setPassword(encorder.encode(new StringBuilder().append(props.getDefaultAdminPassword())));
+		defaultAdmin.setEncodedPassword(encorder.encode(new StringBuilder().append(props.getDefaultAdminPassword())));
 		defaultAdmin.setAdmin(true);
 		final MVUserDetails auth = MVUserDetails.of(defaultAdmin);
 		

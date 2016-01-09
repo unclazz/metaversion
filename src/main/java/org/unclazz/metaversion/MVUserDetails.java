@@ -25,7 +25,7 @@ public class MVUserDetails extends org.springframework.security.core.userdetails
 		return l;
 	}
 	public static MVUserDetails of(final User user) {
-		return new MVUserDetails(user.getId(), user.getName(), user.getPassword(), user.isAdmin());
+		return new MVUserDetails(user.getId(), user.getName(), user.getEncodedPassword(), user.isAdmin());
 	}
 	public static MVUserDetails of(final Principal principal) {
 		return (MVUserDetails) ((Authentication) principal).getPrincipal();
@@ -53,7 +53,7 @@ public class MVUserDetails extends org.springframework.security.core.userdetails
 		final User user = new User();
 		user.setId(id);
 		user.setName(super.getUsername());
-		user.setPassword(super.getPassword());
+		user.setEncodedPassword(super.getPassword());
 		user.setAdmin(admin);
 		return user;
 	}

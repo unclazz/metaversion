@@ -22,18 +22,13 @@ public class UserService {
     @Autowired
 	private UserMapper userMapper;
 	
-	public User composeValueObject(final String username, final char[] password, final boolean admin) {
-		final User user = new User();
-		user.setName(username);
-		user.setPassword(passwordEncoder.encode(MVUtils.charArrayToCharSequence(password)));
-		user.setAdmin(admin);
-		return user;
+	public void doPasswordEncode(final User user) {
+		user.setEncodedPassword(passwordEncoder.encode(MVUtils.charArrayToCharSequence(user.getPassword())));
 	}
 	
-	public User composeValueObject(final int id, final String username, final char[] password, final boolean admin) {
-		final User user = composeValueObject(username, password, admin);
-		user.setId(id);
-		return user;
+	public void doPasswordSupplement(final User user) {
+		final User dbUser = userMapper.selectOneById(user.getId());
+		user.setEncodedPassword(dbUser.getEncodedPassword());
 	}
 	
 	@Transactional
