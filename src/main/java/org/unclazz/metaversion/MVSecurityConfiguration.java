@@ -23,7 +23,7 @@ public class MVSecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(final HttpSecurity http) throws Exception {
-        http
+        http.csrf().disable()
             .authorizeRequests()
             	.antMatchers("/foo").hasAuthority(MVGrantedAuthority.NAME_ADMINISTRATOR)
             	.antMatchers("/init").permitAll()
