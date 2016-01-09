@@ -1,5 +1,8 @@
 package org.unclazz.metaversion;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -49,16 +52,11 @@ public final class MVUtils {
 		return unexpectedResult("SQL operation is failed: %s .", operation);
 	}
 	public static CharSequence stackTraceToCharSequence(final Throwable error) {
-		final String sep = System.getProperty("line.separator");
-		final StringBuilder buff = new StringBuilder();
-		for (final StackTraceElement e : error.getStackTrace()) {
-			if (buff.length() > 0) {
-				buff.append(sep);
-			}
-			buff.append("at ").append(e.getClassName()).append('.').append(e.getMethodName())
-			.append(' ').append('(').append(e.getFileName()).append(':').append(e.getLineNumber()).append(')');
-		}
-		return buff;
+		final StringWriter sw = new StringWriter();
+		final PrintWriter pw = new PrintWriter(sw);
+		error.printStackTrace(pw);
+		pw.flush();
+		return sw.getBuffer();
 	}
 	
 	/**
@@ -122,6 +120,13 @@ public final class MVUtils {
 		return (ResponseEntity<T>) new ResponseEntity(message, HttpStatus.BAD_REQUEST);
 	}
 	
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public static<T> ResponseEntity<T> httpResponseOfBadRequest(final Throwable cause) {
+		// 戻り値型を揃えるため強引にキャストを行う
+		// ＊イレイジャを前提としたトリック
+		return (ResponseEntity<T>) new ResponseEntity(cause, HttpStatus.BAD_REQUEST);
+	}
+	
 	/**
 	 * HTTPステータスコード{@code 500 Internal Server Error}を返すためのレスポンスエンティティを生成する.
 	 * @param value オブジェクト
@@ -141,5 +146,12 @@ public final class MVUtils {
 		// 戻り値型を揃えるため強引にキャストを行う
 		// ＊イレイジャを前提としたトリック
 		return (ResponseEntity<T>) new ResponseEntity(message, HttpStatus.INTERNAL_SERVER_ERROR);
+	}
+
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public static<T> ResponseEntity<T> httpResponseOfInternalServerError(final Throwable cause) {
+		// 戻り値型を揃えるため強引にキャストを行う
+		// ＊イレイジャを前提としたトリック
+		return (ResponseEntity<T>) new ResponseEntity(cause, HttpStatus.INTERNAL_SERVER_ERROR);
 	}
 }
