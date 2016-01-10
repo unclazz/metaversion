@@ -1,10 +1,13 @@
 package org.unclazz.metaversion.controller;
 
 import java.security.Principal;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.unclazz.metaversion.MVUserDetails;
@@ -16,6 +19,21 @@ import org.unclazz.metaversion.service.MasterService.ApplicationMayBeAlreadyInit
 public class HtmlController {
 	@Autowired
 	private MasterService masterService;
+	private Map<String, Object> globalModelAttributes;
+	
+	@ModelAttribute("global")
+	public Map<String, Object> globalModelAttributes() {
+		if (globalModelAttributes != null) {
+			return globalModelAttributes;
+		}
+		
+		final Map<String, Object> attrs = new HashMap<String, Object>();
+		attrs.put("applicationName", "MetaVersion");
+		attrs.put("applicationVersion", "1.0-SNAPSHOT");
+		
+		globalModelAttributes = attrs;
+		return globalModelAttributes;
+	}
 	
 	@RequestMapping("/init")
 	public String init(final Model model) {

@@ -30,7 +30,7 @@ public class SvnRepositoryPathInfoTest {
 		entity.setId(123);
 		entity.setMaxRevision(123);
 		entity.setName("foo");
-		entity.setPassword("****");
+		entity.setEncodedPassword("****");
 		entity.setTrunkPathPattern("/trunk");
 		entity.setUsername("foo");
 		
