@@ -32,6 +32,8 @@ public class MVSecurityConfiguration extends WebSecurityConfigurerAdapter {
             	.antMatchers(MVApplication.REST_API_PATH_PREFIX + "/*").permitAll()
             	// マスタデータ等の初期化のためのパスへのアクセスはすべて許可する
             	.antMatchers(MVApplication.INIT_PAGE_PATH).permitAll()
+            	// 静的リソースへのアクセスはすべて許可する
+            	.antMatchers("/favicon.ico", "/css/*", "/img/*", "/js/*", "/fonts/*").permitAll()
             	// その他のパスへのアクセスには認証パスが必要とする
                 .anyRequest().authenticated()
                 .and()
