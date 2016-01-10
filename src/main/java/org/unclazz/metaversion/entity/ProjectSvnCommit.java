@@ -1,5 +1,8 @@
 package org.unclazz.metaversion.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+@JsonIgnoreProperties(ignoreUnknown=true)
 public class ProjectSvnCommit {
 	private int projectId;
 	private int svnCommitId;

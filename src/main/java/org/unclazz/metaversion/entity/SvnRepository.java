@@ -1,8 +1,10 @@
 package org.unclazz.metaversion.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+@JsonIgnoreProperties(ignoreUnknown=true)
 public class SvnRepository {
 	private static final String defaultTrunkPathPattern = "/trunk/";
 	private static final String defaultBranchPathPattern = "/branches/\\w+";
