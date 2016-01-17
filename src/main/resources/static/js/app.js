@@ -27,6 +27,17 @@
 			};
 			entities[entityName] = $resource(urlPattern,urlParams, customActions);
 		};
+		var suggest = function(entityName, urlPattern, urlParams, queryParams) {
+			var paginatedQuery = {
+				method: 'GET',
+				params: queryParams,
+				isArray: true
+			};
+			var customActions = {
+				'query' : paginatedQuery
+			};
+			entities[entityName] = $resource(urlPattern,urlParams, customActions);
+		};
 		
 		// UserエンティティのためのResourceオブジェクトを作成
 		entity("User", "api/users/:id", {id: "@id"}, pagingParams);
@@ -51,14 +62,40 @@
 				{projectId: "@projectId"}, pagingParams);
 		
 		// サジェスト用のResourceオブジェクトを作成
-		entity("PathName", "api/pathnames", {}, suggestParams);
-		entity("ProjectName", "api/projectnames", {}, suggestParams);
+		suggest("PathName", "api/pathnames", {}, suggestParams);
+		suggest("ProjectName", "api/projectnames", {}, suggestParams);
 		
 		return entities;
+	})
+	.factory('pathvars', function($log, $location) {
+		var vars = {};
+		var url = $location.absUrl();
+		var res = null;
+		if (res = /\/users\/(\d+)/.exec(url)) {
+			vars.userId = res[1];
+		}
+		if (res = /\/projects\/(\d+)/.exec(url)) {
+			vars.projectId = res[1];
+		}
+		if (res = /\/repositories\/(\d+)/.exec(url)) {
+			vars.repositoryId = res[1];
+		}
+		if (res = /\/commits\/(\d+)/.exec(url)) {
+			vars.commitId = res[1];
+		}
+		return vars;
 	});
 	
 	// mvApiTesterモジュールを追加
-	angular.module('mvApiTester', ['ngResource', 'ui.bootstrap']);
+	angular.module('mvApiTester', ['mvCommon', 'ngResource', 'ui.bootstrap']);
+	angular.module('mvIndex', ['mvCommon', 'ngResource', 'ui.bootstrap']);
+	
+	angular.module('mvIndex')
+	.controller('search', function($log, $scope, entities, pathvars) {
+		$scope.projectNames = function (partialName) {
+			return entities.ProjectName.query({like: partialName}).$promise;
+		};
+	});
 	
 	// mvApiTesterにmainコントローラを追加
 	angular.module('mvApiTester')

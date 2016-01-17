@@ -29,11 +29,7 @@ public class MVHandlerInterceptor implements HandlerInterceptor {
 			final Object handler,
 			final ModelAndView modelAndView)
 			throws Exception {
-		
-		final MVUserDetails auth = MVUtils.userDetails();
-		if (auth != null) {
-			modelAndView.addObject("user", auth.toUser());
-		}
+		// Do nothing.
 	}
 
 	@Override

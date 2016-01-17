@@ -8,10 +8,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.unclazz.metaversion.MVProperties;
 import org.unclazz.metaversion.MVUserDetails;
 import org.unclazz.metaversion.MVUtils;
+import org.unclazz.metaversion.entity.User;
 import org.unclazz.metaversion.service.MasterService;
 import org.unclazz.metaversion.service.MasterService.ApplicationMayBeAlreadyInitialized;
 
@@ -19,20 +22,29 @@ import org.unclazz.metaversion.service.MasterService.ApplicationMayBeAlreadyInit
 public class HtmlController {
 	@Autowired
 	private MasterService masterService;
-	private Map<String, Object> globalModelAttributes;
+	@Autowired
+	private MVProperties props;
+	private Map<String, String> applicationModelAttributes;
 	
-	@ModelAttribute("global")
-	public Map<String, Object> globalModelAttributes() {
-		if (globalModelAttributes != null) {
-			return globalModelAttributes;
+	@ModelAttribute("user")
+	public User userModelAttributes() {
+		final MVUserDetails auth = MVUtils.userDetails();
+		if (auth != null) {
+			return auth.toUser();
+		} else {
+			return null;
 		}
-		
-		final Map<String, Object> attrs = new HashMap<String, Object>();
-		attrs.put("applicationName", "MetaVersion");
-		attrs.put("applicationVersion", "1.0-SNAPSHOT");
-		
-		globalModelAttributes = attrs;
-		return globalModelAttributes;
+	}
+	
+	@ModelAttribute("app")
+	public Map<String, String> applicationModelAttributes() {
+		if (applicationModelAttributes != null) {
+			return applicationModelAttributes;
+		}
+		final Map<String, String> map = new HashMap<String, String>();
+		map.put("name", props.getApplicationName());
+		map.put("version", props.getApplicationVersion());
+		return applicationModelAttributes = map;
 	}
 	
 	@RequestMapping("/init")
@@ -55,8 +67,52 @@ public class HtmlController {
     }
     
     @RequestMapping({"/", "/index"})
-    public String index(Principal principal, Model model) {
-    	model.addAttribute("username", MVUserDetails.of(principal).getUsername());
+    public String index(final Principal principal, final Model model) {
+        return "index";
+    }
+    
+    @RequestMapping({"/projects"})
+    public String projects(final Principal principal, final Model model) {
+        return "projects";
+    }
+    
+    @RequestMapping({"/projects/new"})
+    public String projectsNew(final Principal principal, final Model model) {
+        return "projects$projectId$edit";
+    }
+    
+    @RequestMapping({"/projects/{projectId}/edit"})
+    public String projectsProjectIdEdit(final Principal principal, 
+    		@PathVariable("projectId") final int projectId, final Model model) {
+        return "projects$projectId$edit";
+    }
+    
+    @RequestMapping({"/projects/{projectId}/delete"})
+    public String projectsProjectIdDelete(final Principal principal, 
+    		@PathVariable("projectId") final int projectId, final Model model) {
+        return "projects$projectId$delete";
+    }
+    
+    @RequestMapping({"/projects/{projectId}"})
+    public String projectsProjectId(final Principal principal, 
+    		@PathVariable("projectId") final int projectId, final Model model) {
+        return "projects$projectId";
+    }
+    
+    @RequestMapping({"/projects/{projectId}/commits"})
+    public String projectsProjectIdCommits(final Principal principal, 
+    		@PathVariable("projectId") final int projectId, final Model model) {
+        return "projects$projectId$commits";
+    }
+    
+    @RequestMapping({"/repositories"})
+    public String repositories(final Principal principal, final Model model) {
+        return "repositories";
+    }
+    
+    @RequestMapping({"/repositories/{repositoryId}"})
+    public String repositoriesRepositoryId(final Principal principal, 
+    		@PathVariable("repositoryId") final int repositoryId, final Model model) {
         return "index";
     }
     
