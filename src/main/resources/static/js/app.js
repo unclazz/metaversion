@@ -89,6 +89,7 @@
 	// mvApiTesterモジュールを追加
 	angular.module('mvApiTester', ['mvCommon', 'ngResource', 'ui.bootstrap']);
 	angular.module('mvIndex', ['mvCommon', 'ngResource', 'ui.bootstrap']);
+	angular.module('mvProjects', ['mvCommon', 'ngResource', 'ui.bootstrap']);
 	
 	angular.module('mvIndex')
 	.controller('search', function($log, $scope, entities, pathvars) {
@@ -96,6 +97,22 @@
 			return entities.ProjectName.query({like: partialName}).$promise;
 		};
 	});
+	
+	angular.module('mvProjects')
+	.controller('list', function($log, $scope, entities, pathvars) {
+		$scope.cond = {
+				pathbase: 0,
+				like: ''
+		};
+		$scope.projectOrPathNames = function (partialName) {
+			if ($scope.cond.pathbase) {
+				return entities.PathName.query({like: partialName}).$promise;
+			} else {
+				return entities.ProjectName.query({like: partialName}).$promise;
+			}
+		};
+	});
+	
 	
 	// mvApiTesterにmainコントローラを追加
 	angular.module('mvApiTester')

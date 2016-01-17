@@ -20,7 +20,7 @@ public interface SvnCommitPathMapper {
 			+ "FROM svn_commit_path cp "
 			+ "INNER JOIN project_svn_commit pc "
 			+ "ON cp.commit_id = pc.commit_id "
-			+ "WHERE path like ('%' || #{partialName} || '%') "
+			+ "WHERE path like ('%' || #{partialPath} || '%') "
 			+ "GROUP BY path "
 			+ "ORDER BY path ${limitOffset} ")
 	List<String> selectPathByPartialPath(@Param("partialPath") String partialPath, 
