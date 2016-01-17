@@ -3,15 +3,15 @@ package org.unclazz.metaversion;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
 
+@Component
 public class MVHandlerInterceptor implements HandlerInterceptor {
+	
 	@Override
 	public void afterCompletion(
 			final HttpServletRequest request, 
@@ -29,7 +29,11 @@ public class MVHandlerInterceptor implements HandlerInterceptor {
 			final Object handler,
 			final ModelAndView modelAndView)
 			throws Exception {
-		// Do nothing.
+		
+		final MVUserDetails auth = MVUtils.userDetails();
+		if (auth != null) {
+			modelAndView.addObject("user", auth.toUser());
+		}
 	}
 
 	@Override
@@ -51,19 +55,7 @@ public class MVHandlerInterceptor implements HandlerInterceptor {
 	}
 	
 	private boolean anonymousUser() {
-		// 認証パス済みのときはAuthenticationが返される
-		// しかしそうでないときも返されることがある
-		final Authentication au = SecurityContextHolder.getContext().getAuthentication();
-		if (au == null) {
-			return true;
-		}
-		
-		// 認証パス済みのときはUserDetailsが返される
-		// そうでない時は文字列"anonymousUser"が返される
-		final Object po = au.getPrincipal();
-		
-		// 型判定により認証状態を判定する
-		return !(po instanceof UserDetails);
+		return MVUtils.threadIsForAnonymousUser();
 	}
 	
 	private boolean restApiUrl(final Object handler) {

@@ -34,8 +34,10 @@
 		// SvnRepositoryエンティティのためのResourceオブジェクトを作成
 		entity("Repository", "api/repositories/:id", {id: "@id"}, pagingParams);
 		// SvnCommitエンティティのためのResourceオブジェクトを作成
+		// ＊クエリ用パラメータのデフォルトとしてunlinkedプロパティを追加している
 		entity("RepositoryCommit", "api/repositories/:repositoryId/commits", 
 				{repositoryId: "@repositoryId"}, angular.extend({unlinked: false}, pagingParams));
+		// SvnCommitPathエンティティのためのResourceオブジェクトを作成
 		entity("RepositoryCommitChangedPath", "api/repositories/:repositoryId/commits/:commitId/changedpaths", 
 				{repositoryId: "@repositoryId", commitId: "@commitId"}, pagingParams);
 		

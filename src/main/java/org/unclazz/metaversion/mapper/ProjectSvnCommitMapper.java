@@ -9,11 +9,6 @@ import org.unclazz.metaversion.entity.ProjectSvnCommit;
 public interface ProjectSvnCommitMapper {
 	@Insert("INSERT INTO project_svn_commit "
 			+ "(project_id, commit_id, create_user_id) "
-			+ "VALUES (#{projectId}, #{commitId}, #{auth.id}) ")
-	int insert(@Param("projectId") int projectId, @Param("commitId") int commitId, @Param("auth") MVUserDetails auth);
-	
-	@Insert("INSERT INTO project_svn_commit "
-			+ "(project_id, commit_id, create_user_id) "
 			+ "VALUES (#{vo.projectId}, #{vo.commitId}, #{auth.id}) ")
 	int insert(@Param("vo") ProjectSvnCommit vo, @Param("auth") MVUserDetails auth);
 	

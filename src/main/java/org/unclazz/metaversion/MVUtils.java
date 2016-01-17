@@ -5,6 +5,8 @@ import java.io.StringWriter;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 public final class MVUtils {
 	private MVUtils() {}
@@ -153,5 +155,39 @@ public final class MVUtils {
 		// 戻り値型を揃えるため強引にキャストを行う
 		// ＊イレイジャを前提としたトリック
 		return (ResponseEntity<T>) new ResponseEntity(cause, HttpStatus.INTERNAL_SERVER_ERROR);
+	}
+	
+	public static boolean threadIsForAnonymousUser() {
+		// 認証パス済みのときはAuthenticationが返される
+		// しかしそうでないときも返されることがある
+		final Authentication au = SecurityContextHolder.getContext().getAuthentication();
+		if (au == null) {
+			return true;
+		}
+		
+		// 認証パス済みのときはUserDetailsが返される
+		// そうでない時は文字列"anonymousUser"が返される
+		final Object po = au.getPrincipal();
+
+		// 型判定により認証状態を判定する
+		return !(po instanceof MVUserDetails);
+	}
+	
+	public static MVUserDetails userDetails() {
+		// 認証パス済みのときはAuthenticationが返される
+		// しかしそうでないときも返されることがある
+		final Authentication au = SecurityContextHolder.getContext().getAuthentication();
+		if (au == null) {
+			return null;
+		}
+		
+		// 認証パス済みのときはUserDetailsが返される
+		// そうでない時は文字列"anonymousUser"が返される
+		final Object po = au.getPrincipal();
+		if (po instanceof MVUserDetails) {
+			return (MVUserDetails) po;
+		} else {
+			return null;
+		}
 	}
 }

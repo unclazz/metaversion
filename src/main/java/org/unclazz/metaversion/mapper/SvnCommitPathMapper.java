@@ -26,11 +26,6 @@ public interface SvnCommitPathMapper {
 	List<String> selectPathByPartialPath(@Param("partialPath") String partialPath, 
 			@Param("limitOffset") LimitOffsetClause limitOffset);
 	
-	// TODO つかう？
-	@Select("SELECT id, commit_id commitId, change_type_id changeTypeId, path "
-			+ "FROM svn_commit_path WHERE commit_id = #{commitId} ")
-	List<SvnCommitPath> selectBySvnCommitId(@Param("commitId") int commitId);
-	
 	@Select("SELECT id, commit_id commitId, change_type_id changeTypeId, path "
 			+ "FROM svn_commit_path "
 			+ "WHERE commit_id = #{commitId} "

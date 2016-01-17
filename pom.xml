@@ -2,10 +2,11 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
+    <groupId>org.unclazz</groupId>
 	<artifactId>metaversion</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
-	<name>sample project</name>
-	<description>A sample project for Spring Boot and MyBatis</description>
+	<name>MetaVersion</name>
+	<version>1.0.0-SNAPSHOT</version>
+	<description></description>
 	<packaging>war</packaging>
 	
 	<!-- Inherit defaults from Spring Boot -->
@@ -96,6 +97,4 @@
             <url>http://repo.spring.io/libs-release</url>
         </pluginRepository>
     </pluginRepositories>
-
-    <groupId>org.unclazz</groupId>
 </project>

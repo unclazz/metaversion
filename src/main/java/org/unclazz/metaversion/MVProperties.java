@@ -15,6 +15,10 @@ public class MVProperties {
 	private char[] defaultAdminPassword;
 	@Value("${metaversion.logimport.revision.range}")
 	private int logimportRevisionRange;
+	@Value("${metaversion.application.name}")
+	private String applicationName;
+	@Value("${metaversion.application.version}")
+	private String applicationVersion;
 	
 	public int getDefaultAdminId() {
 		return defaultAdminId;
@@ -27,5 +31,11 @@ public class MVProperties {
 	}
 	public int getLogimportRevisionRange() {
 		return logimportRevisionRange;
+	}
+	public final String getApplicationName() {
+		return applicationName;
+	}
+	public final String getApplicationVersion() {
+		return applicationVersion;
 	}
 }

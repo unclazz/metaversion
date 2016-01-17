@@ -68,7 +68,10 @@ public class CommitLinkService {
 				if (!matcher.find()) {
 					continue;
 				}
-				projectSvnCommitMapper.insert(projectId, commit.getId(), auth);
+				final ProjectSvnCommit vo = new ProjectSvnCommit();
+				vo.setCommitId(commit.getId());
+				vo.setProjectId(projectId);
+				projectSvnCommitMapper.insert(vo, auth);
 			}
 			
 			obsoleted.setLastRevision(maxRevision.getValue());
