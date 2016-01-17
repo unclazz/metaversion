@@ -56,7 +56,7 @@ public interface ProjectMapper {
 			+ "	SELECT pc.project_id "
 			+ "	FROM project_svn_commit pc "
 			+ "	INNER JOIN svn_commit_path cp "
-			+ "	ON pc.svn_commit_id = cp.svn_commit_id "
+			+ "	ON pc.commit_id = cp.commit_id "
 			+ "	WHERE path like ('%' || #{partialPath} || '%') "
 			+ ") ${orderBy} ${limitOffset} ")
 	List<Project> selectByPartialPath(@Param("partialPath") String partialPath,
@@ -68,7 +68,7 @@ public interface ProjectMapper {
 			+ "	SELECT pc.project_id "
 			+ "	FROM project_svn_commit pc "
 			+ "	INNER JOIN svn_commit_path cp "
-			+ "	ON pc.svn_commit_id = cp.svn_commit_id "
+			+ "	ON pc.commit_id = cp.commit_id "
 			+ "	WHERE path like ('%' || #{partialPath} || '%') "
 			+ ") ")
 	int selectCountByPartialPath(@Param("partialPath") String partialPath);

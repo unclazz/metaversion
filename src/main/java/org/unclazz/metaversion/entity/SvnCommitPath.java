@@ -2,7 +2,7 @@ package org.unclazz.metaversion.entity;
 
 public class SvnCommitPath {
 	private int id;
-	private int svnCommitId;
+	private int commitId;
 	private int changeTypeId;
 	private String path;
 	public final int getId() {
@@ -11,11 +11,11 @@ public class SvnCommitPath {
 	public final void setId(int id) {
 		this.id = id;
 	}
-	public final int getSvnCommitId() {
-		return svnCommitId;
+	public final int getCommitId() {
+		return commitId;
 	}
-	public final void setSvnCommitId(int svnCommitId) {
-		this.svnCommitId = svnCommitId;
+	public final void setCommitId(int commitId) {
+		this.commitId = commitId;
 	}
 	public final int getChangeTypeId() {
 		return changeTypeId;

@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.unclazz.metaversion.MVApplication;
 import org.unclazz.metaversion.MVUserDetails;
-import org.unclazz.metaversion.entity.PathAndItsSvnRepository;
+import org.unclazz.metaversion.entity.ProjectChangedPath;
 import org.unclazz.metaversion.entity.Project;
 import org.unclazz.metaversion.entity.ProjectStats;
 import org.unclazz.metaversion.entity.ProjectSvnCommit;
@@ -167,14 +167,14 @@ public class ProjectsJsonController {
 	 * IDで指定されたプロジェクトに紐付けられたコミット情報の一覧を返す.
 	 * 
 	 * @param principal 認証情報
-	 * @param id ID
+	 * @param projectId ID
 	 * @param paging リクエストパラメータ{@code page}と{@code size}の情報を格納したオブジェクト
 	 * @return コミット情報の一覧
 	 */
-	@RequestMapping(value="/projects/{id}/commits", method=RequestMethod.GET)
+	@RequestMapping(value="/projects/{projectId}/commits", method=RequestMethod.GET)
 	public Paginated<SvnCommit> getProjectsCommits(final Principal principal,
-			@PathVariable("id") final int id, @ModelAttribute final Paging paging) {
-		return commitService.getCommitListByProjectId(id, paging);
+			@PathVariable("projectId") final int projectId, @ModelAttribute final Paging paging) {
+		return commitService.getCommitListByProjectId(projectId, paging);
 	}
 
 	/**
@@ -192,7 +192,7 @@ public class ProjectsJsonController {
 		
 		final ProjectSvnCommit vo = new ProjectSvnCommit();
 		vo.setProjectId(projectId);
-		vo.setSvnCommitId(commitId);
+		vo.setCommitId(commitId);
 		
 		try {
 			commitLinkService.registerCommitLink(vo, MVUserDetails.of(principal));
@@ -220,7 +220,7 @@ public class ProjectsJsonController {
 		
 		final ProjectSvnCommit vo = new ProjectSvnCommit();
 		vo.setProjectId(projectId);
-		vo.setSvnCommitId(commitId);
+		vo.setCommitId(commitId);
 		
 		try {
 			commitLinkService.removeCommitLink(vo, MVUserDetails.of(principal));
@@ -242,7 +242,7 @@ public class ProjectsJsonController {
 	 * @return パス情報の一覧
 	 */
 	@RequestMapping(value="/projects/{id}/changedpaths", method=RequestMethod.GET)
-	public Paginated<PathAndItsSvnRepository> getProjectsChangedPaths(final Principal principal,
+	public Paginated<ProjectChangedPath> getProjectsChangedPaths(final Principal principal,
 			@PathVariable("id") final int id, @ModelAttribute final Paging paging) {
 		return commitService.getChangedPathListByProjectId(id, paging);
 	}

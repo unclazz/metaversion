@@ -6,7 +6,8 @@
 	mvCommonModule.factory('entities', function($resource) {
 		var entities = {};
 		var pagingParams = {page: 1, size: 25};
-		var mkEntity = function(entityName, urlPattern, urlParams, queryParams) {
+		var suggestParams = {like: "", size: 25};
+		var entity = function(entityName, urlPattern, urlParams, queryParams) {
 			var xformResp = function(data) {
 				var paginated = angular.fromJson(data);
 				paginated.list = paginated.list.map(function (item) {
@@ -27,11 +28,29 @@
 			entities[entityName] = $resource(urlPattern,urlParams, customActions);
 		};
 		
-		mkEntity("User", "rest/users/:id",{id: "@id"}, pagingParams);
-		mkEntity("Repository", "rest/repositories/:id",{id: "@id"}, pagingParams);
-		mkEntity("Project", "rest/projects/:id",{id: "@id"}, pagingParams);
-		mkEntity("ProjectName", "rest/pathnames/:id",{id: "@id"}, pagingParams);
-		mkEntity("PathName", "rest/pathnames/:id",{id: "@id"}, pagingParams);
+		// UserエンティティのためのResourceオブジェクトを作成
+		entity("User", "api/users/:id", {id: "@id"}, pagingParams);
+
+		// SvnRepositoryエンティティのためのResourceオブジェクトを作成
+		entity("Repository", "api/repositories/:id", {id: "@id"}, pagingParams);
+		// SvnCommitエンティティのためのResourceオブジェクトを作成
+		entity("RepositoryCommit", "api/repositories/:repositoryId/commits", 
+				{repositoryId: "@repositoryId"}, angular.extend({unlinked: false}, pagingParams));
+		entity("RepositoryCommitChangedPath", "api/repositories/:repositoryId/commits/:commitId/changedpaths", 
+				{repositoryId: "@repositoryId", commitId: "@commitId"}, pagingParams);
+		
+		// ProjectエンティティのためのResourceオブジェクトを作成
+		entity("Project", "api/projects/:id", {id: "@id"}, pagingParams);
+		// ProjectSvnCommitエンティティのためのResourceオブジェクトを作成
+		entity("ProjectCommit", "api/projects/:projectId/commits/:commitId",
+				{projectId: "@projectId", commitId: "@commitId"}, pagingParams);
+		// ProjectChagedPathエンティティのためのResourceオブジェクトを作成
+		entity("ProjectChangedPath", "api/projects/:projectId/changedpaths",
+				{projectId: "@projectId"}, pagingParams);
+		
+		// サジェスト用のResourceオブジェクトを作成
+		entity("PathName", "api/pathnames", {}, suggestParams);
+		entity("ProjectName", "api/projectnames", {}, suggestParams);
 		
 		return entities;
 	});

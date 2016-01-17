@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 
 public class SvnCommit {
 	private int id;
-	private int svnRepositoryId;
+	private int repositoryId;
 	private int revision;
 	@JsonFormat(pattern="yyyy/MM/dd HH:mm:ss.SSS")
 	private Date commitDate;
@@ -18,11 +18,11 @@ public class SvnCommit {
 	public final void setId(int id) {
 		this.id = id;
 	}
-	public final int getSvnRepositoryId() {
-		return svnRepositoryId;
+	public final int getRepositoryId() {
+		return repositoryId;
 	}
-	public final void setSvnRepositoryId(int repositoryId) {
-		this.svnRepositoryId = repositoryId;
+	public final void setRepositoryId(int repositoryId) {
+		this.repositoryId = repositoryId;
 	}
 	public final int getRevision() {
 		return revision;

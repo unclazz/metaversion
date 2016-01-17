@@ -7,7 +7,7 @@ import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 import org.unclazz.metaversion.MVUserDetails;
-import org.unclazz.metaversion.entity.PathAndItsSvnRepository;
+import org.unclazz.metaversion.entity.ProjectChangedPath;
 import org.unclazz.metaversion.entity.SvnCommitPath;
 import org.unclazz.metaversion.vo.LimitOffsetClause;
 import org.unclazz.metaversion.vo.OrderByClause;
@@ -19,7 +19,7 @@ public interface SvnCommitPathMapper {
 	@Select("SELECT path "
 			+ "FROM svn_commit_path cp "
 			+ "INNER JOIN project_svn_commit pc "
-			+ "ON cp.svn_commit_id = pc.svn_commit_id "
+			+ "ON cp.commit_id = pc.commit_id "
 			+ "WHERE path like ('%' || #{partialName} || '%') "
 			+ "GROUP BY path "
 			+ "ORDER BY path ${limitOffset} ")
@@ -27,29 +27,29 @@ public interface SvnCommitPathMapper {
 			@Param("limitOffset") LimitOffsetClause limitOffset);
 	
 	// TODO つかう？
-	@Select("SELECT id, svn_commit_id svnCommitId, change_type_id changeTypeId, path "
-			+ "FROM svn_commit_path WHERE svn_commit_id = #{svnCommitId} ")
-	List<SvnCommitPath> selectBySvnCommitId(@Param("svnCommitId") int svnCommitId);
+	@Select("SELECT id, commit_id commitId, change_type_id changeTypeId, path "
+			+ "FROM svn_commit_path WHERE commit_id = #{commitId} ")
+	List<SvnCommitPath> selectBySvnCommitId(@Param("commitId") int commitId);
 	
-	@Select("SELECT id, svn_commit_id svnCommitId, change_type_id changeTypeId, path "
+	@Select("SELECT id, commit_id commitId, change_type_id changeTypeId, path "
 			+ "FROM svn_commit_path "
-			+ "WHERE svn_commit_id = #{svnCommitId} "
+			+ "WHERE commit_id = #{commitId} "
 			+ "${orderBy} ${limitOffset} ")
 	List<SvnCommitPath> selectBySvnCommitId(
-			@Param("svnCommitId") int svnCommitId,
+			@Param("commitId") int commitId,
 			@Param("orderBy") OrderByClause orderBy,
 			@Param("limitOffset") LimitOffsetClause limitOffset);
 	
-	@Select("SELECT count(1) FROM svn_commit_path WHERE svn_commit_id = #{svnCommitId} ")
-	int selectCountBySvnCommitId(@Param("svnCommitId") int svnCommitId);
+	@Select("SELECT count(1) FROM svn_commit_path WHERE commit_id = #{commitId} ")
+	int selectCountBySvnCommitId(@Param("commitId") int commitId);
 	
-	@Select("SELECT path, svb_repository_id svnRepositoryId, svn_repository_name svnRepositoryName, " 
+	@Select("SELECT path, svb_repository_id repositoryId, repository_name repositoryName, " 
 			+ "commit_count commitCount, min_revision minRevision, max_revision maxRevision, " 
 			+ "min_commit_date minCommitDate, max_commit_date maxCommitDate " 
 			+ "FROM project_changedpath_view " 
 			+ "WHERE project_id = #{projectId} " 
 			+ "${orderBy} ${limitOffset} ")
-	List<PathAndItsSvnRepository> selectByProjectId(
+	List<ProjectChangedPath> selectByProjectId(
 			@Param("projectId") int projectId,
 			@Param("orderBy") OrderByClause orderBy,
 			@Param("limitOffset") LimitOffsetClause limitOffset);
@@ -59,14 +59,14 @@ public interface SvnCommitPathMapper {
 			+ "WHERE project_id = #{projectId} ")
 	int selectCountByProjectId(@Param("projectId") int projectId);
 	
-	@Insert("INSERT INTO svn_commit_path (id, svn_commit_id, change_type_id, path, create_user_id) "
-			+ "VALUES (#{path.id}, #{path.svnCommitId}, #{path.changeTypeId}, #{path.path}, #{auth.id}) ")
+	@Insert("INSERT INTO svn_commit_path (id, commit_id, change_type_id, path, create_user_id) "
+			+ "VALUES (#{path.id}, #{path.commitId}, #{path.changeTypeId}, #{path.path}, #{auth.id}) ")
 	int insert(@Param("path") SvnCommitPath path, @Param("auth") MVUserDetails auth);
 	
 	@Delete("DELETE FROM svn_commit_path "
-			+ "WHERE svn_commit_id IN ("
+			+ "WHERE commit_id IN ("
 			+ "	SELECT id "
 			+ "	FROM svn_commit "
-			+ "	WHERE svn_repository_id = #{svnRepositoryId}) ")
-	int deleteBySvnRepositoryId(@Param("svnRepositoryId") int svnRepositoryId);
+			+ "	WHERE repository_id = #{repositoryId}) ")
+	int deleteBySvnRepositoryId(@Param("repositoryId") int repositoryId);
 }

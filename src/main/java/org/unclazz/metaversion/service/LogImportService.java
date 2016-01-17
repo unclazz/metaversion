@@ -116,7 +116,7 @@ public class LogImportService {
 			commit.setCommitDate(commitAndPathList.getCommitDate());
 			commit.setCommitterName(commitAndPathList.getCommitterName());
 			commit.setRevision(currentRevision);
-			commit.setSvnRepositoryId(repository.getId());
+			commit.setRepositoryId(repository.getId());
 			svnCommitMapper.insert(commit, auth);
 			
 			// svn logエントリのパス情報ごとのループ
@@ -169,7 +169,7 @@ public class LogImportService {
 				
 				// svn logエントリのパス情報からsvn_commit_pathレコードを作成
 				path.setId(svnCommitPathMapper.selectNextVal());
-				path.setSvnCommitId(commit.getId());
+				path.setCommitId(commit.getId());
 				path.setPath(normalizedUrl.toString());
 				svnCommitPathMapper.insert(path, auth);
 			}

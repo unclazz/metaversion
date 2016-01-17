@@ -15,58 +15,58 @@ public interface SvnCommitMapper {
 	@Select("SELECT nextval('svn_commit_seq') ")
 	int selectNextVal();
 	
-	@Select("SELECT id, svn_repository_id svnRepositoryId, commit_message commitMessage, "
+	@Select("SELECT id, repository_id repositoryId, commit_message commitMessage, "
 			+ "commit_date commitDate, committer_name committerName, revision "
 			+ "FROM svn_commit WHERE id = #{id} ")
 	SvnCommit selectOneById(@Param("id") int id);
 	
-	@Select("SELECT c.id, c.svn_repository_id svnRepositoryId, c.commit_message commitMessage, "
+	@Select("SELECT c.id, c.repository_id repositoryId, c.commit_message commitMessage, "
 			+ "c.commit_date commitDate, c.committer_name committerName, c.revision "
 			+ "FROM svn_commit c "
 			+ "INNER JOIN project_svn_repository pr "
-			+ "ON c.svn_repository_id = pr.svn_repository_id "
+			+ "ON c.repository_id = pr.repository_id "
 			+ "WHERE c.revision > pr.last_revision "
-			+ "AND pr.project_id = #{projectId} AND pr.svn_repository_id = #{svnRepositoryId} ")
+			+ "AND pr.project_id = #{projectId} AND pr.repository_id = #{repositoryId} ")
 	List<SvnCommit> selectForMatchingByProjectIdAndRepositoryId(
-			@Param("projectId") int projectId, @Param("svnRepositoryId") int svnRepositoryId);
+			@Param("projectId") int projectId, @Param("repositoryId") int repositoryId);
 	
-	@Select(" SELECT c.id, c.svn_repository_id svnRepositoryId, c.commit_message commitMessage, "
+	@Select(" SELECT c.id, c.repository_id repositoryId, c.commit_message commitMessage, "
 			+ "c.commit_date commitDate, c.committer_name committerName, c.revision "
 			+ "FROM svn_commit c "
 			+ "LEFT OUTER JOIN project_svn_commit pc "
-			+ "ON c.id = pc.svn_commit_id "
-			+ "WHERE pc.svn_commit_id IS NULL AND c.svn_repository_id = #{svnRepositoryId} "
+			+ "ON c.id = pc.commit_id "
+			+ "WHERE pc.commit_id IS NULL AND c.repository_id = #{repositoryId} "
 			+ "${orderBy} ${limitOffset} ")
 	List<SvnCommit> selectProjectUndeterminedListByRepositoryId(
-			@Param("svnRepositoryId") int svnRepositoryId,
+			@Param("repositoryId") int repositoryId,
 			@Param("orderBy") OrderByClause orderBy,
 			@Param("limitOffset") LimitOffsetClause limitOffset);
 	
 	@Select(" SELECT count(1) FROM svn_commit c "
 			+ "LEFT OUTER JOIN project_svn_commit pc "
-			+ "ON c.id = pc.svn_commit_id "
-			+ "WHERE pc.svn_commit_id IS NULL AND c.svn_repository_id = #{svnRepositoryId} ")
-	int selectProjectUndeterminedCountByRepositoryId(@Param("svnRepositoryId") int svnRepositoryId);
+			+ "ON c.id = pc.commit_id "
+			+ "WHERE pc.commit_id IS NULL AND c.repository_id = #{repositoryId} ")
+	int selectProjectUndeterminedCountByRepositoryId(@Param("repositoryId") int repositoryId);
 	
-	@Select(" SELECT c.id, c.svn_repository_id svnRepositoryId, c.commit_message commitMessage, "
+	@Select(" SELECT c.id, c.repository_id repositoryId, c.commit_message commitMessage, "
 			+ "c.commit_date commitDate, c.committer_name committerName, c.revision "
 			+ "FROM svn_commit c "
-			+ "WHERE c.svn_repository_id = #{svnRepositoryId} "
+			+ "WHERE c.repository_id = #{repositoryId} "
 			+ "${orderBy} ${limitOffset} ")
 	List<SvnCommit> selectByRepositoryId(
-			@Param("svnRepositoryId") int svnRepositoryId,
+			@Param("repositoryId") int repositoryId,
 			@Param("orderBy") OrderByClause orderBy,
 			@Param("limitOffset") LimitOffsetClause limitOffset);
 	
 	@Select(" SELECT count(1) FROM svn_commit c "
-			+ "WHERE c.svn_repository_id = #{svnRepositoryId} ")
-	int selectCountByRepositoryId(@Param("svnRepositoryId") int svnRepositoryId);
+			+ "WHERE c.repository_id = #{repositoryId} ")
+	int selectCountByRepositoryId(@Param("repositoryId") int repositoryId);
 	
-	@Select(" SELECT c.id, c.svn_repository_id svnRepositoryId, c.commit_message commitMessage, "
+	@Select(" SELECT c.id, c.repository_id repositoryId, c.commit_message commitMessage, "
 			+ "c.commit_date commitDate, c.committer_name committerName, c.revision "
 			+ "FROM svn_commit c "
 			+ "INNER JOIN project_svn_commit pc "
-			+ "ON c.id = pc.svn_commit_id "
+			+ "ON c.id = pc.commit_id "
 			+ "WHERE pc.project_id = #{projectId} "
 			+ "${orderBy} ${limitOffset} ")
 	List<SvnCommit> selectByProjectId(
@@ -76,16 +76,16 @@ public interface SvnCommitMapper {
 	
 	@Select(" SELECT count(1) FROM svn_commit c "
 			+ "INNER JOIN project_svn_commit pc "
-			+ "ON c.id = pc.svn_commit_id "
+			+ "ON c.id = pc.commit_id "
 			+ "WHERE pc.project_id = #{projectId} ")
 	int selectCountByProjectId(@Param("projectId") int projectId);
 	
-	@Insert("INSERT INTO svn_commit (id, svn_repository_id, commit_message, "
+	@Insert("INSERT INTO svn_commit (id, repository_id, commit_message, "
 			+ "commit_date, committer_name, revision, create_user_id) "
-			+ "VALUES (#{commit.id}, #{commit.svnRepositoryId}, #{commit.commitMessage}, "
+			+ "VALUES (#{commit.id}, #{commit.repositoryId}, #{commit.commitMessage}, "
 			+ "#{commit.commitDate}, #{commit.committerName}, #{commit.revision}, #{auth.id}) ")
 	int insert(@Param("commit") SvnCommit commit, @Param("auth") MVUserDetails auth);
 	
-	@Delete("DELETE FROM svn_commit WHERE svn_repository_id = #{svnRepositoryId} ")
-	int deleteBySvnRepositoryId(@Param("svnRepositoryId") int svnRepositoryId);
+	@Delete("DELETE FROM svn_commit WHERE repository_id = #{repositoryId} ")
+	int deleteBySvnRepositoryId(@Param("repositoryId") int repositoryId);
 }

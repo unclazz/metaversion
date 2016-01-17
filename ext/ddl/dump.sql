@@ -201,7 +201,7 @@ ALTER TABLE project OWNER TO postgres;
 
 CREATE TABLE project_svn_commit (
     project_id integer NOT NULL,
-    svn_commit_id integer NOT NULL,
+    commit_id integer NOT NULL,
     create_date timestamp without time zone DEFAULT now() NOT NULL,
     create_user_id integer NOT NULL
 );
@@ -215,7 +215,7 @@ ALTER TABLE project_svn_commit OWNER TO postgres;
 
 CREATE TABLE svn_commit (
     id integer NOT NULL,
-    svn_repository_id integer NOT NULL,
+    repository_id integer NOT NULL,
     revision integer NOT NULL,
     commit_date timestamp without time zone NOT NULL,
     commit_message text,
@@ -233,7 +233,7 @@ ALTER TABLE svn_commit OWNER TO postgres;
 
 CREATE TABLE svn_commit_path (
     id integer NOT NULL,
-    svn_commit_id integer NOT NULL,
+    commit_id integer NOT NULL,
     change_type_id integer NOT NULL,
     path text NOT NULL,
     create_date timestamp without time zone DEFAULT now() NOT NULL,
@@ -272,7 +272,7 @@ ALTER TABLE svn_repository OWNER TO postgres;
 CREATE VIEW project_changedpath_view AS
  SELECT pc.project_id,
     cp.path,
-    r.id AS svn_repository_id,
+    r.id AS repository_id,
     r.name AS svn_repository_name,
     count(1) AS commit_count,
     min(c.revision) AS min_revision,
@@ -280,9 +280,9 @@ CREATE VIEW project_changedpath_view AS
     min(c.commit_date) AS min_commit_date,
     max(c.commit_date) AS max_commit_date
    FROM (((svn_commit_path cp
-     JOIN svn_commit c ON ((cp.svn_commit_id = c.id)))
-     JOIN svn_repository r ON ((c.svn_repository_id = r.id)))
-     JOIN project_svn_commit pc ON ((pc.svn_commit_id = cp.svn_commit_id)))
+     JOIN svn_commit c ON ((cp.commit_id = c.id)))
+     JOIN svn_repository r ON ((c.repository_id = r.id)))
+     JOIN project_svn_commit pc ON ((pc.commit_id = cp.commit_id)))
   GROUP BY pc.project_id, cp.path, r.id, r.name;
 
 
@@ -320,7 +320,7 @@ CREATE VIEW project_stats_view AS
           WHERE (pcp.project_id = p.id)) AS path_count
    FROM ((project p
      LEFT JOIN project_svn_commit pc ON ((p.id = pc.project_id)))
-     LEFT JOIN svn_commit c ON ((pc.svn_commit_id = c.id)))
+     LEFT JOIN svn_commit c ON ((pc.commit_id = c.id)))
   GROUP BY p.id, p.code, p.name, p.responsible_person, p.commit_sign_pattern;
 
 
@@ -332,7 +332,7 @@ ALTER TABLE project_stats_view OWNER TO postgres;
 
 CREATE TABLE project_svn_repository (
     project_id integer NOT NULL,
-    svn_repository_id integer NOT NULL,
+    repository_id integer NOT NULL,
     last_revision integer DEFAULT 0 NOT NULL,
     create_date timestamp without time zone DEFAULT now() NOT NULL,
     create_user_id integer NOT NULL,
@@ -376,11 +376,11 @@ ALTER TABLE svn_commit_seq OWNER TO postgres;
 --
 
 CREATE VIEW svn_repository_path_view AS
- SELECT c.svn_repository_id,
+ SELECT c.repository_id,
     cp.path
    FROM (svn_commit c
-     JOIN svn_commit_path cp ON ((c.id = cp.svn_commit_id)))
-  GROUP BY c.svn_repository_id, cp.path;
+     JOIN svn_commit_path cp ON ((c.id = cp.commit_id)))
+  GROUP BY c.repository_id, cp.path;
 
 
 ALTER TABLE svn_repository_path_view OWNER TO postgres;
@@ -410,10 +410,10 @@ CREATE VIEW svn_repository_stats_view AS
     r.max_revision,
     ( SELECT count(c.id) AS count
            FROM svn_commit c
-          WHERE (r.id = c.svn_repository_id)) AS commit_count,
+          WHERE (r.id = c.repository_id)) AS commit_count,
     ( SELECT count(rp.path) AS count
            FROM svn_repository_path_view rp
-          WHERE (r.id = rp.svn_repository_id)) AS path_count
+          WHERE (r.id = rp.repository_id)) AS path_count
    FROM svn_repository r;
 
 
@@ -520,7 +520,7 @@ ALTER TABLE ONLY project
 --
 
 ALTER TABLE ONLY project_svn_commit
-    ADD CONSTRAINT project_svn_commit_pk PRIMARY KEY (project_id, svn_commit_id);
+    ADD CONSTRAINT project_svn_commit_pk PRIMARY KEY (project_id, commit_id);
 
 
 --
@@ -528,7 +528,7 @@ ALTER TABLE ONLY project_svn_commit
 --
 
 ALTER TABLE ONLY project_svn_repository
-    ADD CONSTRAINT project_svn_repository_pk PRIMARY KEY (project_id, svn_repository_id);
+    ADD CONSTRAINT project_svn_repository_pk PRIMARY KEY (project_id, repository_id);
 
 
 --
@@ -656,7 +656,7 @@ ALTER TABLE ONLY project_svn_commit
 --
 
 ALTER TABLE ONLY project_svn_commit
-    ADD CONSTRAINT project_svn_commit_fk1 FOREIGN KEY (svn_commit_id) REFERENCES svn_commit(id);
+    ADD CONSTRAINT project_svn_commit_fk1 FOREIGN KEY (commit_id) REFERENCES svn_commit(id);
 
 
 --
@@ -672,7 +672,7 @@ ALTER TABLE ONLY project_svn_repository
 --
 
 ALTER TABLE ONLY project_svn_repository
-    ADD CONSTRAINT project_svn_repository_fk1 FOREIGN KEY (svn_repository_id) REFERENCES svn_repository(id);
+    ADD CONSTRAINT project_svn_repository_fk1 FOREIGN KEY (repository_id) REFERENCES svn_repository(id);
 
 
 --
@@ -680,7 +680,7 @@ ALTER TABLE ONLY project_svn_repository
 --
 
 ALTER TABLE ONLY svn_commit
-    ADD CONSTRAINT svn_commit_fk0 FOREIGN KEY (svn_repository_id) REFERENCES svn_repository(id);
+    ADD CONSTRAINT svn_commit_fk0 FOREIGN KEY (repository_id) REFERENCES svn_repository(id);
 
 
 --
@@ -688,7 +688,7 @@ ALTER TABLE ONLY svn_commit
 --
 
 ALTER TABLE ONLY svn_commit_path
-    ADD CONSTRAINT svn_commit_path_fk0 FOREIGN KEY (svn_commit_id) REFERENCES svn_commit(id);
+    ADD CONSTRAINT svn_commit_path_fk0 FOREIGN KEY (commit_id) REFERENCES svn_commit(id);
 
 
 --

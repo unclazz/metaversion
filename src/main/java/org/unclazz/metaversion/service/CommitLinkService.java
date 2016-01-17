@@ -59,7 +59,7 @@ public class CommitLinkService {
 		
 		for (final ProjectSvnRepository obsoleted : obsoletedList) {
 			final List<SvnCommit> commitList = svnCommitMapper.
-					selectForMatchingByProjectIdAndRepositoryId(projectId, obsoleted.getSvnRepositoryId());
+					selectForMatchingByProjectIdAndRepositoryId(projectId, obsoleted.getRepositoryId());
 			final MaxRevision maxRevision = MaxRevision.startsWith(obsoleted.getLastRevision());
 			
 			for (final SvnCommit commit : commitList) {
@@ -81,7 +81,7 @@ public class CommitLinkService {
 			
 			throw MVUtils.unexpectedResult("Unexpected error has occurred while "
 					+ "linking between a project(id=%s) and a commit(id=%s). ",
-					projectSvnCommit.getProjectId(), projectSvnCommit.getSvnCommitId());
+					projectSvnCommit.getProjectId(), projectSvnCommit.getCommitId());
 		}
 	}
 	
@@ -90,7 +90,7 @@ public class CommitLinkService {
 			
 			throw MVUtils.unexpectedResult("Unexpected error has occurred while "
 					+ "unlinking between a project(id=%s) and a commit(id=%s). ",
-					projectSvnCommit.getProjectId(), projectSvnCommit.getSvnCommitId());
+					projectSvnCommit.getProjectId(), projectSvnCommit.getCommitId());
 		}
 	}
 }

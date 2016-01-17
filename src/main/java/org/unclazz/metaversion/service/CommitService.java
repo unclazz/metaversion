@@ -2,7 +2,7 @@ package org.unclazz.metaversion.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.unclazz.metaversion.entity.PathAndItsSvnRepository;
+import org.unclazz.metaversion.entity.ProjectChangedPath;
 import org.unclazz.metaversion.entity.SvnCommit;
 import org.unclazz.metaversion.entity.SvnCommitPath;
 import org.unclazz.metaversion.mapper.SvnCommitMapper;
@@ -50,7 +50,7 @@ public class CommitService {
 		
 	}
 	
-	public Paginated<PathAndItsSvnRepository> getChangedPathListByProjectId(final int projectId, final Paging paging) {
+	public Paginated<ProjectChangedPath> getChangedPathListByProjectId(final int projectId, final Paging paging) {
 		final OrderByClause orderBy = OrderByClause.of("path", Order.DESC);
 		final LimitOffsetClause limitOffset = LimitOffsetClause.of(paging);
 

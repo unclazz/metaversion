@@ -11,31 +11,31 @@ import org.unclazz.metaversion.MVUserDetails;
 import org.unclazz.metaversion.entity.ProjectSvnRepository;
 
 public interface ProjectSvnRepositoryMapper {
-	@Select("SELECT pr.project_id projectId, pr.svn_repository_id svnRepositoryId, pr.last_revision lastRevision "
+	@Select("SELECT pr.project_id projectId, pr.repository_id repositoryId, pr.last_revision lastRevision "
 			+ "FROM project_svn_repository pr "
 			+ "INNER JOIN svn_repository r "
-			+ "ON pr.svn_repository_id = r.id "
+			+ "ON pr.repository_id = r.id "
 			+ "WHERE pr.last_revision < r.id ")
 	List<ProjectSvnRepository> selectObsoletedRecordByProjectId(@Param("projectId") int id);
 	
 	@Insert("INSERT INTO project_svn_repository "
-			+ "(project_id, svn_repository_id, create_user_id, update_user_id) "
+			+ "(project_id, repository_id, create_user_id, update_user_id) "
 			+ "SELECT p.id, r.id, #{auth.id}, #{auth.id} "
 			+ "FROM svn_repository r "
 			+ "CROSS JOIN project p "
 			+ "LEFT OUTER JOIN project_svn_repository pr "
-			+ "ON r.id = pr.svn_repository_id AND p.id = pr.project_id "
-			+ "WHERE pr.svn_repository_id IS NULL ")
+			+ "ON r.id = pr.repository_id AND p.id = pr.project_id "
+			+ "WHERE pr.repository_id IS NULL ")
 	int insertMissingLink(@Param("auth") MVUserDetails auth);
 	
 	@Update("UPDATE project_svn_repository "
 			+ "SET last_revision = #{record.lastRevision}, update_date = now(), update_user_id = #{auth.id} "
-			+ "WHERE project_id = #{record.projectId} AND svn_repository_id = #{record.svnRepositoryId} ")
+			+ "WHERE project_id = #{record.projectId} AND repository_id = #{record.repositoryId} ")
 	int update(@Param("record") ProjectSvnRepository record, @Param("auth") MVUserDetails auth);
 	
 	@Delete("DELETE FROM project_svn_repository WHERE project_id = #{projectId} ")
 	int deleteByProjectId(@Param("projectId") int projectId);
 	
-	@Delete("DELETE FROM project_svn_repository WHERE svn_repository_id = #{svnRepositoryId} ")
-	int deleteBySvnRepositoryId(@Param("svnRepositoryId") int svnRepositoryId);
+	@Delete("DELETE FROM project_svn_repository WHERE repository_id = #{repositoryId} ")
+	int deleteBySvnRepositoryId(@Param("repositoryId") int repositoryId);
 }

@@ -8,26 +8,26 @@ import org.unclazz.metaversion.entity.ProjectSvnCommit;
 
 public interface ProjectSvnCommitMapper {
 	@Insert("INSERT INTO project_svn_commit "
-			+ "(project_id, svn_commit_id, create_user_id) "
-			+ "VALUES (#{projectId}, #{svnCommitId}, #{auth.id}) ")
-	int insert(@Param("projectId") int projectId, @Param("svnCommitId") int svnCommitId, @Param("auth") MVUserDetails auth);
+			+ "(project_id, commit_id, create_user_id) "
+			+ "VALUES (#{projectId}, #{commitId}, #{auth.id}) ")
+	int insert(@Param("projectId") int projectId, @Param("commitId") int commitId, @Param("auth") MVUserDetails auth);
 	
 	@Insert("INSERT INTO project_svn_commit "
-			+ "(project_id, svn_commit_id, create_user_id) "
-			+ "VALUES (#{vo.projectId}, #{vo.svnCommitId}, #{auth.id}) ")
+			+ "(project_id, commit_id, create_user_id) "
+			+ "VALUES (#{vo.projectId}, #{vo.commitId}, #{auth.id}) ")
 	int insert(@Param("vo") ProjectSvnCommit vo, @Param("auth") MVUserDetails auth);
 	
 	@Delete("DELETE FROM project_svn_commit "
-			+ "WHERE project_id = #{vo.projectId} AND svn_commit_id = #{vo.svnCommitId} ")
+			+ "WHERE project_id = #{vo.projectId} AND commit_id = #{vo.commitId} ")
 	int delete(@Param("vo") ProjectSvnCommit vo);
 	
 	@Delete("DELETE FROM project_svn_commit WHERE project_id = #{projectId} ")
 	int deleteByProjectId(@Param("projectId") int projectId);
 	
 	@Delete("DELETE FROM project_svn_commit "
-			+ "WHERE svn_commit_id IN ( "
+			+ "WHERE commit_id IN ( "
 			+ "	SELECT id "
 			+ "	FROM svn_commit "
-			+ "	WHERE svn_repository_id = #{svnRepositoryId}) ")
-	int deleteBySvnRepositoryId(@Param("svnRepositoryId") int svnRepositoryId);
+			+ "	WHERE repository_id = #{repositoryId}) ")
+	int deleteBySvnRepositoryId(@Param("repositoryId") int repositoryId);
 }
