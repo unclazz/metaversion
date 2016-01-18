@@ -1,9 +1,7 @@
 (function(angular) {
-	// mvCommonモジュールを追加
-	var mvCommonModule = angular.module('mvCommon', ['ngResource', 'ui.bootstrap']);
+	var app = angular.module('app', ['ngResource', 'ui.bootstrap', 'ngRoute']);
 	
-	// mvCommonにentitiesファクトリを追加
-	mvCommonModule.factory('entities', function($log, $resource) {
+	app.factory('entities', function($log, $resource) {
 		var entities = {};
 		var pagingParams = {page: 1, size: 25};
 		var suggestParams = {like: '', size: 25};
@@ -84,69 +82,17 @@
 		}
 		return vars;
 	})
-	.factory('params', function($log, $location) {
-		var parse = function(path) {
-			// 読み取った結果を格納するオブジェクト
-			var result = {};
-			// パス文字列に`?`が含まれているかチェック
-			if (path.indexOf('?') == -1) {
-				// 含まれていない場合読み取るべき情報はないので処理は終了
-				return result;
-			}
-			// `?`より後の文字列を`&`を区切り文字としてパス断片へと分割
-			// 個々の断片ごとに処理を行う
-			angular.forEach(path.replace(/^.*[?]/, '').split('&'), function(value) {
-				// 断片文字列の長さをチェック
-				if (value.length == 0) {
-					// 空文字列の場合は処理をスキップ
-					return;
-				}
-				// 一時変数を宣言
-				var paramName, paramValue;
-				// 断片文字列に`=`が含まれるかチェック
-				if (value.indexOf('=') == -1) {
-					// 含まれない場合パラメータ値は`true`
-					paramName = value;
-					paramValue = true;
-				} else {
-					// 含まれた場合それを区切り文字として断片化
-					var nameAndValue = value.split('=', 2);
-					// 1つめの要素がパラメータ名で2つめの要素がパラメータ値
-					paramName = nameAndValue[0];
-					paramValue = decodeURIComponent(nameAndValue[1]);
-					// パラメータ値の文字列のフォーマットを確認
-					if (paramValue.match(/^[1-9][0-9]*([.][0-9]*)?$/)) {
-						// 数値と見做せるものであれば数値化
-						paramValue = paramValue - 0;
-					} else if (paramValue === 'true') {
-						// `true`という文字列であれば真偽値の`true`に変換
-						paramValue = true;
-					} else if (paramValue === 'false') {
-						// `false`という文字列であれば真偽値の`false`に変換
-						paramValue = true;
-					}
-				}
-				// 同じパラメータ名が既知のものかどうかチェック
-				if (this.hasOwnProperty(paramName)) {
-					// 既知の場合
-					// そのパラメータが配列かどうかをチェック
-					if (angular.isArray(this[paramName])) {
-						// 配列であればその末尾に今回のパラメータ値を追加
-						this[paramName].push(paramValue);
-					} else {
-						// 配列でなければ配列化して今回のパラメータ値も追加
-						this[paramName] = [this[paramName], paramValue];
-					}
-				} else {
-					// 未知のものであれば単純に追加を行う
-					this[paramName] = paramValue;
-				}
-			}, result);
-			return result;
+	.factory('paths', function($log, $location) {
+		var serialize = function(path) {
+			var data = $location.search();
+			return (data === undefined) ? {} : data;
 		};
-		var load = function(defaultParams) {
+		var deserialize = function(defaultParams) {
 			var params = defaultParams === undefined ? {} : angular.copy(defaultParams);
-			var search = angular.extend($location.search(), parse($location.absUrl()));
+			var search = $location.search();
+			if (search === undefined) {
+				return params;
+			}
 			for (var k in params) {
 				if (k in search) {
 					var v = params[k];
@@ -170,30 +116,59 @@
 				callback(page === undefined ? 1 : page - 0);
 			});
 		}
+		var go = function(path, data) {
+			$location.path(path);
+			$location.search(data);
+		};
 		
 		return {
-			parse: parse,
-			load: load,
+			deserialize: deserialize,
+			serialize: function(data) {
+				$location.search(data);
+			},
+			go: go,
 			watchpage: watch
 		};
 	});
 	
-	// mvApiTesterモジュールを追加
-	angular.module('mvApiTester', ['mvCommon', 'ngResource', 'ui.bootstrap']);
-	angular.module('mvIndex', ['mvCommon', 'ui.bootstrap']);
-	angular.module('mvProjects', ['mvCommon', 'ui.bootstrap']);
-	
-	angular.module('mvIndex')
-	.controller('search', function($log, $scope, entities, pathvars) {
+	angular.module('app')
+	.config(function($routeProvider){
+		$routeProvider.when('/', {
+			templateUrl: 'js/templates/index.html'
+		}).when('/projects', {
+			templateUrl: 'js/templates/projects.html'
+		}).otherwise({
+			redirectTo: '/'
+		});
+	})
+	.config(function($logProvider) {
+		$logProvider.debugEnabled(true);
+	})
+	.controller('parent', function($scope, $location, $log) {
+		$scope.navItems = {
+				projects: false,
+				repositories: false,
+				users: false
+		};
+		$scope.$watch(function() {
+			return $location.path();
+		}, function(path) {
+			for (var k in $scope.navItems) {
+				$scope.navItems[k] = path.endsWith(k);
+			}
+		});
+	})
+	.controller('index', function($log, $scope, entities, pathvars, paths) {
 		$scope.projectNames = function (partialName) {
 			return entities.ProjectName.query({like: partialName}).$promise;
 		};
-	});
-	
-	angular.module('mvProjects')
-	.controller('list', function($log, $scope, $location, entities, pathvars, params) {
+		$scope.submit = function() {
+			paths.go('projects', {like: $scope.like});
+		};
+	})
+	.controller('projects', function($log, $scope, $location, entities, pathvars, paths) {
 		
-		$scope.cond = params.load({pathbase: false, like: ''});
+		$scope.cond = paths.deserialize({pathbase: false, like: ''});
 		$scope.projectOrPathNames = function (partialName) {
 			if ($scope.cond.pathbase) {
 				return entities.PathName.query({like: partialName}).$promise;
@@ -202,7 +177,7 @@
 			}
 		};
 
-		params.watchpage($scope, function(p) {
+		paths.watchpage($scope, function(p) {
 			$scope.cond.page = p;
 			entities.Project.query($scope.cond).$promise.then(function(paginated) {
 				$scope.totalSize = paginated.totalSize;
@@ -212,6 +187,9 @@
 		});
 	});
 	
+	
+	// mvApiTesterモジュールを追加
+	angular.module('mvApiTester', ['mvCommon', 'ngResource', 'ui.bootstrap']);
 	
 	// mvApiTesterにmainコントローラを追加
 	angular.module('mvApiTester')
