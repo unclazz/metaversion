@@ -58,8 +58,8 @@
 							<th>検索方法</th>
 							<td>
 								<div class="btn-group">
-									<label class="btn btn-default" ng-model="cond.pathbase" btn-radio="0">プロジェクト名</label>
-									<label class="btn btn-default" ng-model="cond.pathbase" btn-radio="1">変更パス名</label>
+									<label class="btn btn-default" ng-model="cond.pathbase" uib-btn-radio="false">プロジェクト名</label>
+									<label class="btn btn-default" ng-model="cond.pathbase" uib-btn-radio="true">変更パス名</label>
 								</div>
 							</td>
 						</tr>
@@ -100,18 +100,18 @@
 							<!-- empty -->
 						</div>
 						<div class="col-lg-6">
-							<pagination total-items="paginationTotalItems"
+							<uib-pagination total-items="totalSize"
 								ng-model="cond.page"
 								ng-change="pageChanged()"
-								max-size="paginationMaxSize"
+								max-size="5"
 								class="pagination-sm"
 								boundary-links="true"
-								items-per-page="paginationItemsPerPage"
+								items-per-page="size"
 								first-text="最初"
 								previous-text="前"
 								next-text="次"
 								last-text="最後"
-							></pagination>
+							></uib-pagination>
 						</div>
 						<div class="col-lg-2">
 							<!-- empty -->
@@ -124,20 +124,15 @@
 				<table class="table table-hover table-condensed">
 					<thead>
 						<tr>
-							<th>管理票ID</th>
 							<th>プロジェクトコード</th>
 							<th>プロジェクト名</th>
-							<th>完了日</th>
 							<th>アクション</th>
 						</tr>
 					</thead>
 					<tbody>
 						<tr  ng-repeat="item in list">
-							<td><a href="#" target="_blank" ng-show="projectHasXmdbRecordId(item)" ng-href="{{makeXmdbRecordUrl(item)}}">{{makeXmdbCode(item)}}
-							<span class="glyphicon glyphicon-new-window"></span></a></td>
 							<td>{{item.code}}</td>
 							<td><a href="#" ng-href="{{makeDetailPagePath(item)}}">{{item.name}}</a></td>
-							<td>{{item.closeDate | date : 'yyyy/MM/dd'}}</td>
 							<td>
 								<div class="btn-group btn-group-xs" role="group">
 									<a class="btn btn-default" href="#" ng-href="project.html#?id={{item.id}}" role="button">プロジェクト詳細</a>
