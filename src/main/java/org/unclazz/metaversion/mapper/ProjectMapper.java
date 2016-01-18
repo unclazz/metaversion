@@ -41,8 +41,9 @@ public interface ProjectMapper {
 	int selectCount();
 	
 	@Select("SELECT id, code, name, responsible_person responsiblePerson, commit_sign_pattern commitSignPattern "
+			+ "FROM project "
 			+ "WHERE name like ('%' || #{partialName} || '%') "
-			+ "FROM project ${orderBy} ${limitOffset} ")
+			+ "${orderBy} ${limitOffset} ")
 	List<Project> selectByPartialName(@Param("partialName") String partialName,
 			@Param("orderBy") OrderByClause orderBy,
 			@Param("limitOffset") LimitOffsetClause limitOffset);
