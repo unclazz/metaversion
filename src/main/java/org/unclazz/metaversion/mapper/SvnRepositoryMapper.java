@@ -41,6 +41,12 @@ public interface SvnRepositoryMapper {
 	List<SvnRepositoryStats> selectStatsAll(@Param("orderBy") OrderByClause orderBy,
 			@Param("limitOffset") LimitOffsetClause limitOffset);
 	
+	@Select("SELECT id, name, base_url baseUrl, max_revision maxRevision, "
+			+ "commit_count commitCount, path_count pathCount "
+			+ "FROM svn_repository_stats_view "
+			+ "WHERE id = #{id} ")
+	SvnRepositoryStats selectStatsOneById(int id);
+	
 	@Select("SELECT count(1) FROM svn_repository_stats_view ")
 	int selectCountStatsAll();
 	

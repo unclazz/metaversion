@@ -83,6 +83,9 @@ public class RepositoryService {
 				svnRepositoryMapper.selectStatsAll(orderBy, limitOffset),
 				svnRepositoryMapper.selectCountStatsAll());
 	}
+	public SvnRepositoryStats getRepositoryStats(final int id) {
+		return svnRepositoryMapper.selectStatsOneById(id);
+	}
 	public SvnRepository getRepository(final int id) {
 		return svnRepositoryMapper.selectOneById(id);
 	}

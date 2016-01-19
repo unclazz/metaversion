@@ -1,0 +1,82 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+	<meta charset="utf-8" />
+</head>
+<body>
+	<div class="container" ng-controller="repositories">
+		<nav>
+			<ol class="breadcrumb">
+				  <li><a href="#" ng-href="#/">
+				  <span class="glyphicon glyphicon-home" aria-hidden="true"></span> トップ</a></li>
+				  <li class="active">リポジトリ一覧</li>
+			</ol>
+		</nav>
+
+		<header class="page-header">
+			<h1>リポジトリ一覧</h1>
+		</header>
+
+		<article ng-show="list.length > 0">
+			<div class="panel panel-default">
+				<div class="panel-body">
+					<div class="row">
+						<div class="col-lg-3">
+							<!-- empty -->
+						</div>
+						<div class="col-lg-6" style="text-align: center;">
+							<uib-pagination total-items="totalSize"
+								ng-model="cond.page"
+								ng-change="pageChanged()"
+								max-size="5"
+								class="pagination-sm"
+								boundary-links="true"
+								items-per-page="size"
+								first-text="最初"
+								previous-text="前"
+								next-text="次"
+								last-text="最後"
+							></uib-pagination>
+						</div>
+						<div class="col-lg-2">
+							<!-- empty -->
+						</div>
+						<div class="col-lg-1">
+							<a class="btn btn-default" href="project-edit.html">追加</a>
+						</div>
+					</div>
+				</div>
+				<table class="table table-hover table-condensed">
+					<thead>
+						<tr>
+							<th>リポジトリ名</th>
+							<th>ベースURL</th>
+							<th>アクション</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr  ng-repeat="item in list">
+							<td><a href="#" ng-href="#/repositories/{{item.id}}">{{item.name}}</a></td>
+							<td><a href="#" ng-href="#/repositories/{{item.id}}">{{item.baseUrl}}</a></td>
+							<td>
+								<div class="btn-group btn-group-xs" role="group">
+									<a class="btn btn-default" href="#" ng-href="#/repositories/{{item.id}}" role="button">リポジトリ詳細</a>
+									<a class="btn btn-default" href="#" ng-href="#/repositories/{{item.id}}/commits" role="button">コミット一覧</a>
+								</div>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+				<div class="panel-body">
+					<div class="row">
+						<div class="col-lg-6">
+						</div>
+						<div class="col-lg-6">
+						</div>
+					</div>
+				</div>
+			</div>
+		</article>
+	</div>
+</body>
+</html>

@@ -143,7 +143,11 @@
 		}).when('/projects', {
 			templateUrl: 'js/templates/projects.html'
 		}).when('/projects/:projectId', {
-			templateUrl: 'js/templates/projectsProjectId.html'
+			templateUrl: 'js/templates/projects$projectId.html'
+		}).when('/repositories', {
+			templateUrl: 'js/templates/repositories.html'
+		}).when('/repositories/:repositoryId', {
+			templateUrl: 'js/templates/repositories$repositoryId.html'
 		}).otherwise({
 			redirectTo: '/'
 		});
@@ -193,8 +197,23 @@
 			});
 		});
 	})
-	.controller('projectsProjectId', function($log, $scope, $location, entities, paths) {
+	.controller('projects$rojectId', function($log, $scope, $location, entities, paths) {
 		$scope.project = entities.ProjectStats.get({id: paths.pathToIds().projectId});
+	})
+	.controller('repositories', function($log, $scope, $location, entities, paths) {
+		
+		$scope.cond = paths.queryToObject();
+		paths.watchPage($scope, function(p) {
+			$scope.cond.page = p;
+			entities.Repository.query($scope.cond).$promise.then(function(paginated) {
+				$scope.totalSize = paginated.totalSize;
+				$scope.size = paginated.size;
+				$scope.list = paginated.list;
+			});
+		});
+	})
+	.controller('repositories$repositoryId', function($log, $scope, $location, entities, paths) {
+		$scope.repository = entities.Repository.get({id: paths.pathToIds().repositoryId});
 	});
 	
 	

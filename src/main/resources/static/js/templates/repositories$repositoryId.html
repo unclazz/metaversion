@@ -1,0 +1,50 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+	<meta charset="utf-8" />
+</head>
+<body>
+	<div class="container" ng-controller="repositories$repositoryId">
+		<nav>
+			<ol class="breadcrumb">
+				  <li><a href="#" ng-href="#/">
+				  <span class="glyphicon glyphicon-home" aria-hidden="true"></span> トップ</a></li>
+				  <li><a href="#" ng-href="#/repositories">リポジトリ一覧</a></li>
+				  <li class="active">リポジトリ詳細</li>
+			</ol>
+		</nav>
+
+		<header class="page-header">
+			<h1>{{repository.name}}</h1>
+		</header>
+
+		<article>
+			<div class="panel panel-default">
+				<div class="panel-heading">
+					リポジトリ情報
+				</div>
+				<table class="table">
+					<tr><th>ベースURL</th><td>{{repository.baseUrl}}</td></tr>
+					<tr><th>trunkパス・パターン</th><td>{{repository.trunkPathPattern}}</td></tr>
+					<tr><th>branchパス・パターン</th><td>{{repository.branchPathPattern}}</td></tr>
+					<tr><th>最終リビジョン</th><td>{{repository.maxRevision}}</td></tr>
+				</table>
+				<div class="panel-body">
+					<div class="row">
+						<div class="col-lg-6">
+							<a class="btn btn-default" href="#" ng-href="project-resource-list.html#?id={{project.id}}" role="button">リソース一覧</a>
+							<a class="btn btn-default" href="#" ng-href="project-resource-contention-list.html#?id={{project.id}}" role="button">競合チェック</a>
+						</div><!-- /.col-lg-N -->
+						<div class="col-lg-4">
+						</div><!-- /.col-lg-N -->
+						<div class="col-lg-2" style="text-align: right;">
+							<a class="btn btn-default" role="button" href="#" ng-href="project-edit.html#?id={{project.id}}">変更</a>
+							<button class="btn btn-danger" type="button" ng-click="openDelModal(project)">削除</button>
+						</div><!-- /.col-lg-N -->
+					</div><!-- /.row -->
+				</div>
+			</div>
+		</article>
+	</div><!-- /.container -->
+</body>
+</html>

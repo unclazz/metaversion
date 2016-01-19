@@ -66,6 +66,12 @@ public class RepositoriesJsonController {
 		
 		return repositoryService.getRepositoryStatsList(paging);
 	}
+	@RequestMapping(value="/repositorystats/{id}", method=RequestMethod.GET)
+	public ResponseEntity<SvnRepositoryStats> getRepositoryStats(final Principal principal,
+			@PathVariable("id") final int id) {
+		
+		return httpResponseOfOkOrNotFound(repositoryService.getRepositoryStats(id));
+	}
 	
 	/**
 	 * IDで指定されたリポジトリ情報を返す.
