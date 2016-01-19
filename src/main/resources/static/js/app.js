@@ -51,6 +51,7 @@
 		
 		// ProjectエンティティのためのResourceオブジェクトを作成
 		entity("Project", "api/projects/:id", {id: "@id"}, pagingParams);
+		entity("ProjectStats", "api/projectstats/:id", {id: "@id"}, pagingParams);
 		// ProjectSvnCommitエンティティのためのResourceオブジェクトを作成
 		entity("ProjectCommit", "api/projects/:projectId/commits/:commitId",
 				{projectId: "@projectId", commitId: "@commitId"}, pagingParams);
@@ -64,30 +65,8 @@
 		
 		return entities;
 	})
-	.factory('pathvars', function($log, $location) {
-		var vars = {};
-		var url = $location.absUrl();
-		var res = null;
-		if (res = /\/users\/(\d+)/.exec(url)) {
-			vars.userId = res[1];
-		}
-		if (res = /\/projects\/(\d+)/.exec(url)) {
-			vars.projectId = res[1];
-		}
-		if (res = /\/repositories\/(\d+)/.exec(url)) {
-			vars.repositoryId = res[1];
-		}
-		if (res = /\/commits\/(\d+)/.exec(url)) {
-			vars.commitId = res[1];
-		}
-		return vars;
-	})
 	.factory('paths', function($log, $location) {
-		var serialize = function(path) {
-			var data = $location.search();
-			return (data === undefined) ? {} : data;
-		};
-		var deserialize = function(defaultParams) {
+		var queryToObject = function(defaultParams) {
 			var params = defaultParams === undefined ? {} : angular.copy(defaultParams);
 			var search = $location.search();
 			if (search === undefined) {
@@ -116,18 +95,44 @@
 				callback(page === undefined ? 1 : page - 0);
 			});
 		}
-		var go = function(path, data) {
+		var stringToPath = function(path, data) {
 			$location.path(path);
 			$location.search(data);
 		};
+		var objectToQuery = function(data) {
+			$location.search(data);
+		};
+		var entryToQuery = function(key, value) {
+			var q = $location.search();
+			q[key] = value;
+			$location.search(q);
+		};
+		var pathToIds = function() {
+			var vars = {};
+			var url = $location.absUrl();
+			var res = null;
+			if (res = /\/users\/(\d+)/.exec(url)) {
+				vars.userId = res[1] - 0;
+			}
+			if (res = /\/projects\/(\d+)/.exec(url)) {
+				vars.projectId = res[1] - 0;
+			}
+			if (res = /\/repositories\/(\d+)/.exec(url)) {
+				vars.repositoryId = res[1] - 0;
+			}
+			if (res = /\/commits\/(\d+)/.exec(url)) {
+				vars.commitId = res[1] - 0;
+			}
+			return vars;
+		};
 		
 		return {
-			deserialize: deserialize,
-			serialize: function(data) {
-				$location.search(data);
-			},
-			go: go,
-			watchpage: watch
+			queryToObject: queryToObject,
+			objectToQuery: objectToQuery,
+			entryToQuery: entryToQuery,
+			stringToPath: stringToPath,
+			pathToIds: pathToIds,
+			watchPage: watch
 		};
 	});
 	
@@ -137,6 +142,8 @@
 			templateUrl: 'js/templates/index.html'
 		}).when('/projects', {
 			templateUrl: 'js/templates/projects.html'
+		}).when('/projects/:projectId', {
+			templateUrl: 'js/templates/projectsProjectId.html'
 		}).otherwise({
 			redirectTo: '/'
 		});
@@ -158,7 +165,7 @@
 			}
 		});
 	})
-	.controller('index', function($log, $scope, entities, pathvars, paths) {
+	.controller('index', function($log, $scope, entities, paths) {
 		$scope.projectNames = function (partialName) {
 			return entities.ProjectName.query({like: partialName}).$promise;
 		};
@@ -166,9 +173,9 @@
 			paths.go('projects', {like: $scope.like});
 		};
 	})
-	.controller('projects', function($log, $scope, $location, entities, pathvars, paths) {
+	.controller('projects', function($log, $scope, $location, entities, paths) {
 		
-		$scope.cond = paths.deserialize({pathbase: false, like: ''});
+		$scope.cond = paths.queryToObject({pathbase: false, like: ''});
 		$scope.projectOrPathNames = function (partialName) {
 			if ($scope.cond.pathbase) {
 				return entities.PathName.query({like: partialName}).$promise;
@@ -177,7 +184,7 @@
 			}
 		};
 
-		paths.watchpage($scope, function(p) {
+		paths.watchPage($scope, function(p) {
 			$scope.cond.page = p;
 			entities.Project.query($scope.cond).$promise.then(function(paginated) {
 				$scope.totalSize = paginated.totalSize;
@@ -185,6 +192,9 @@
 				$scope.list = paginated.list;
 			});
 		});
+	})
+	.controller('projectsProjectId', function($log, $scope, $location, entities, paths) {
+		$scope.project = entities.ProjectStats.get({id: paths.pathToIds().projectId});
 	});
 	
 	

@@ -1,0 +1,52 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+	<meta charset="utf-8" />
+</head>
+<body>
+	<div class="container" ng-controller="projectsProjectId">
+		<nav>
+			<ol class="breadcrumb">
+				  <li><a href="index.html" th:href="@{/index}">トップ</a></li>
+				  <li><a href="index.html">トップ</a></li>
+				  <li class="active">プロジェクト詳細</li>
+			</ol>
+		</nav>
+
+		<header class="page-header">
+			<h1>{{project.name}}</h1>
+		</header>
+
+		<article>
+			<div class="panel panel-default">
+				<div class="panel-heading">
+					プロジェクト情報
+				</div>
+				<table class="table">
+					<tr><th>コード</th><td>{{project.code}}</td></tr>
+					<tr><th>担当者</th><td>{{project.responsiblePerson}}</td></tr>
+					<tr><th>コミット・サイン</th><td>{{project.commitSignPattern}}</td></tr>
+					<tr><th>初期コミット日時</th><td>{{project.minCommitDate}}</td></tr>
+					<tr><th>最終コミット日時</th><td>{{project.maxCommitDate}}</td></tr>
+					<tr><th>コミット回数</th><td>{{project.commitCount}}</td></tr>
+					<tr><th>変更パス数</th><td>{{project.pathCount}}</td></tr>
+				</table>
+				<div class="panel-body">
+					<div class="row">
+						<div class="col-lg-6">
+							<a class="btn btn-default" href="#" ng-href="project-resource-list.html#?id={{project.id}}" role="button">リソース一覧</a>
+							<a class="btn btn-default" href="#" ng-href="project-resource-contention-list.html#?id={{project.id}}" role="button">競合チェック</a>
+						</div><!-- /.col-lg-N -->
+						<div class="col-lg-4">
+						</div><!-- /.col-lg-N -->
+						<div class="col-lg-2" style="text-align: right;">
+							<a class="btn btn-default" role="button" href="#" ng-href="project-edit.html#?id={{project.id}}">変更</a>
+							<button class="btn btn-danger" type="button" ng-click="openDelModal(project)">削除</button>
+						</div><!-- /.col-lg-N -->
+					</div><!-- /.row -->
+				</div>
+			</div>
+		</article>
+	</div><!-- /.container -->
+</body>
+</html>

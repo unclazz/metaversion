@@ -2,9 +2,13 @@ package org.unclazz.metaversion.entity;
 
 import java.util.Date;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 public class ProjectStats extends Project {
 	private int commitCount;
+	@JsonFormat(pattern="yyyy/MM/dd HH:mm:ss.SSS")
 	private Date minCommitDate;
+	@JsonFormat(pattern="yyyy/MM/dd HH:mm:ss.SSS")
 	private Date maxCommitDate;
 	private int pathCount;
 	public final int getCommitCount() {
