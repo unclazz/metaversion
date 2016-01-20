@@ -48,11 +48,13 @@ public interface ProjectMapper {
 			@Param("orderBy") OrderByClause orderBy,
 			@Param("limitOffset") LimitOffsetClause limitOffset);
 	
-	@Select("SELECT count(1) FROM project "
+	@Select("SELECT count(1) "
+			+ "FROM project "
 			+ "WHERE name like ('%' || #{partialName} || '%') ")
 	int selectCountByPartialName(@Param("partialName") String partialName);
 	
 	@Select("SELECT id, code, name, responsible_person responsiblePerson, commit_sign_pattern commitSignPattern "
+			+ "FROM project p "
 			+ "WHERE p.id IN ("
 			+ "	SELECT pc.project_id "
 			+ "	FROM project_svn_commit pc "
@@ -64,7 +66,8 @@ public interface ProjectMapper {
 			@Param("orderBy") OrderByClause orderBy,
 			@Param("limitOffset") LimitOffsetClause limitOffset);
 	
-	@Select("SELECT count(1) FROM project p "
+	@Select("SELECT count(1) "
+			+ "FROM project p "
 			+ "WHERE p.id IN ("
 			+ "	SELECT pc.project_id "
 			+ "	FROM project_svn_commit pc "
