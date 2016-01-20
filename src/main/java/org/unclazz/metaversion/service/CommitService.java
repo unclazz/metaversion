@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import org.unclazz.metaversion.entity.ProjectChangedPath;
 import org.unclazz.metaversion.entity.SvnCommit;
 import org.unclazz.metaversion.entity.SvnCommitPath;
+import org.unclazz.metaversion.entity.SvnCommitStats;
 import org.unclazz.metaversion.mapper.SvnCommitMapper;
 import org.unclazz.metaversion.mapper.SvnCommitPathMapper;
 import org.unclazz.metaversion.vo.LimitOffsetClause;
@@ -36,6 +37,17 @@ public class CommitService {
 		return Paginated.of(paging, 
 				svnCommitMapper.selectByRepositoryId(repositoryId, orderBy, limitOffset),
 				svnCommitMapper.selectCountByRepositoryId(repositoryId));
+		
+	}
+	
+	public Paginated<SvnCommitStats> getCommitStatsListByRepositoryId(final int repositoryId, final Paging paging) {
+		final OrderByClause orderBy = OrderByClause.of("revision", Order.DESC);
+		final LimitOffsetClause limitOffset = LimitOffsetClause.of(paging);
+
+		// コミット情報を検索する
+		return Paginated.of(paging, 
+				svnCommitMapper.selectStatsByRepositoryId(repositoryId, orderBy, limitOffset),
+				svnCommitMapper.selectStatsCountByRepositoryId(repositoryId));
 		
 	}
 	

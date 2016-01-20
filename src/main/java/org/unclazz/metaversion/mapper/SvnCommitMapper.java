@@ -8,6 +8,7 @@ import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 import org.unclazz.metaversion.MVUserDetails;
 import org.unclazz.metaversion.entity.SvnCommit;
+import org.unclazz.metaversion.entity.SvnCommitStats;
 import org.unclazz.metaversion.vo.LimitOffsetClause;
 import org.unclazz.metaversion.vo.OrderByClause;
 
@@ -61,6 +62,22 @@ public interface SvnCommitMapper {
 	@Select(" SELECT count(1) FROM svn_commit c "
 			+ "WHERE c.repository_id = #{repositoryId} ")
 	int selectCountByRepositoryId(@Param("repositoryId") int repositoryId);
+	
+	@Select(" SELECT c.id, c.repository_id repositoryId, c.commit_message commitMessage, "
+			+ "c.commit_date commitDate, c.committer_name committerName, c.revision,"
+			+ "c.project_count projectCount, "
+			+ "c.min_project_id projectId, c.min_project_code projectCode, c.min_project_name projectName "
+			+ "FROM svn_commit_stats_view c "
+			+ "WHERE c.repository_id = #{repositoryId} "
+			+ "${orderBy} ${limitOffset} ")
+	List<SvnCommitStats> selectStatsByRepositoryId(
+			@Param("repositoryId") int repositoryId,
+			@Param("orderBy") OrderByClause orderBy,
+			@Param("limitOffset") LimitOffsetClause limitOffset);
+	
+	@Select(" SELECT count(1) FROM svn_commit_stats_view c "
+			+ "WHERE c.repository_id = #{repositoryId} ")
+	int selectStatsCountByRepositoryId(@Param("repositoryId") int repositoryId);
 	
 	@Select(" SELECT c.id, c.repository_id repositoryId, c.commit_message commitMessage, "
 			+ "c.commit_date commitDate, c.committer_name committerName, c.revision "

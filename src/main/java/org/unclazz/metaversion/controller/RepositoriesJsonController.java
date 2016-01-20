@@ -20,6 +20,7 @@ import org.unclazz.metaversion.MVUserDetails;
 import org.unclazz.metaversion.entity.Project;
 import org.unclazz.metaversion.entity.SvnCommit;
 import org.unclazz.metaversion.entity.SvnCommitPath;
+import org.unclazz.metaversion.entity.SvnCommitStats;
 import org.unclazz.metaversion.entity.SvnRepository;
 import org.unclazz.metaversion.entity.SvnRepositoryStats;
 import org.unclazz.metaversion.service.CommitService;
@@ -230,7 +231,14 @@ public class RepositoriesJsonController {
 			return commitService.getCommitListByRepositoryId(repositoryId, paging);
 		}
 	}
-	
+
+	@RequestMapping(value="/repositories/{repositoryId}/commitstats", method=RequestMethod.GET)
+	public Paginated<SvnCommitStats> getRepositoriesCommitStats(final Principal principal,
+			@PathVariable("repositoryId") final int repositoryId,
+			@ModelAttribute final Paging paging) {
+		return commitService.getCommitStatsListByRepositoryId(repositoryId, paging);
+	}
+
 	@RequestMapping(value="/repositories/{repositoryId}/commits/{commitId}", method=RequestMethod.GET)
 	public ResponseEntity<SvnCommit> getRepositoriesCommitsCommitId(final Principal principal,
 			@PathVariable("repositoryId") final int repositoryId,

@@ -61,6 +61,8 @@
 		entity("RepositoryCommit", "api/repositories/:repositoryId/commits/:commitId", 
 				{repositoryId: "@repositoryId", commitId: "@commitId"},
 				angular.extend({unlinked: false}, pagingParams));
+		entity("RepositoryCommitStats", "api/repositories/:repositoryId/commitstats", 
+				{repositoryId: "@repositoryId"}, pagingParams);
 		entity("RepositoryCommitProject", "api/repositories/:repositoryId/commits/:commitId/projects", 
 				{repositoryId: "@repositoryId", commitId: "@commitId"}, pagingParams);
 		// SvnCommitPathエンティティのためのResourceオブジェクトを作成
@@ -312,7 +314,7 @@
 		};
 		// クエリ文字列が変化した際にコールされる関数を作成・設定
 		paths.watchPage($scope, function(p) {
-			entities.RepositoryCommit.query($scope.cond).$promise.then(function(paginated) {
+			entities.RepositoryCommitStats.query($scope.cond).$promise.then(function(paginated) {
 				$scope.totalSize = paginated.totalSize;
 				$scope.size = paginated.size;
 				$scope.list = paginated.list;
