@@ -98,7 +98,7 @@
 					} else if (angular.isString(v)) {
 						params[k] = search[k] + '';
 					} else if (v === true || v === false) {
-						params[k] = search[k] ? true : false;
+						params[k] = search[k] == 'false' ? false : true;
 					} else {
 						params[k] = search[k];
 					}
@@ -189,37 +189,59 @@
 			}
 		});
 	})
+	// トップ画面のためのコントローラ
 	.controller('index', function($log, $scope, entities, paths) {
+		// サジェスト用の関数を作成・設定
 		$scope.projectNames = function (partialName) {
+			// APIを通じてプロジェクト名を取得して返す
 			return entities.ProjectName.query({like: partialName}).$promise;
 		};
+		// 検索ボタンがクリックされたときにコールされる関数を作成・設定
 		$scope.submit = function() {
-			paths.go('projects', {like: $scope.like});
+			// プロジェクト一覧画面に遷移させる
+			paths.stringToPath('projects', {like: $scope.like});
 		};
 	})
+	// プロジェクト一覧画面のためのコントローラ
 	.controller('projects', function($log, $scope, $location, entities, paths) {
-		
+		// クエリ文字列をもとに検索条件を初期化
 		$scope.cond = paths.queryToObject({pathbase: false, like: ''});
+		// サジェスト用の関数を作成・設定
 		$scope.projectOrPathNames = function (partialName) {
+			// 変更パス・ベースの検索かどうかをチェック
 			if ($scope.cond.pathbase) {
+				// 変更パス・ベースの検索の場合
+				// APIを通じて変更パス名を取得して返す
 				return entities.PathName.query({like: partialName}).$promise;
 			} else {
+				// そうでない場合
+				// APIを通じてプロジェクト名を取得して返す
 				return entities.ProjectName.query({like: partialName}).$promise;
 			}
 		};
-
+		// 検索ボタンがクリックされたときにコールされる関数を作成・設定
+		$scope.submit = function() {
+			// プロジェクト一覧画面に遷移させる
+			paths.objectToQuery($scope.cond);
+		};
+		// クエリ文字列が変化した際にコールされる関数を作成・設定
 		paths.watchPage($scope, function(p) {
+			// 変化後のページ番号を検索条件に反映させる
 			$scope.cond.page = p;
+			// APIを介してコミットに紐づく変更パスを取得
 			entities.Project.query($scope.cond).$promise.then(function(paginated) {
+				// 取得に成功したら結果を画面に反映させる
 				$scope.totalSize = paginated.totalSize;
 				$scope.size = paginated.size;
 				$scope.list = paginated.list;
 			});
 		});
 	})
+	// プロジェクト詳細画面のためのコントローラ
 	.controller('projects$projectId', function($log, $scope, $location, entities, paths) {
 		$scope.project = entities.ProjectStats.get({id: paths.pathToIds().projectId});
 	})
+	// リポジトリ一覧画面のためのコントローラ
 	.controller('repositories', function($log, $scope, $location, entities, paths) {
 		
 		$scope.cond = paths.queryToObject();
@@ -232,14 +254,23 @@
 			});
 		});
 	})
+	// コミット詳細画面のためのコントローラ
 	.controller('repositories$repositoryId$commits$commitId', function($log, $scope, $location, entities, paths) {
+		// パスからリポジトリIDやコミットIDを読み取る
 		var ids = paths.pathToIds();
+		// APIを介してコミット情報を取得
 		$scope.commit = entities.RepositoryCommit.get(ids);
+		// APIを介してコミットの関連プロジェクトを取得
 		$scope.projectList = entities.RepositoryCommitProject.query(ids);
+		// クエリ文字列をもとに検索条件を初期化
 		$scope.cond = angular.extend(paths.queryToObject(), ids);
+		// クエリ文字列が変化した際にコールされる関数を作成・設定
 		paths.watchPage($scope, function(p) {
+			// 変化後のページ番号を検索条件に反映させる
 			$scope.cond.page = p;
+			// APIを介してコミットに紐づく変更パスを取得
 			entities.RepositoryCommitChangedPath.query($scope.cond).$promise.then(function(paginated) {
+				// 取得に成功したら結果を画面に反映させる
 				$scope.totalSize = paginated.totalSize;
 				$scope.size = paginated.size;
 				$scope.list = paginated.list;
