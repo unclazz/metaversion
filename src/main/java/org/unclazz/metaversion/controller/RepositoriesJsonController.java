@@ -17,11 +17,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.unclazz.metaversion.MVApplication;
 import org.unclazz.metaversion.MVUserDetails;
+import org.unclazz.metaversion.entity.Project;
 import org.unclazz.metaversion.entity.SvnCommit;
 import org.unclazz.metaversion.entity.SvnCommitPath;
 import org.unclazz.metaversion.entity.SvnRepository;
 import org.unclazz.metaversion.entity.SvnRepositoryStats;
 import org.unclazz.metaversion.service.CommitService;
+import org.unclazz.metaversion.service.ProjectService;
 import org.unclazz.metaversion.service.RepositoryService;
 import org.unclazz.metaversion.service.SvnCommandService;
 import org.unclazz.metaversion.vo.Paginated;
@@ -40,6 +42,8 @@ public class RepositoriesJsonController {
 	private CommitService commitService;
 	@Autowired
 	private SvnCommandService svnCommandService;
+	@Autowired
+	private ProjectService projectService;
 	
 	/**
 	 * リポジトリ情報の一覧を返す.
@@ -232,6 +236,14 @@ public class RepositoriesJsonController {
 			@PathVariable("repositoryId") final int repositoryId,
 			@PathVariable("commitId") final int commitId) {
 		return httpResponseOfOkOrNotFound(commitService.getCommitById(commitId));
+	}
+	
+	@RequestMapping(value="/repositories/{repositoryId}/commits/{commitId}/projects", method=RequestMethod.GET)
+	public Paginated<Project> getRepositoriesCommitsCommitIdProjects(final Principal principal,
+			@PathVariable("repositoryId") final int repositoryId,
+			@PathVariable("commitId") final int commitId,
+			@ModelAttribute final Paging paging) {
+		return projectService.getProjectListByCommitId(commitId, paging);
 	}
 	
 	/**

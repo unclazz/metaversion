@@ -56,6 +56,14 @@ public class ProjectService {
 				projectMapper.selectCountByPartialName(partialName));
 	}
 	
+	public Paginated<Project> getProjectListByCommitId(final int commitId, final Paging paging) {
+		final LimitOffsetClause limitOffset = LimitOffsetClause.of(paging);
+		final OrderByClause orderBy = OrderByClause.of("name", Order.ASC);
+		return Paginated.of(paging,
+				projectMapper.selectByCommitId(commitId, orderBy, limitOffset),
+				projectMapper.selectCountByCommitId(commitId));
+	}
+	
 	public Paginated<Project> getProjectListByPartialPath(final String partialPath, final Paging paging) {
 		final LimitOffsetClause limitOffset = LimitOffsetClause.of(paging);
 		final OrderByClause orderBy = OrderByClause.of("name", Order.ASC);

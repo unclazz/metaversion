@@ -61,6 +61,8 @@
 		entity("RepositoryCommit", "api/repositories/:repositoryId/commits/:commitId", 
 				{repositoryId: "@repositoryId", commitId: "@commitId"},
 				angular.extend({unlinked: false}, pagingParams));
+		entity("RepositoryCommitProject", "api/repositories/:repositoryId/commits/:commitId/projects", 
+				{repositoryId: "@repositoryId", commitId: "@commitId"}, pagingParams);
 		// SvnCommitPathエンティティのためのResourceオブジェクトを作成
 		entity("RepositoryCommitChangedPath", "api/repositories/:repositoryId/commits/:commitId/changedpaths", 
 				{repositoryId: "@repositoryId", commitId: "@commitId"}, pagingParams);
@@ -215,7 +217,7 @@
 			});
 		});
 	})
-	.controller('projects$rojectId', function($log, $scope, $location, entities, paths) {
+	.controller('projects$projectId', function($log, $scope, $location, entities, paths) {
 		$scope.project = entities.ProjectStats.get({id: paths.pathToIds().projectId});
 	})
 	.controller('repositories', function($log, $scope, $location, entities, paths) {
@@ -233,7 +235,7 @@
 	.controller('repositories$repositoryId$commits$commitId', function($log, $scope, $location, entities, paths) {
 		var ids = paths.pathToIds();
 		$scope.commit = entities.RepositoryCommit.get(ids);
-		
+		$scope.projectList = entities.RepositoryCommitProject.query(ids);
 		$scope.cond = angular.extend(paths.queryToObject(), ids);
 		paths.watchPage($scope, function(p) {
 			$scope.cond.page = p;
@@ -256,7 +258,6 @@
 				$scope.list = paginated.list;
 			});
 		});
-
 	});
 	
 	// mvApiTesterモジュールを追加

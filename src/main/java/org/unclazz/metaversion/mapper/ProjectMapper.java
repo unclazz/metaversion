@@ -74,6 +74,23 @@ public interface ProjectMapper {
 			+ ") ")
 	int selectCountByPartialPath(@Param("partialPath") String partialPath);
 	
+	@Select("SELECT p.id, code, name, responsible_person responsiblePerson, commit_sign_pattern commitSignPattern "
+			+ "FROM project p "
+			+ "INNER JOIN project_svn_commit pc "
+			+ "ON p.id = pc.project_id "
+			+ "WHERE pc.commit_id = #{commitId} "
+			+ "${orderBy} ${limitOffset} ")
+	List<Project> selectByCommitId(@Param("commitId") int commitId,
+			@Param("orderBy") OrderByClause orderBy,
+			@Param("limitOffset") LimitOffsetClause limitOffset);
+	
+	@Select("SELECT count(1) "
+			+ "FROM project p "
+			+ "INNER JOIN project_svn_commit pc "
+			+ "ON p.id = pc.project_id "
+			+ "WHERE pc.commit_id = #{commitId} ")
+	int selectCountByCommitId(@Param("commitId") int commitId);
+	
 	// TODO 必要？
 	@Select("SELECT count(1) FROM project WHERE id = #{id} ")
 	int selectCountById(@Param("id") int id);

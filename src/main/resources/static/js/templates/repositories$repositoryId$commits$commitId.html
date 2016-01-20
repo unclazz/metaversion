@@ -26,9 +26,19 @@
 				</div>
 				<table class="table">
 					<tr><th>リビジョン</th><td>{{commit.revision}}</td></tr>
-					<tr><th>コミット日時</th><td>{{commit.commitDate}}</td></tr>
+					<tr><th nowrap="nowrap">コミット日時</th><td>{{commit.commitDate}}</td></tr>
 					<tr><th>コミッター</th><td>{{commit.committerName}}</td></tr>
 					<tr><th>メッセージ</th><td>{{commit.commitMessage}}</td></tr>
+					<tr><th nowrap="nowrap">関連プロジェクト</th><td>
+						<span ng-show="projectList.totalSize == 0">（関連プロジェクトなし）</span>
+						<span ng-repeat="item in projectList.list">
+							<span><a href="#" ng-href="#/projects/{{item.id}}">{{item.name}}</a>
+							({{item.code}}) {{$last ? '' : '、'}}</span>
+						</span>
+						<span ng-show="projectList.totalSize > projectList.size">
+							ほか {{projectList.totalSize - projectList.size}}プロジェクト
+						</span>
+					</td></tr>
 				</table>
 				<div class="panel-body">
 					<div class="row">
