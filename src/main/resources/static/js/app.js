@@ -90,8 +90,8 @@
 			if (search === undefined) {
 				return params;
 			}
-			for (var k in params) {
-				if (k in search) {
+			for (var k in search) {
+				if (k in params) {
 					var v = params[k];
 					if (angular.isNumber(v)) {
 						params[k] = search[k] - 0;
@@ -102,6 +102,8 @@
 					} else {
 						params[k] = search[k];
 					}
+				} else {
+					params[k] = search[k];
 				}
 			}
 			return params;
@@ -159,15 +161,19 @@
 		$routeProvider.when('/', {
 			templateUrl: 'js/templates/index.html'
 		}).when('/projects', {
-			templateUrl: 'js/templates/projects.html'
+			templateUrl: 'js/templates/projects.html',
+			reloadOnSearch: false
 		}).when('/projects/:projectId', {
 			templateUrl: 'js/templates/projects$projectId.html'
 		}).when('/repositories', {
-			templateUrl: 'js/templates/repositories.html'
+			templateUrl: 'js/templates/repositories.html',
+			reloadOnSearch: false
 		}).when('/repositories/:repositoryId', {
-			templateUrl: 'js/templates/repositories$repositoryId.html'
+			templateUrl: 'js/templates/repositories$repositoryId.html',
+			reloadOnSearch: false
 		}).when('/repositories/:repositoryId/commits/:commitId', {
-			templateUrl: 'js/templates/repositories$repositoryId$commits$commitId.html'
+			templateUrl: 'js/templates/repositories$repositoryId$commits$commitId.html',
+			reloadOnSearch: false
 		}).otherwise({
 			redirectTo: '/'
 		});
@@ -205,7 +211,7 @@
 	// プロジェクト一覧画面のためのコントローラ
 	.controller('projects', function($log, $scope, $location, entities, paths) {
 		// クエリ文字列をもとに検索条件を初期化
-		$scope.cond = paths.queryToObject({pathbase: false, like: ''});
+		$scope.cond = paths.queryToObject({page: 1, pathbase: false, like: ''});
 		// サジェスト用の関数を作成・設定
 		$scope.projectOrPathNames = function (partialName) {
 			// 変更パス・ベースの検索かどうかをチェック
@@ -224,11 +230,15 @@
 			// プロジェクト一覧画面に遷移させる
 			paths.objectToQuery($scope.cond);
 		};
+		// ページ変更時にコールされる関数を作成・設定
+		$scope.pageChange = function() {
+			paths.entryToQuery('page', $scope.cond.page)
+		};
 		// クエリ文字列が変化した際にコールされる関数を作成・設定
-		paths.watchPage($scope, function(p) {
-			// 変化後のページ番号を検索条件に反映させる
-			$scope.cond.page = p;
-			// APIを介してコミットに紐づく変更パスを取得
+		$scope.$watch(function () {
+			return $location.search();
+		}, function(search) {
+			// APIを介してプロジェクト一覧を取得
 			entities.Project.query($scope.cond).$promise.then(function(paginated) {
 				// 取得に成功したら結果を画面に反映させる
 				$scope.totalSize = paginated.totalSize;
@@ -243,10 +253,17 @@
 	})
 	// リポジトリ一覧画面のためのコントローラ
 	.controller('repositories', function($log, $scope, $location, entities, paths) {
-		
-		$scope.cond = paths.queryToObject();
+		// クエリ文字列をもとに検索条件を初期化
+		$scope.cond = paths.queryToObject({page: 1});
+		// ページ変更時にコールされる関数を作成・設定
+		$scope.pageChange = function() {
+			paths.entryToQuery('page', $scope.cond.page)
+		};
+		// クエリ文字列が変化した際にコールされる関数を作成・設定
 		paths.watchPage($scope, function(p) {
+			// 変化後のページ番号を検索条件に反映させる
 			$scope.cond.page = p;
+			// APIを介してリポジトリ一覧を取得
 			entities.Repository.query($scope.cond).$promise.then(function(paginated) {
 				$scope.totalSize = paginated.totalSize;
 				$scope.size = paginated.size;
@@ -263,7 +280,11 @@
 		// APIを介してコミットの関連プロジェクトを取得
 		$scope.projectList = entities.RepositoryCommitProject.query(ids);
 		// クエリ文字列をもとに検索条件を初期化
-		$scope.cond = angular.extend(paths.queryToObject(), ids);
+		$scope.cond = angular.extend(paths.queryToObject({page: 1}), ids);
+		// ページ変更時にコールされる関数を作成・設定
+		$scope.pageChange = function() {
+			paths.entryToQuery('page', $scope.cond.page)
+		};
 		// クエリ文字列が変化した際にコールされる関数を作成・設定
 		paths.watchPage($scope, function(p) {
 			// 変化後のページ番号を検索条件に反映させる
@@ -277,12 +298,20 @@
 			});
 		});
 	})
+	// リポジトリ詳細画面のためのコントローラ
 	.controller('repositories$repositoryId', function($log, $scope, $location, entities, paths) {
+		// パスからリポジトリIDを読み取る
 		var ids = paths.pathToIds();
+		// APIを介してリポジトリ情報を取得
 		$scope.repository = entities.Repository.get({id: ids.repositoryId});
-		$scope.cond = angular.extend(paths.queryToObject(), ids);
+		// クエリ文字列をもとに検索条件を初期化
+		$scope.cond = angular.extend(paths.queryToObject({page: 1}), ids);
+		// ページ変更時にコールされる関数を作成・設定
+		$scope.pageChange = function() {
+			paths.entryToQuery('page', $scope.cond.page)
+		};
+		// クエリ文字列が変化した際にコールされる関数を作成・設定
 		paths.watchPage($scope, function(p) {
-			$scope.cond.page = p;
 			entities.RepositoryCommit.query($scope.cond).$promise.then(function(paginated) {
 				$scope.totalSize = paginated.totalSize;
 				$scope.size = paginated.size;
