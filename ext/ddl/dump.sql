@@ -272,7 +272,7 @@ ALTER TABLE svn_repository OWNER TO postgres;
 CREATE VIEW project_changedpath_view AS
  SELECT pc.project_id,
     cp.path,
-    r.id AS repository_id,
+    r.id AS svn_repository_id,
     r.name AS svn_repository_name,
     count(1) AS commit_count,
     min(c.revision) AS min_revision,
@@ -372,11 +372,35 @@ CREATE SEQUENCE svn_commit_seq
 ALTER TABLE svn_commit_seq OWNER TO postgres;
 
 --
+-- Name: svn_commit_stats_view; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE svn_commit_stats_view (
+    id integer,
+    repository_id integer,
+    revision integer,
+    commit_date timestamp without time zone,
+    commit_message text,
+    committer_name text,
+    create_date timestamp without time zone,
+    create_user_id integer,
+    project_count bigint,
+    min_project_id integer,
+    min_project_name text,
+    min_project_code text
+);
+
+ALTER TABLE ONLY svn_commit_stats_view REPLICA IDENTITY NOTHING;
+
+
+ALTER TABLE svn_commit_stats_view OWNER TO postgres;
+
+--
 -- Name: svn_repository_path_view; Type: VIEW; Schema: public; Owner: postgres
 --
 
 CREATE VIEW svn_repository_path_view AS
- SELECT c.repository_id,
+ SELECT c.repository_id AS svn_repository_id,
     cp.path
    FROM (svn_commit c
      JOIN svn_commit_path cp ON ((c.id = cp.commit_id)))
@@ -413,7 +437,7 @@ CREATE VIEW svn_repository_stats_view AS
           WHERE (r.id = c.repository_id)) AS commit_count,
     ( SELECT count(rp.path) AS count
            FROM svn_repository_path_view rp
-          WHERE (r.id = rp.repository_id)) AS path_count
+          WHERE (r.id = rp.svn_repository_id)) AS path_count
    FROM svn_repository r;
 
 
@@ -593,6 +617,39 @@ ALTER TABLE ONLY application_user
 
 ALTER TABLE ONLY application_user
     ADD CONSTRAINT user_uniq0 UNIQUE (name);
+
+
+--
+-- Name: _RETURN; Type: RULE; Schema: public; Owner: postgres
+--
+
+CREATE RULE "_RETURN" AS
+    ON SELECT TO svn_commit_stats_view DO INSTEAD  SELECT c_pc.id,
+    c_pc.repository_id,
+    c_pc.revision,
+    c_pc.commit_date,
+    c_pc.commit_message,
+    c_pc.committer_name,
+    c_pc.create_date,
+    c_pc.create_user_id,
+    c_pc.project_count,
+    c_pc.min_project_id,
+    p.name AS min_project_name,
+    p.code AS min_project_code
+   FROM (( SELECT c.id,
+            c.repository_id,
+            c.revision,
+            c.commit_date,
+            c.commit_message,
+            c.committer_name,
+            c.create_date,
+            c.create_user_id,
+            count(pc.project_id) AS project_count,
+            min(pc.project_id) AS min_project_id
+           FROM (svn_commit c
+             LEFT JOIN project_svn_commit pc ON ((pc.commit_id = c.id)))
+          GROUP BY c.id) c_pc
+     LEFT JOIN project p ON ((c_pc.min_project_id = p.id)));
 
 
 --
