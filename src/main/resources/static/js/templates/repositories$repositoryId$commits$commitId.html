@@ -4,30 +4,31 @@
 	<meta charset="utf-8" />
 </head>
 <body>
-	<div class="container" ng-controller="repositories$repositoryId">
+	<div class="container" ng-controller="repositories$repositoryId$commits$commitId">
 		<nav>
 			<ol class="breadcrumb">
 				  <li><a href="#" ng-href="#/">
 				  <span class="glyphicon glyphicon-home" aria-hidden="true"></span> トップ</a></li>
 				  <li><a href="#" ng-href="#/repositories">リポジトリ一覧</a></li>
-				  <li class="active">リポジトリ詳細</li>
+				  <li><a href="#" ng-href="#/repositories/{{cond.repositoryId}}">リポジトリ詳細</a></li>
+				  <li class="active">コミット詳細</li>
 			</ol>
 		</nav>
 
 		<header class="page-header">
-			<h1>{{repository.name}}</h1>
+			<h1>コミット詳細</h1>
 		</header>
 
 		<article>
 			<div class="panel panel-default">
 				<div class="panel-heading">
-					リポジトリ情報
+					コミット情報
 				</div>
 				<table class="table">
-					<tr><th>ベースURL</th><td>{{repository.baseUrl}}</td></tr>
-					<tr><th>trunkパス・パターン</th><td>{{repository.trunkPathPattern}}</td></tr>
-					<tr><th>branchパス・パターン</th><td>{{repository.branchPathPattern}}</td></tr>
-					<tr><th>最終リビジョン</th><td>{{repository.maxRevision}}</td></tr>
+					<tr><th>リビジョン</th><td>{{commit.revision}}</td></tr>
+					<tr><th>コミット日時</th><td>{{commit.commitDate}}</td></tr>
+					<tr><th>コミッター</th><td>{{commit.committerName}}</td></tr>
+					<tr><th>メッセージ</th><td>{{commit.commitMessage}}</td></tr>
 				</table>
 				<div class="panel-body">
 					<div class="row">
@@ -47,7 +48,7 @@
 
 			<div class="panel panel-default" ng-show="list.length > 0">
 				<div class="panel-heading">
-					コミット一覧
+					変更パス一覧
 				</div>
 				<div class="panel-body">
 					<div class="row">
@@ -79,25 +80,19 @@
 				<table class="table table-hover table-condensed">
 					<thead>
 						<tr>
-							<th>リビジョン</th>
-							<th>コミット日時</th>
-							<th>コミッター</th>
-							<th>メッセージ</th>
-							<th>アクション</th>
+							<th>変更タイプ</th>
+							<th>変更パス</th>
 						</tr>
 					</thead>
 					<tbody>
 						<tr  ng-repeat="item in list">
-							<td><a href="#" ng-href="#/repositories/{{repository.id}}/commits/{{item.id}}">{{item.revision}}</a></td>
-							<td>{{item.commitDate}}</td>
-							<td>{{item.committerName}}</td>
-							<td>{{item.commitMessage | excerpt:50}}</td>
 							<td>
-								<div class="btn-group btn-group-xs" role="group">
-									<a class="btn btn-default" href="#" ng-href="#/repositories/{{item.id}}" role="button">リポジトリ詳細</a>
-									<a class="btn btn-default" href="#" ng-href="#/repositories/{{item.id}}/commits" role="button">コミット一覧</a>
-								</div>
+								<span class="label label-info" ng-show="item.changeTypeId == 1">ADDED</span>
+								<span class="label label-danger" ng-show="item.changeTypeId == 2">DELETED</span>
+								<span class="label label-warning" ng-show="item.changeTypeId == 3">MODIFIED</span>
+								<span class="label label-danger" ng-show="item.changeTypeId == 4">REPLACED</span>
 							</td>
+							<td>{{item.path}}</td>
 						</tr>
 					</tbody>
 				</table>
@@ -111,6 +106,6 @@
 				</div>
 			</div>
 		</article>
-	</div><!-- /.container -->
+	</div>
 </body>
 </html>

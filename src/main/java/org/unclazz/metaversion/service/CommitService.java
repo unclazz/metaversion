@@ -50,6 +50,10 @@ public class CommitService {
 		
 	}
 	
+	public SvnCommit getCommitById(final int commitId) {
+		return svnCommitMapper.selectOneById(commitId);
+	}
+	
 	public Paginated<ProjectChangedPath> getChangedPathListByProjectId(final int projectId, final Paging paging) {
 		final OrderByClause orderBy = OrderByClause.of("path", Order.DESC);
 		final LimitOffsetClause limitOffset = LimitOffsetClause.of(paging);

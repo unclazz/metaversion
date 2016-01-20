@@ -227,6 +227,13 @@ public class RepositoriesJsonController {
 		}
 	}
 	
+	@RequestMapping(value="/repositories/{repositoryId}/commits/{commitId}", method=RequestMethod.GET)
+	public ResponseEntity<SvnCommit> getRepositoriesCommitsCommitId(final Principal principal,
+			@PathVariable("repositoryId") final int repositoryId,
+			@PathVariable("commitId") final int commitId) {
+		return httpResponseOfOkOrNotFound(commitService.getCommitById(commitId));
+	}
+	
 	/**
 	 * IDで指定されたコミットにより変更されたパスの一覧を返す.
 	 * 

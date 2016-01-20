@@ -1,7 +1,22 @@
 (function(angular) {
 	var app = angular.module('app', ['ngResource', 'ui.bootstrap', 'ngRoute']);
 	
-	app.factory('entities', function($log, $resource) {
+	app.filter('excerpt', function () {
+		return function (text, len) {
+			if (len === undefined) {
+				len = 100;
+			}
+			if(text !== undefined) {
+				if(text.length > len) {
+				return text.substring(0, len - 3) + '...';
+				}
+				else {
+				return text;
+				}
+			}
+		};
+	})
+	.factory('entities', function($log, $resource) {
 		var entities = {};
 		var pagingParams = {page: 1, size: 25};
 		var suggestParams = {like: '', size: 25};
@@ -43,8 +58,9 @@
 		entity("Repository", "api/repositories/:id", {id: "@id"}, pagingParams);
 		// SvnCommitエンティティのためのResourceオブジェクトを作成
 		// ＊クエリ用パラメータのデフォルトとしてunlinkedプロパティを追加している
-		entity("RepositoryCommit", "api/repositories/:repositoryId/commits", 
-				{repositoryId: "@repositoryId"}, angular.extend({unlinked: false}, pagingParams));
+		entity("RepositoryCommit", "api/repositories/:repositoryId/commits/:commitId", 
+				{repositoryId: "@repositoryId", commitId: "@commitId"},
+				angular.extend({unlinked: false}, pagingParams));
 		// SvnCommitPathエンティティのためのResourceオブジェクトを作成
 		entity("RepositoryCommitChangedPath", "api/repositories/:repositoryId/commits/:commitId/changedpaths", 
 				{repositoryId: "@repositoryId", commitId: "@commitId"}, pagingParams);
@@ -148,6 +164,8 @@
 			templateUrl: 'js/templates/repositories.html'
 		}).when('/repositories/:repositoryId', {
 			templateUrl: 'js/templates/repositories$repositoryId.html'
+		}).when('/repositories/:repositoryId/commits/:commitId', {
+			templateUrl: 'js/templates/repositories$repositoryId$commits$commitId.html'
 		}).otherwise({
 			redirectTo: '/'
 		});
@@ -212,10 +230,34 @@
 			});
 		});
 	})
+	.controller('repositories$repositoryId$commits$commitId', function($log, $scope, $location, entities, paths) {
+		var ids = paths.pathToIds();
+		$scope.commit = entities.RepositoryCommit.get(ids);
+		
+		$scope.cond = angular.extend(paths.queryToObject(), ids);
+		paths.watchPage($scope, function(p) {
+			$scope.cond.page = p;
+			entities.RepositoryCommitChangedPath.query($scope.cond).$promise.then(function(paginated) {
+				$scope.totalSize = paginated.totalSize;
+				$scope.size = paginated.size;
+				$scope.list = paginated.list;
+			});
+		});
+	})
 	.controller('repositories$repositoryId', function($log, $scope, $location, entities, paths) {
-		$scope.repository = entities.Repository.get({id: paths.pathToIds().repositoryId});
+		var ids = paths.pathToIds();
+		$scope.repository = entities.Repository.get({id: ids.repositoryId});
+		$scope.cond = angular.extend(paths.queryToObject(), ids);
+		paths.watchPage($scope, function(p) {
+			$scope.cond.page = p;
+			entities.RepositoryCommit.query($scope.cond).$promise.then(function(paginated) {
+				$scope.totalSize = paginated.totalSize;
+				$scope.size = paginated.size;
+				$scope.list = paginated.list;
+			});
+		});
+
 	});
-	
 	
 	// mvApiTesterモジュールを追加
 	angular.module('mvApiTester', ['mvCommon', 'ngResource', 'ui.bootstrap']);
