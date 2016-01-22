@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org" ng-app="app">
 <head>
 	<meta charset="utf-8" />
-	<title th:text="${app.name}">AppName</title>
+	<title th:text="${app.name} + ' ' + ${app.version}">AppName</title>
 	<style type="text/css">
 		[ng\:cloak], [ng-cloak], .ng-cloak {
 			display: none !important;

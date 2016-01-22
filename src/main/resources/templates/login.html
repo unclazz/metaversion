@@ -2,17 +2,50 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="utf-8"/>
-    <title>login</title>
+	<title th:text="${app.name} + ' ' + ${app.version}">AppName</title>
+	<style type="text/css">
+		[ng\:cloak], [ng-cloak], .ng-cloak {
+			display: none !important;
+		}
+	</style>
+	<link href="../static/css/bootstrap.min.css" th:href="@{/css/bootstrap.min.css}" rel="stylesheet"/>
+	<link href="../static/css/app.css" th:href="@{/css/app.css}" rel="stylesheet"/>
 </head>
 <body>
-	<form action="#" th:action="@{/login}" method="post" autocomplete="off">
-        <label for="name">ユーザ名</label>
-        <input type="text" name="username" id="username" placeholder="ユーザ名を入力して下さい" />
-        <br />
-        <label for="password">パスワード</label>
-        <input type="password" name="password" id="password" placeholder="パスワードを入力して下さい" />
-	    <br/>
-	    <button type="submit">ログイン</button>
-	</form>
+	<article>
+	<div class="container">
+		<div class="panel panel-default panel-login">
+			<div class="panel-heading">
+				<h1>
+					MetaVersion
+				</h1>
+			</div>
+			<div class="panel-body">
+				<form action="#" th:action="@{/login}" method="post" autocomplete="off" >
+					<table class="table table-borderless">
+						<tr>
+							<td><label for="name">ユーザ名</label></td>
+							<td>
+								<input type="text" name="username" id="username" placeholder="ユーザ名" class="form-control" />
+							</td>
+						</tr>
+						<tr>
+							<td><label for="password">パスワード</label></td>
+							<td>
+								<input type="password" name="password" id="password" placeholder="パスワード" class="form-control" />
+							</td>
+						</tr>
+						<tr>
+							<td colspan="2" style="text-align: center;">
+							    <button type="submit" class="btn btn-primary">ログイン</button>
+							</td>
+						</tr>
+					</table>
+				</form>
+			</div>
+		</div>
+	</div>
+	</article>
+		
 </body>
 </html>

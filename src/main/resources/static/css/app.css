@@ -6,3 +6,15 @@ body {
 	margin-top: 0px;
 	margin-bottom: 0px;
 }
+.table-borderless td,
+.table-borderless th {
+    border: 0 !important;
+}
+.panel-login {
+	width: 360px;
+	margin: 80px auto;
+}
+.panel-login .panel-heading h1 {
+	background: url(../img/logo_40x70.png) no-repeat;
+	text-indent: 80px;
+}
