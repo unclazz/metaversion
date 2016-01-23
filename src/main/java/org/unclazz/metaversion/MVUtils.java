@@ -72,6 +72,7 @@ public final class MVUtils {
 	}
 	
 	private static final Pattern doubleSlash = Pattern.compile("/+");
+	private static final Pattern endSlash = Pattern.compile("/+$");
 	public static CharSequence slashNormalize(final CharSequence original) {
 		CharSequence result = original;
 		
@@ -84,7 +85,7 @@ public final class MVUtils {
 		}
 		
 		if (result.charAt(result.length() - 1) == '/') {
-			result = new StringBuilder().append(result.subSequence(0, result.length() - 2));
+			result = new StringBuilder().append(endSlash.matcher(result).replaceAll(""));
 		}
 		
 		return doubleSlash.matcher(result).replaceAll("/");

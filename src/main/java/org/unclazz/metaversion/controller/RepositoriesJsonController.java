@@ -197,7 +197,7 @@ public class RepositoriesJsonController {
 	}
 	
 	private void normalizeRepositoryInfo(final SvnRepository r) {
-		r.setBaseUrl(slashNormalize(r.getBaseUrl()).toString());
+		r.setBaseUrl(r.getBaseUrl().replaceAll("/+$", ""));
 	}
 	
 	private void checkConnectivity(final SvnRepository r) {
