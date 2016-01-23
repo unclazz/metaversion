@@ -28,25 +28,30 @@
 				});
 				return paginated;
 			};
-			var paginatedQuery = {
-				method: 'GET',
-				params: queryParams,
-				isArray:false,
-				transformResponse : xformResp
-			};
+			var paginatedQueryAction = {
+					method: 'GET',
+					params: queryParams,
+					isArray:false,
+					transformResponse : xformResp
+				};
+			var resaveAction = {
+					method: 'PUT',
+					isArray:false
+				};
 			var customActions = {
-				'query' : paginatedQuery
+				'query' : paginatedQueryAction,
+				'resave' : resaveAction
 			};
 			entities[entityName] = $resource(urlPattern,urlParams, customActions);
 		};
 		var suggest = function(entityName, urlPattern, urlParams, queryParams) {
-			var paginatedQuery = {
+			var paginatedQueryAction = {
 				method: 'GET',
 				params: queryParams,
 				isArray: true
 			};
 			var customActions = {
-				'query' : paginatedQuery
+				'query' : paginatedQueryAction
 			};
 			entities[entityName] = $resource(urlPattern,urlParams, customActions);
 		};
@@ -165,8 +170,13 @@
 		}).when('/projects', {
 			templateUrl: 'js/templates/projects.html',
 			reloadOnSearch: false
+		}).when('/projects/new', {
+			templateUrl: 'js/templates/projects$projectId$edit.html'
 		}).when('/projects/:projectId', {
-			templateUrl: 'js/templates/projects$projectId.html'
+			templateUrl: 'js/templates/projects$projectId.html',
+			reloadOnSearch: false
+		}).when('/projects/:projectId/edit', {
+			templateUrl: 'js/templates/projects$projectId$edit.html'
 		}).when('/repositories', {
 			templateUrl: 'js/templates/repositories.html',
 			reloadOnSearch: false
@@ -264,6 +274,31 @@
 	// プロジェクト詳細画面のためのコントローラ
 	.controller('projects$projectId', function($log, $scope, $location, entities, paths) {
 		$scope.project = entities.ProjectStats.get({id: paths.pathToIds().projectId});
+	})
+	// プロジェクト詳細画面のためのコントローラ
+	.controller('projects$projectId$edit', function($log, $scope, $location, entities, paths) {
+		// パスからIDを読み取る
+		var ids = paths.pathToIds();
+		if (ids.projectId !== undefined) {
+			$scope.project = entities.Project.get({id: paths.pathToIds().projectId});
+		} else {
+			$scope.project = new entities.Project({id: undefined});
+		}
+		
+		$scope.submit = function() {
+			var p;
+			if (ids.projectId > 0) {
+				p = $scope.project.$resave();
+			} else {
+				p = $scope.project.$save();
+			}
+			$log.debug(p);
+			p.then(function (data) {
+				paths.stringToPath('projects/' + data.id);
+			}, function (error) {
+				// TODO
+			});
+		};
 	})
 	// リポジトリ一覧画面のためのコントローラ
 	.controller('repositories', function($log, $scope, $location, entities, paths) {

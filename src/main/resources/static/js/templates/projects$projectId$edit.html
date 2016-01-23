@@ -1,0 +1,56 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+	<meta charset="utf-8" />
+</head>
+<body>
+	<div class="container" ng-controller="projects$projectId$edit">
+		<nav>
+			<ol class="breadcrumb">
+				  <li><a href="#" ng-href="#/">
+				  <span class="glyphicon glyphicon-home" aria-hidden="true"></span> トップ</a></li>
+				  <li><a href="#" ng-href="#/projects">プロジェクト一覧</a></li>
+				  <li ng-show="project.id > 0"><a href="#" ng-href="#/projects/{{project.id}}">プロジェクト詳細</a></li>
+				  <li class="active" ng-show="project.id !== undefined">プロジェクト編集</li>
+				  <li class="active" ng-show="project.id === undefined">プロジェクト追加</li>
+			</ol>
+		</nav>
+
+		<header class="page-header">
+			<h1>プロジェクト{{project.id !== undefined ? '編集' : '追加'}}</h1>
+		</header>
+
+		<article>
+			<form method="post" ng-submit="submit()">
+				<div class="panel panel-default">
+					<div class="panel-heading">
+						プロジェクト情報
+					</div>
+					<table class="table">
+						<tr><th>名前</th>
+						<td><input type="text" class="form-control" required="required" ng-model="project.name" /></td></tr>
+						<tr><th>コード</th>
+						<td><input type="text" class="form-control" required="required" ng-model="project.code" /></td></tr>
+						<tr><th>担当者</th>
+						<td><input type="text" class="form-control" required="required" ng-model="project.responsiblePerson" /></td></tr>
+						<tr><th>コミット・サイン</th>
+						<td><input type="text" class="form-control" required="required" ng-model="project.commitSignPattern" /></td></tr>
+					</table>
+					<div class="panel-body">
+						<div class="row">
+							<div class="col-lg-6">
+							</div><!-- /.col-lg-N -->
+							<div class="col-lg-4">
+							</div><!-- /.col-lg-N -->
+							<div class="col-lg-2" style="text-align: right;">
+								<a class="btn btn-default" role="button" href="#" ng-href="#/projects/{{project.id}}">キャンセル</a>
+								<button class="btn btn-primary" type="submit">OK</button>
+							</div><!-- /.col-lg-N -->
+						</div><!-- /.row -->
+					</div>
+				</div>
+			</form>
+		</article>
+	</div><!-- /.container -->
+</body>
+</html>
