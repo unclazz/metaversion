@@ -265,26 +265,6 @@
 	.controller('projects$projectId', function($log, $scope, $location, entities, paths) {
 		$scope.project = entities.ProjectStats.get({id: paths.pathToIds().projectId});
 	})
-	// ユーザ一覧画面のためのコントローラ
-	.controller('users', function($log, $scope, $location, entities, paths) {
-		// クエリ文字列をもとに検索条件を初期化
-		$scope.cond = paths.queryToObject({page: 1});
-		// ページ変更時にコールされる関数を作成・設定
-		$scope.pageChange = function() {
-			paths.entryToQuery('page', $scope.cond.page)
-		};
-		// クエリ文字列が変化した際にコールされる関数を作成・設定
-		paths.watchPage($scope, function(p) {
-			// 変化後のページ番号を検索条件に反映させる
-			$scope.cond.page = p;
-			// APIを介してリポジトリ一覧を取得
-			entities.User.query($scope.cond).$promise.then(function(paginated) {
-				$scope.totalSize = paginated.totalSize;
-				$scope.size = paginated.size;
-				$scope.list = paginated.list;
-			});
-		});
-	})
 	// リポジトリ一覧画面のためのコントローラ
 	.controller('repositories', function($log, $scope, $location, entities, paths) {
 		// クエリ文字列をもとに検索条件を初期化
@@ -299,6 +279,27 @@
 			$scope.cond.page = p;
 			// APIを介してリポジトリ一覧を取得
 			entities.Repository.query($scope.cond).$promise.then(function(paginated) {
+				$scope.totalSize = paginated.totalSize;
+				$scope.size = paginated.size;
+				$scope.list = paginated.list;
+			});
+		});
+	})
+	// リポジトリ詳細画面のためのコントローラ
+	.controller('repositories$repositoryId', function($log, $scope, $location, entities, paths) {
+		// パスからリポジトリIDを読み取る
+		var ids = paths.pathToIds();
+		// APIを介してリポジトリ情報を取得
+		$scope.repository = entities.Repository.get({id: ids.repositoryId});
+		// クエリ文字列をもとに検索条件を初期化
+		$scope.cond = angular.extend(paths.queryToObject({page: 1}), ids);
+		// ページ変更時にコールされる関数を作成・設定
+		$scope.pageChange = function() {
+			paths.entryToQuery('page', $scope.cond.page)
+		};
+		// クエリ文字列が変化した際にコールされる関数を作成・設定
+		paths.watchPage($scope, function(p) {
+			entities.RepositoryCommitStats.query($scope.cond).$promise.then(function(paginated) {
 				$scope.totalSize = paginated.totalSize;
 				$scope.size = paginated.size;
 				$scope.list = paginated.list;
@@ -332,21 +333,20 @@
 			});
 		});
 	})
-	// リポジトリ詳細画面のためのコントローラ
-	.controller('repositories$repositoryId', function($log, $scope, $location, entities, paths) {
-		// パスからリポジトリIDを読み取る
-		var ids = paths.pathToIds();
-		// APIを介してリポジトリ情報を取得
-		$scope.repository = entities.Repository.get({id: ids.repositoryId});
+	// ユーザ一覧画面のためのコントローラ
+	.controller('users', function($log, $scope, $location, entities, paths) {
 		// クエリ文字列をもとに検索条件を初期化
-		$scope.cond = angular.extend(paths.queryToObject({page: 1}), ids);
+		$scope.cond = paths.queryToObject({page: 1});
 		// ページ変更時にコールされる関数を作成・設定
 		$scope.pageChange = function() {
 			paths.entryToQuery('page', $scope.cond.page)
 		};
 		// クエリ文字列が変化した際にコールされる関数を作成・設定
 		paths.watchPage($scope, function(p) {
-			entities.RepositoryCommitStats.query($scope.cond).$promise.then(function(paginated) {
+			// 変化後のページ番号を検索条件に反映させる
+			$scope.cond.page = p;
+			// APIを介してリポジトリ一覧を取得
+			entities.User.query($scope.cond).$promise.then(function(paginated) {
 				$scope.totalSize = paginated.totalSize;
 				$scope.size = paginated.size;
 				$scope.list = paginated.list;
