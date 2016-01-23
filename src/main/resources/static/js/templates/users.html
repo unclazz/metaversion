@@ -4,17 +4,17 @@
 	<meta charset="utf-8" />
 </head>
 <body>
-	<div class="container" ng-controller="repositories">
+	<div class="container" ng-controller="users">
 		<nav>
 			<ol class="breadcrumb">
 				  <li><a href="#" ng-href="#/">
 				  <span class="glyphicon glyphicon-home" aria-hidden="true"></span> トップ</a></li>
-				  <li class="active">リポジトリ一覧</li>
+				  <li class="active">ユーザ一覧</li>
 			</ol>
 		</nav>
 
 		<header class="page-header">
-			<h1>リポジトリ一覧</h1>
+			<h1>ユーザ一覧</h1>
 		</header>
 
 		<article ng-show="list.length > 0">
@@ -42,39 +42,31 @@
 							<!-- empty -->
 						</div>
 						<div class="col-lg-1">
-							<a class="btn btn-default" href="project-edit.html">追加</a>
+							<a class="btn btn-default" href="#/users/new">追加</a>
 						</div>
 					</div>
 				</div>
 				<table class="table table-hover table-condensed">
 					<thead>
 						<tr>
-							<th>リポジトリ名</th>
-							<th>ベースURL</th>
+							<th>ユーザ名</th>
+							<th>管理者権限</th>
 							<th>アクション</th>
 						</tr>
 					</thead>
 					<tbody>
 						<tr  ng-repeat="item in list">
-							<td><a href="#" ng-href="#/repositories/{{item.id}}">{{item.name}}</a></td>
-							<td>{{item.baseUrl}}</td>
-							<td>
+							<td>{{item.name}}</td>
+							<td style="width: 120px;">{{item.admin ? 'あり' : 'なし'}}</td>
+							<td style="width: 120px;">
 								<div class="btn-group btn-group-xs" role="group">
-									<a class="btn btn-default" href="#" ng-href="#/repositories/{{item.id}}" role="button">リポジトリ詳細</a>
-									<a class="btn btn-default" href="#" ng-href="#/repositories/{{item.id}}/commits" role="button">コミット一覧</a>
+									<a class="btn btn-default" href="#" ng-href="#/users/{{item.id}}/edit" role="button">編集</a>
+									<a class="btn btn-default btn-danger" ng-class="{'disabled': item.id == 0}" href="#" ng-href="#/users/{{item.id}}/delete" role="button">削除</a>
 								</div>
 							</td>
 						</tr>
 					</tbody>
 				</table>
-				<div class="panel-body">
-					<div class="row">
-						<div class="col-lg-6">
-						</div>
-						<div class="col-lg-6">
-						</div>
-					</div>
-				</div>
 				<div class="panel-body">
 					<div class="row">
 						<div class="col-lg-3">
@@ -98,7 +90,7 @@
 							<!-- empty -->
 						</div>
 						<div class="col-lg-1">
-							<a class="btn btn-default" href="project-edit.html">追加</a>
+							<a class="btn btn-default" href="#/users/new">追加</a>
 						</div>
 					</div>
 				</div>
