@@ -13,6 +13,7 @@ import org.unclazz.metaversion.MVUserDetails;
 import org.unclazz.metaversion.entity.OnlineBatchProgram;
 import org.unclazz.metaversion.entity.SvnCommit;
 import org.unclazz.metaversion.entity.SvnCommitPath;
+import org.unclazz.metaversion.entity.SvnCommitPathWithRawInfo;
 import org.unclazz.metaversion.entity.SvnRepository;
 import org.unclazz.metaversion.mapper.SvnCommitMapper;
 import org.unclazz.metaversion.mapper.SvnCommitPathMapper;
@@ -129,6 +130,16 @@ public class LogImportService {
 					continue;
 				}
 				
+				// INSERT用のVOを初期化
+				final SvnCommitPathWithRawInfo rec = new SvnCommitPathWithRawInfo();
+				// 新しいVOにchangeTypeIdをコピー
+				// ＊id、commitId、path、rawPath、basePathSegment、branchPathSegmentはこのあと設定
+				rec.setChangeTypeId(path.getChangeTypeId());
+				
+				// 新しいVOにrawPathとbasePathSegmentを設定
+				rec.setRawPath(path.getPath());
+				rec.setBasePathSegment(pathInfo.getBaseUrlPathComponent());
+				
 				// SVNから返されたパスからアプリのリポジトリ設定にあるURLのベースパスを除去
 				final CharSequence pathAfterBaseUrl = new StringBuilder(path.getPath())
 						.subSequence(pathInfo.getBaseUrlPathComponent().length(), path.getPath().length());
@@ -145,6 +156,9 @@ public class LogImportService {
 					// 該当する場合
 					// trunkの部分パスを除去する
 					normalizedUrl = pathAfterBaseUrl.subSequence(trunkMatcher.end(), pathAfterBaseUrl.length());
+					
+					// INSERT用VOにbranchPathSegmentを設定
+					rec.setBranchPathSegment(trunkMatcher.group());
 				} else {
 					// 該当しない場合
 					// branchのパスに該当するかチェック
@@ -153,6 +167,9 @@ public class LogImportService {
 						// 該当する場合
 						// branchの部分パスを除去する
 						normalizedUrl = pathAfterBaseUrl.subSequence(branchMatcher.end(), pathAfterBaseUrl.length());
+						
+						// INSERT用VOにbranchPathSegmentを設定
+						rec.setBranchPathSegment(branchMatcher.group());
 					} else {
 						// 該当しない場合
 						// インポート対象でないのでスキップ
@@ -167,11 +184,11 @@ public class LogImportService {
 					continue;
 				}
 				
-				// svn logエントリのパス情報からsvn_commit_pathレコードを作成
-				path.setId(svnCommitPathMapper.selectNextVal());
-				path.setCommitId(commit.getId());
-				path.setPath(normalizedUrl.toString());
-				svnCommitPathMapper.insert(path, auth);
+				// INSERT用VOにid、commitId、pathを設定
+				rec.setId(svnCommitPathMapper.selectNextVal());
+				rec.setCommitId(commit.getId());
+				rec.setPath(normalizedUrl.toString());
+				svnCommitPathMapper.insert(rec, auth);
 			}
 		}
 		

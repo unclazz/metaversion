@@ -237,7 +237,10 @@ CREATE TABLE svn_commit_path (
     change_type_id integer NOT NULL,
     path text NOT NULL,
     create_date timestamp without time zone DEFAULT now() NOT NULL,
-    create_user_id integer NOT NULL
+    create_user_id integer NOT NULL,
+    raw_path text NOT NULL,
+    base_path_segment text NOT NULL,
+    branch_path_segment text NOT NULL
 );
 
 
@@ -617,6 +620,20 @@ ALTER TABLE ONLY application_user
 
 ALTER TABLE ONLY application_user
     ADD CONSTRAINT user_uniq0 UNIQUE (name);
+
+
+--
+-- Name: svn_commit_idx01; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX svn_commit_idx01 ON svn_commit USING btree (repository_id, revision DESC, id DESC);
+
+
+--
+-- Name: svn_commit_path_idx01; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX svn_commit_path_idx01 ON svn_commit_path USING btree (commit_id DESC, id);
 
 
 --

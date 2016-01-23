@@ -9,6 +9,7 @@ import org.apache.ibatis.annotations.Select;
 import org.unclazz.metaversion.MVUserDetails;
 import org.unclazz.metaversion.entity.ProjectChangedPath;
 import org.unclazz.metaversion.entity.SvnCommitPath;
+import org.unclazz.metaversion.entity.SvnCommitPathWithRawInfo;
 import org.unclazz.metaversion.vo.LimitOffsetClause;
 import org.unclazz.metaversion.vo.OrderByClause;
 
@@ -54,9 +55,12 @@ public interface SvnCommitPathMapper {
 			+ "WHERE project_id = #{projectId} ")
 	int selectCountByProjectId(@Param("projectId") int projectId);
 	
-	@Insert("INSERT INTO svn_commit_path (id, commit_id, change_type_id, path, create_user_id) "
-			+ "VALUES (#{path.id}, #{path.commitId}, #{path.changeTypeId}, #{path.path}, #{auth.id}) ")
-	int insert(@Param("path") SvnCommitPath path, @Param("auth") MVUserDetails auth);
+	@Insert("INSERT INTO svn_commit_path "
+			+ "(id, commit_id, change_type_id, path, "
+			+ "raw_path, base_path_segment, branch_path_segment, create_user_id) "
+			+ "VALUES (#{path.id}, #{path.commitId}, #{path.changeTypeId}, #{path.path}, "
+			+ "#{path.rawPath}, #{path.basePathSegment}, #{path.branchPathSegment}, #{auth.id}) ")
+	int insert(@Param("path") SvnCommitPathWithRawInfo path, @Param("auth") MVUserDetails auth);
 	
 	@Delete("DELETE FROM svn_commit_path "
 			+ "WHERE commit_id IN ("
