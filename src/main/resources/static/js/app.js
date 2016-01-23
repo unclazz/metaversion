@@ -336,7 +336,7 @@
 		$scope.project = entities.ProjectStats.get({id: paths.pathToIds().projectId});
 	})
 	// プロジェクト編集画面のためのコントローラ
-	.controller('projects$projectId$edit', function($log, $scope, $location, entities, paths) {
+	.controller('projects$projectId$edit', function($log, $scope, $location, entities, paths, modals) {
 		// パスからIDを読み取る
 		var ids = paths.pathToIds();
 		if (ids.projectId !== undefined) {
@@ -359,7 +359,7 @@
 		};
 	})
 	// プロジェクト削除画面のためのコントローラ
-	.controller('projects$projectId$delete', function($log, $scope, $location, entities, paths) {
+	.controller('projects$projectId$delete', function($log, $scope, $location, entities, paths, modals) {
 		// パスからIDを読み取る
 		var ids = paths.pathToIds();
 		$scope.project = entities.Project.get({id: paths.pathToIds().projectId});
@@ -449,7 +449,7 @@
 		};
 	})
 	// リポジトリ削除画面のためのコントローラ
-	.controller('repositories$repositoryId$delete', function($log, $scope, $location, entities, paths) {
+	.controller('repositories$repositoryId$delete', function($log, $scope, $location, entities, paths, modals) {
 		// パスからIDを読み取る
 		var ids = paths.pathToIds();
 		$scope.repository = entities.Repository.get({id: paths.pathToIds().repositoryId});
@@ -463,7 +463,7 @@
 		};
 	})
 	// コミット詳細画面のためのコントローラ
-	.controller('repositories$repositoryId$commits$commitId', function($log, $scope, $location, entities, paths) {
+	.controller('repositories$repositoryId$commits$commitId', function($log, $scope, entities, paths) {
 		// パスからリポジトリIDやコミットIDを読み取る
 		var ids = paths.pathToIds();
 		// APIを介してコミット情報を取得
