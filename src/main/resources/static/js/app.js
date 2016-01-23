@@ -260,11 +260,20 @@
 		$logProvider.debugEnabled(true);
 	})
 	.controller('parent', function($scope, $location, $log) {
+		// Paginationディレクティブのためのデフォルト値
+		// ＊外部スコープにてページネーションに関わる値─とくにtotalSizeを初期化することで、
+		// 画面初期表示時にページ番号が強制的にリセットされてしまう問題への対策としている。
+		$scope.page = 1;
+		$scope.size = 25;
+		$scope.totalSize = Number.MAX_VALUE;
+		
+		// ナビの項目のアクティブ/非アクティブを制御するためのマップ
 		$scope.navItems = {
 				projects: false,
 				repositories: false,
 				users: false
 		};
+		// パスの変化を監視するためのコールバックを作成・設定
 		$scope.$watch(function() {
 			return $location.path();
 		}, function(path) {
@@ -325,11 +334,6 @@
 		// ページ変更時にコールされる関数を作成・設定
 		$scope.pageChange = function() {
 			paths.entryToQuery('page', $scope.cond.page)
-		};
-		// クエリ文字列が変化した際にコールされる関数を作成・設定
-		$scope.$watch(function () {
-			return $location.search();
-		}, function(search) {
 			// APIを介してプロジェクト一覧を取得
 			entities.Project.query($scope.cond).$promise.then(function(paginated) {
 				// 取得に成功したら結果を画面に反映させる
@@ -337,7 +341,9 @@
 				$scope.size = paginated.size;
 				$scope.list = paginated.list;
 			});
-		});
+		};
+		// 初期表示
+		$scope.pageChange();
 	})
 	// プロジェクト詳細画面のためのコントローラ
 	.controller('projects$projectId', function($log, $scope, $location, entities, paths) {
@@ -390,15 +396,14 @@
 		// ページ変更時にコールされる関数を作成・設定
 		$scope.pageChange = function() {
 			paths.entryToQuery('page', $scope.cond.page)
-		};
-		// クエリ文字列が変化した際にコールされる関数を作成・設定
-		paths.watchPage($scope, function(p) {
 			entities.ProjectCommit.query($scope.cond).$promise.then(function(paginated) {
 				$scope.totalSize = paginated.totalSize;
 				$scope.size = paginated.size;
 				$scope.list = paginated.list;
 			});
-		});
+		};
+		// 初期表示
+		$scope.pageChange();
 	})
 	// プロジェクトコミット紐付け解除画面のためのコントローラ
 	.controller('projects$projectId$commits$commitId$delete', function($log, $scope, $location, entities, paths) {
@@ -418,21 +423,19 @@
 	.controller('prjects$projectId$changedpaths', function($log, $scope, $location, entities, paths) {
 		var ids = paths.pathToIds();
 		$scope.project = entities.ProjectStats.get({id: ids.projectId});
-
 		// クエリ文字列をもとに検索条件を初期化
 		$scope.cond = angular.extend(paths.queryToObject({page: 1}), ids);
 		// ページ変更時にコールされる関数を作成・設定
 		$scope.pageChange = function() {
 			paths.entryToQuery('page', $scope.cond.page)
-		};
-		// クエリ文字列が変化した際にコールされる関数を作成・設定
-		paths.watchPage($scope, function(p) {
 			entities.ProjectChangedPath.query($scope.cond).$promise.then(function(paginated) {
 				$scope.totalSize = paginated.totalSize;
 				$scope.size = paginated.size;
 				$scope.list = paginated.list;
 			});
-		});
+		};
+		// 初期表示
+		$scope.pageChange();
 	})
 	// リポジトリ一覧画面のためのコントローラ
 	.controller('repositories', function($log, $scope, $location, entities, paths) {
@@ -441,18 +444,15 @@
 		// ページ変更時にコールされる関数を作成・設定
 		$scope.pageChange = function() {
 			paths.entryToQuery('page', $scope.cond.page)
-		};
-		// クエリ文字列が変化した際にコールされる関数を作成・設定
-		paths.watchPage($scope, function(p) {
-			// 変化後のページ番号を検索条件に反映させる
-			$scope.cond.page = p;
 			// APIを介してリポジトリ一覧を取得
 			entities.Repository.query($scope.cond).$promise.then(function(paginated) {
 				$scope.totalSize = paginated.totalSize;
 				$scope.size = paginated.size;
 				$scope.list = paginated.list;
 			});
-		});
+		};
+		// 初期表示
+		$scope.pageChange();
 	})
 	// リポジトリ詳細画面のためのコントローラ
 	.controller('repositories$repositoryId', function($log, $scope, $location, entities, paths) {
@@ -462,18 +462,19 @@
 		$scope.repository = entities.Repository.get({id: ids.repositoryId});
 		// クエリ文字列をもとに検索条件を初期化
 		$scope.cond = angular.extend(paths.queryToObject({page: 1}), ids);
+
 		// ページ変更時にコールされる関数を作成・設定
 		$scope.pageChange = function() {
-			paths.entryToQuery('page', $scope.cond.page)
-		};
-		// クエリ文字列が変化した際にコールされる関数を作成・設定
-		paths.watchPage($scope, function(p) {
+			paths.entryToQuery('page', $scope.cond.page);
 			entities.RepositoryCommitStats.query($scope.cond).$promise.then(function(paginated) {
+				$scope.list = paginated.list;
 				$scope.totalSize = paginated.totalSize;
 				$scope.size = paginated.size;
-				$scope.list = paginated.list;
 			});
-		});
+		};
+		
+		// 初期表示
+		$scope.pageChange();
 	})
 	// リポジトリ編集画面のためのコントローラ
 	.controller('repositories$repositoryId$edit', function($log, $scope, entities, paths, modals) {
@@ -537,19 +538,15 @@
 		// ページ変更時にコールされる関数を作成・設定
 		$scope.pageChange = function() {
 			paths.entryToQuery('page', $scope.cond.page)
-		};
-		// クエリ文字列が変化した際にコールされる関数を作成・設定
-		paths.watchPage($scope, function(p) {
-			// 変化後のページ番号を検索条件に反映させる
-			$scope.cond.page = p;
-			// APIを介してコミットに紐づく変更パスを取得
 			entities.RepositoryCommitChangedPath.query($scope.cond).$promise.then(function(paginated) {
 				// 取得に成功したら結果を画面に反映させる
 				$scope.totalSize = paginated.totalSize;
 				$scope.size = paginated.size;
 				$scope.list = paginated.list;
 			});
-		});
+		};
+		// 初期表示
+		$scope.pageChange();
 	})
 	// ユーザ一覧画面のためのコントローラ
 	.controller('users', function($log, $scope, $location, entities, paths) {
@@ -558,18 +555,14 @@
 		// ページ変更時にコールされる関数を作成・設定
 		$scope.pageChange = function() {
 			paths.entryToQuery('page', $scope.cond.page)
-		};
-		// クエリ文字列が変化した際にコールされる関数を作成・設定
-		paths.watchPage($scope, function(p) {
-			// 変化後のページ番号を検索条件に反映させる
-			$scope.cond.page = p;
-			// APIを介してリポジトリ一覧を取得
 			entities.User.query($scope.cond).$promise.then(function(paginated) {
 				$scope.totalSize = paginated.totalSize;
 				$scope.size = paginated.size;
 				$scope.list = paginated.list;
 			});
-		});
+		};
+		// 初期表示
+		$scope.pageChange();
 	})
 	// ユーザ編集画面のためのコントローラ
 	.controller('users$userId$edit', function($log, $scope, $location, entities, paths, modals) {
