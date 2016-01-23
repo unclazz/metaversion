@@ -2,6 +2,7 @@ package org.unclazz.metaversion;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.regex.Pattern;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -68,6 +69,25 @@ public final class MVUtils {
 	 */
 	public static CharSequence charArrayToCharSequence(final char[] charArray) {
 		return new StringBuilder().append(charArray == null ? new char[0] : charArray);
+	}
+	
+	private static final Pattern doubleSlash = Pattern.compile("/+");
+	public static CharSequence slashNormalize(final CharSequence original) {
+		CharSequence result = original;
+		
+		if (result.length() == 0) {
+			throw illegalArgument("Slash normatization is not support empty character sequence.");
+		}
+		
+		if (result.charAt(0) != '/') {
+			result = new StringBuilder().append('/').append(result);
+		}
+		
+		if (result.charAt(result.length() - 1) == '/') {
+			result = new StringBuilder().append(result.subSequence(0, result.length() - 2));
+		}
+		
+		return doubleSlash.matcher(result).replaceAll("/");
 	}
 	
 	/**

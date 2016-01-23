@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.unclazz.metaversion.MVProperties;
 import org.unclazz.metaversion.MVUserDetails;
+import org.unclazz.metaversion.MVUtils;
 import org.unclazz.metaversion.entity.OnlineBatchProgram;
 import org.unclazz.metaversion.entity.SvnCommit;
 import org.unclazz.metaversion.entity.SvnCommitPath;
@@ -158,7 +159,7 @@ public class LogImportService {
 					normalizedUrl = pathAfterBaseUrl.subSequence(trunkMatcher.end(), pathAfterBaseUrl.length());
 					
 					// INSERT用VOにbranchPathSegmentを設定
-					rec.setBranchPathSegment(trunkMatcher.group());
+					rec.setBranchPathSegment(MVUtils.slashNormalize(trunkMatcher.group()).toString());
 				} else {
 					// 該当しない場合
 					// branchのパスに該当するかチェック
@@ -169,7 +170,7 @@ public class LogImportService {
 						normalizedUrl = pathAfterBaseUrl.subSequence(branchMatcher.end(), pathAfterBaseUrl.length());
 						
 						// INSERT用VOにbranchPathSegmentを設定
-						rec.setBranchPathSegment(branchMatcher.group());
+						rec.setBranchPathSegment(MVUtils.slashNormalize(branchMatcher.group()).toString());
 					} else {
 						// 該当しない場合
 						// インポート対象でないのでスキップ
@@ -187,7 +188,7 @@ public class LogImportService {
 				// INSERT用VOにid、commitId、pathを設定
 				rec.setId(svnCommitPathMapper.selectNextVal());
 				rec.setCommitId(commit.getId());
-				rec.setPath(normalizedUrl.toString());
+				rec.setPath(MVUtils.slashNormalize(normalizedUrl).toString());
 				svnCommitPathMapper.insert(rec, auth);
 			}
 		}

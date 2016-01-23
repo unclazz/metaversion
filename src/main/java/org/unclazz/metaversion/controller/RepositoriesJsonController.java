@@ -111,6 +111,8 @@ public class RepositoriesJsonController {
 			@PathVariable("id") final int id,
 			@RequestBody final SvnRepository repository) {
 		
+		normalizeRepositoryInfo(repository);
+		
 		try {
 			// 正規表現パターンの検証を行う
 			Pattern.compile(repository.getTrunkPathPattern());
@@ -162,6 +164,8 @@ public class RepositoriesJsonController {
 	public ResponseEntity<SvnRepository> postRepository(final Principal principal,
 			@RequestBody SvnRepository repository) {
 		
+		normalizeRepositoryInfo(repository);
+		
 		try {
 			// 正規表現パターンの検証を行う
 			Pattern.compile(repository.getTrunkPathPattern());
@@ -190,6 +194,10 @@ public class RepositoriesJsonController {
 			logger.error("{}", stackTraceToCharSequence(ex));
 			return httpResponseOfInternalServerError(ex.getMessage());
 		}
+	}
+	
+	private void normalizeRepositoryInfo(final SvnRepository r) {
+		r.setBaseUrl(slashNormalize(r.getBaseUrl()).toString());
 	}
 	
 	private void checkConnectivity(final SvnRepository r) {
