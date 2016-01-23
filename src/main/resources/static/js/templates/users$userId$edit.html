@@ -1,0 +1,53 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+	<meta charset="utf-8" />
+</head>
+<body>
+	<div class="container" ng-controller="users$userId$edit">
+		<nav>
+			<ol class="breadcrumb">
+				  <li><a href="#" ng-href="#/">
+				  <span class="glyphicon glyphicon-home" aria-hidden="true"></span> トップ</a></li>
+				  <li><a href="#" ng-href="#/users">ユーザ一覧</a></li>
+				  <li class="active">ユーザ編集</li>
+			</ol>
+		</nav>
+
+		<header class="page-header">
+			<h1>ユーザ編集</h1>
+		</header>
+
+		<article>
+			<form method="post" ng-submit="submit()">
+				<div class="panel panel-default">
+					<div class="panel-heading">
+						ユーザ情報
+					</div>
+					<table class="table">
+						<tr><th>ユーザ名</th>
+						<td><input type="text" class="form-control" required="required" placeholder="ユーザ名" ng-model="user.name" /></td></tr>
+						<tr><th>パスワード</th>
+						<td><input type="password" class="form-control" 
+						placeholder="パスワード（未入力の場合 パスワード変更なし）" ng-model="user.password" /></td></tr>
+						<tr><th>管理者権限</th>
+						<td><input type="checkbox" ng-model="user.admin" /></td></tr>
+					</table>
+					<div class="panel-body">
+						<div class="row">
+							<div class="col-lg-6">
+							</div><!-- /.col-lg-N -->
+							<div class="col-lg-4">
+							</div><!-- /.col-lg-N -->
+							<div class="col-lg-2" style="text-align: right;">
+								<a class="btn btn-default" role="button" href="#" ng-href="#/users">キャンセル</a>
+								<button class="btn btn-primary" type="submit">OK</button>
+							</div><!-- /.col-lg-N -->
+						</div><!-- /.row -->
+					</div>
+				</div>
+			</form>
+		</article>
+	</div><!-- /.container -->
+</body>
+</html>

@@ -236,7 +236,7 @@
 			templateUrl: 'js/templates/users.html',
 			reloadOnSearch: false
 		}).when('/users/new', {
-			templateUrl: 'js/templates/users$userId$edit.html',
+			templateUrl: 'js/templates/users$new.html',
 			reloadOnSearch: false
 		}).when('/users/:userId/edit', {
 			templateUrl: 'js/templates/users$userId$edit.html',
@@ -347,7 +347,7 @@
 		
 		$scope.submit = function() {
 			var p;
-			if (ids.projectId === undefined) {
+			if (ids.projectId !== undefined) {
 				p = $scope.project.$resave();
 			} else {
 				p = $scope.project.$save();
@@ -508,6 +508,42 @@
 				$scope.list = paginated.list;
 			});
 		});
+	})
+	// ユーザ編集画面のためのコントローラ
+	.controller('users$userId$edit', function($log, $scope, $location, entities, paths, modals) {
+		// パスからIDを読み取る
+		var ids = paths.pathToIds();
+		if (ids.userId !== undefined) {
+			$scope.user = entities.User.get({id: paths.pathToIds().userId});
+			$scope.user.password = null;
+		} else {
+			$scope.user = new entities.User({id: undefined});
+		}
+		
+		$scope.submit = function() {
+			var p;
+			if (ids.userId !== undefined) {
+				p = $scope.user.$resave();
+			} else {
+				p = $scope.user.$save();
+			}
+			p.then(function (data) {
+				paths.stringToPath('users');
+			}, modals.errorModal);
+		};
+	})
+	// ユーザ削除画面のためのコントローラ
+	.controller('users$userId$delete', function($log, $scope, $location, entities, paths, modals) {
+		// パスからIDを読み取る
+		var ids = paths.pathToIds();
+		$scope.user = entities.User.get({id: paths.pathToIds().userId});
+		
+		$scope.submit = function() {
+			var p = $scope.user.$remove();
+			p.then(function (data) {
+				paths.stringToPath('users');
+			}, modals.errorModal);
+		};
 	});
 	
 	// mvApiTesterモジュールを追加
