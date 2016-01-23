@@ -398,6 +398,26 @@
 			});
 		});
 	})
+	// プロジェクト変更パス一覧画面のためのコントローラ
+	.controller('prjects$projectId$changedpaths', function($log, $scope, $location, entities, paths) {
+		var ids = paths.pathToIds();
+		$scope.project = entities.ProjectStats.get({id: ids.projectId});
+
+		// クエリ文字列をもとに検索条件を初期化
+		$scope.cond = angular.extend(paths.queryToObject({page: 1}), ids);
+		// ページ変更時にコールされる関数を作成・設定
+		$scope.pageChange = function() {
+			paths.entryToQuery('page', $scope.cond.page)
+		};
+		// クエリ文字列が変化した際にコールされる関数を作成・設定
+		paths.watchPage($scope, function(p) {
+			entities.ProjectChangedPath.query($scope.cond).$promise.then(function(paginated) {
+				$scope.totalSize = paginated.totalSize;
+				$scope.size = paginated.size;
+				$scope.list = paginated.list;
+			});
+		});
+	})
 	// リポジトリ一覧画面のためのコントローラ
 	.controller('repositories', function($log, $scope, $location, entities, paths) {
 		// クエリ文字列をもとに検索条件を初期化

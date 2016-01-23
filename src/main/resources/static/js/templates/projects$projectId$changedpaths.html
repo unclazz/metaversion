@@ -1,0 +1,103 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+	<meta charset="utf-8" />
+</head>
+<body>
+	<div class="container" ng-controller="prjects$projectId$changedpaths">
+		<nav>
+			<ol class="breadcrumb">
+				  <li><a href="#" ng-href="#/">
+				  <span class="glyphicon glyphicon-home" aria-hidden="true"></span> トップ</a></li>
+				  <li><a href="#" ng-href="#/projects">プロジェクト一覧</a></li>
+				  <li><a href="#" ng-href="#/projects/{{project.id}}">プロジェクト詳細</a></li>
+				  <li class="active">プロジェクト変更パス一覧</li>
+			</ol>
+		</nav>
+
+		<header class="page-header">
+			<h1>{{project.name}} の変更パス一覧</h1>
+		</header>
+
+		<article>
+			<div class="panel panel-default" ng-show="list.length > 0">
+				<div class="panel-heading">
+					変更パス一覧
+				</div>
+				<div class="panel-body">
+					<div class="row">
+						<div class="col-lg-3">
+							<!-- empty -->
+						</div>
+						<div class="col-lg-6" style="text-align: center;">
+							<uib-pagination total-items="totalSize"
+								ng-model="cond.page"
+								ng-change="pageChange()"
+								max-size="5"
+								class="pagination-sm"
+								boundary-links="true"
+								items-per-page="size"
+								first-text="最初"
+								previous-text="前"
+								next-text="次"
+								last-text="最後"
+							></uib-pagination>
+						</div>
+						<div class="col-lg-2">
+							<!-- empty -->
+						</div>
+						<div class="col-lg-1">
+							<a class="btn btn-default" href="project-edit.html">追加</a>
+						</div>
+					</div>
+				</div>
+				<table class="table table-hover table-condensed">
+					<thead>
+						<tr>
+							<th>リポジトリ名</th>
+							<th>変更パス</th>
+							<th>初期コミット日時</th>
+							<th>最終コミット日時</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr  ng-repeat="item in list">
+							<td>{{item.repositoryName}}</td>
+							<td>{{item.path}}</td>
+							<td>{{item.minCommitDate}}</td>
+							<td>{{item.maxCommitDate}}</td>
+						</tr>
+					</tbody>
+				</table>
+				<div class="panel-body">
+					<div class="row">
+						<div class="col-lg-3">
+							<!-- empty -->
+						</div>
+						<div class="col-lg-6" style="text-align: center;">
+							<uib-pagination total-items="totalSize"
+								ng-model="cond.page"
+								ng-change="pageChange()"
+								max-size="5"
+								class="pagination-sm"
+								boundary-links="true"
+								items-per-page="size"
+								first-text="最初"
+								previous-text="前"
+								next-text="次"
+								last-text="最後"
+							></uib-pagination>
+						</div>
+						<div class="col-lg-2">
+							<!-- empty -->
+						</div>
+						<div class="col-lg-1">
+							<a class="btn btn-default" href="project-edit.html">追加</a>
+						</div>
+					</div>
+				</div>
+			</div>
+		</article>
+	</div>
+</body>
+</html>

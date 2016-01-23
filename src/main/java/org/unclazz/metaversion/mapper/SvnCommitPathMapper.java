@@ -39,7 +39,7 @@ public interface SvnCommitPathMapper {
 	@Select("SELECT count(1) FROM svn_commit_path WHERE commit_id = #{commitId} ")
 	int selectCountBySvnCommitId(@Param("commitId") int commitId);
 	
-	@Select("SELECT path, svb_repository_id repositoryId, repository_name repositoryName, " 
+	@Select("SELECT path, svn_repository_id repositoryId, svn_repository_name repositoryName, " 
 			+ "commit_count commitCount, min_revision minRevision, max_revision maxRevision, " 
 			+ "min_commit_date minCommitDate, max_commit_date maxCommitDate " 
 			+ "FROM project_changedpath_view " 

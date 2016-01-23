@@ -106,9 +106,28 @@
 				</table>
 				<div class="panel-body">
 					<div class="row">
-						<div class="col-lg-6">
+						<div class="col-lg-3">
+							<!-- empty -->
 						</div>
-						<div class="col-lg-6">
+						<div class="col-lg-6" style="text-align: center;">
+							<uib-pagination total-items="totalSize"
+								ng-model="cond.page"
+								ng-change="pageChange()"
+								max-size="5"
+								class="pagination-sm"
+								boundary-links="true"
+								items-per-page="size"
+								first-text="最初"
+								previous-text="前"
+								next-text="次"
+								last-text="最後"
+							></uib-pagination>
+						</div>
+						<div class="col-lg-2">
+							<!-- empty -->
+						</div>
+						<div class="col-lg-1">
+							<a class="btn btn-default" href="project-edit.html">追加</a>
 						</div>
 					</div>
 				</div>
