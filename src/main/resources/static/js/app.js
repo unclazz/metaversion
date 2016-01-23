@@ -220,6 +220,8 @@
 		}).when('/projects/:projectId/commits', {
 			templateUrl: 'js/templates/projects$projectId$commits.html',
 			reloadOnSearch: false
+		}).when('/projects/:projectId/commits/:commitId/delete', {
+			templateUrl: 'js/templates/projects$projectId$commits$commitId$delete.html'
 		}).when('/projects/:projectId/changedpaths', {
 			templateUrl: 'js/templates/projects$projectId$changedpaths.html',
 			reloadOnSearch: false
@@ -397,6 +399,20 @@
 				$scope.list = paginated.list;
 			});
 		});
+	})
+	// プロジェクトコミット紐付け解除画面のためのコントローラ
+	.controller('projects$projectId$commits$commitId$delete', function($log, $scope, $location, entities, paths) {
+		var ids = paths.pathToIds();
+		$scope.project = entities.ProjectStats.get({id: ids.projectId});
+		$scope.commit = entities.ProjectCommit.get(ids);
+
+		$scope.submit = function() {
+			var p = $scope.commit.$remove();
+			$log.debug(p);
+			p.then(function (data) {
+				paths.stringToPath('projects/' + ids.projectId + '/commits');
+			}, modals.errorModal);
+		};
 	})
 	// プロジェクト変更パス一覧画面のためのコントローラ
 	.controller('prjects$projectId$changedpaths', function($log, $scope, $location, entities, paths) {

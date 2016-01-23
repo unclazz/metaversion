@@ -20,7 +20,7 @@ import org.unclazz.metaversion.entity.ProjectChangedPath;
 import org.unclazz.metaversion.entity.Project;
 import org.unclazz.metaversion.entity.ProjectStats;
 import org.unclazz.metaversion.entity.ProjectSvnCommit;
-import org.unclazz.metaversion.entity.SvnCommit;
+import org.unclazz.metaversion.entity.SvnCommitWithRepositoryInfo;
 import org.unclazz.metaversion.service.CommitLinkService;
 import org.unclazz.metaversion.service.CommitService;
 import org.unclazz.metaversion.service.ProjectService;
@@ -172,9 +172,16 @@ public class ProjectsJsonController {
 	 * @return コミット情報の一覧
 	 */
 	@RequestMapping(value="/projects/{projectId}/commits", method=RequestMethod.GET)
-	public Paginated<SvnCommit> getProjectsCommits(final Principal principal,
+	public Paginated<SvnCommitWithRepositoryInfo> getProjectsCommits(final Principal principal,
 			@PathVariable("projectId") final int projectId, @ModelAttribute final Paging paging) {
 		return commitService.getCommitListByProjectId(projectId, paging);
+	}
+
+	@RequestMapping(value="/projects/{projectId}/commits/{commitId}", method=RequestMethod.GET)
+	public ResponseEntity<SvnCommitWithRepositoryInfo> getProjectsCommits(final Principal principal,
+			@PathVariable("projectId") final int projectId,
+			@PathVariable("commitId") final int commitId) {
+		return httpResponseOfOkOrNotFound(commitService.getCommitWithRepositoryInfoByCommitId(commitId));
 	}
 
 	/**

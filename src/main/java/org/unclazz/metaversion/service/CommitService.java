@@ -6,6 +6,7 @@ import org.unclazz.metaversion.entity.ProjectChangedPath;
 import org.unclazz.metaversion.entity.SvnCommit;
 import org.unclazz.metaversion.entity.SvnCommitPath;
 import org.unclazz.metaversion.entity.SvnCommitStats;
+import org.unclazz.metaversion.entity.SvnCommitWithRepositoryInfo;
 import org.unclazz.metaversion.mapper.SvnCommitMapper;
 import org.unclazz.metaversion.mapper.SvnCommitPathMapper;
 import org.unclazz.metaversion.vo.LimitOffsetClause;
@@ -51,7 +52,7 @@ public class CommitService {
 		
 	}
 	
-	public Paginated<SvnCommit> getCommitListByProjectId(final int projectId, final Paging paging) {
+	public Paginated<SvnCommitWithRepositoryInfo> getCommitListByProjectId(final int projectId, final Paging paging) {
 		final OrderByClause orderBy = OrderByClause.of("revision", Order.DESC);
 		final LimitOffsetClause limitOffset = LimitOffsetClause.of(paging);
 
@@ -60,6 +61,10 @@ public class CommitService {
 				svnCommitMapper.selectByProjectId(projectId, orderBy, limitOffset),
 				svnCommitMapper.selectCountByProjectId(projectId));
 		
+	}
+	
+	public SvnCommitWithRepositoryInfo getCommitWithRepositoryInfoByCommitId(final int commitId) {
+		return svnCommitMapper.selectWithRepositoryInfoById(commitId);
 	}
 	
 	public SvnCommit getCommitById(final int commitId) {

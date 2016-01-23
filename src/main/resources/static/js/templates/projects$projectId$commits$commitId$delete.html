@@ -1,0 +1,52 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+	<meta charset="utf-8" />
+</head>
+<body>
+	<div class="container" ng-controller="projects$projectId$commits$commitId$delete">
+		<nav>
+			<ol class="breadcrumb">
+				  <li><a href="#" ng-href="#/">
+				  <span class="glyphicon glyphicon-home" aria-hidden="true"></span> トップ</a></li>
+				  <li><a href="#" ng-href="#/projects">プロジェクト一覧</a></li>
+				  <li><a href="#" ng-href="#/projects/{{project.id}}">プロジェクト詳細</a></li>
+				  <li><a href="#" ng-href="#/projects/{{project.id}}/commits">プロジェクト・コミット一覧</a></li>
+				  <li class="active">コミット紐付け解除</li>
+			</ol>
+		</nav>
+
+		<header class="page-header">
+			<h1>コミット紐付け解除</h1>
+		</header>
+
+		<article>
+			<form method="post" ng-submit="submit()">
+				<div class="panel panel-danger">
+					<div class="panel-heading">
+						コミット紐付け解除の確認
+					</div>
+					<div class="panel-body">
+						プロジェクト <span class="entity-attribute">{{project.name}}</span> と
+						リポジトリ <span class="entity-attribute">{{commit.repositoryName}}</span> の
+						リビジョン <span class="entity-attribute">{{commit.revision}}</span> の
+						紐付けを削除してもよろしいですか？<br />
+						このオペレーションは取り消しができません。<br />
+						自動で紐付けられたものも含め一度紐付け解除したものを再度紐付けるには手動で紐付けする必要があります。
+					</div>
+					<div class="panel-body">
+						<div class="row">
+							<div class="col-lg-6">
+							</div><!-- /.col-lg-N -->
+							<div class="col-lg-6" style="text-align: right;">
+								<a class="btn btn-default" role="button" href="#" ng-href="#/projects/{{project.id}}/commits">キャンセル</a>
+								<button class="btn btn-danger" type="submit">解除してOK</button>
+							</div><!-- /.col-lg-N -->
+						</div><!-- /.row -->
+					</div>
+				</div>
+			</form>
+		</article>
+	</div><!-- /.container -->
+</body>
+</html>

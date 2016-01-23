@@ -18,3 +18,10 @@ body {
 	background: url(../img/logo_40x70.png) no-repeat;
 	text-indent: 80px;
 }
+.entity-attribute {
+/*	border: 1px solid #ccc;*/
+	border-radius: 0.3ex;
+	background-color: #f5f5f5;
+	padding: 0.5ex 0.5ex 0.25ex;
+	font-family: Consolas, 'Courier New', Courier, Monaco, monospace; 
+}

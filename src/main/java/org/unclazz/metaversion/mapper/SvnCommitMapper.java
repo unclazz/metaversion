@@ -9,6 +9,7 @@ import org.apache.ibatis.annotations.Select;
 import org.unclazz.metaversion.MVUserDetails;
 import org.unclazz.metaversion.entity.SvnCommit;
 import org.unclazz.metaversion.entity.SvnCommitStats;
+import org.unclazz.metaversion.entity.SvnCommitWithRepositoryInfo;
 import org.unclazz.metaversion.vo.LimitOffsetClause;
 import org.unclazz.metaversion.vo.OrderByClause;
 
@@ -20,6 +21,14 @@ public interface SvnCommitMapper {
 			+ "commit_date commitDate, committer_name committerName, revision "
 			+ "FROM svn_commit WHERE id = #{id} ")
 	SvnCommit selectOneById(@Param("id") int id);
+	
+	@Select("SELECT c.id, repository_id repositoryId, r.name repositoryName, r.base_url repositoryBaseUrl, "
+			+ "commit_message commitMessage, commit_date commitDate, committer_name committerName, revision "
+			+ "FROM svn_commit c "
+			+ "INNER JOIN svn_repository r "
+			+ "ON c.repository_id = r.id "
+			+ "WHERE c.id = #{id} ")
+	SvnCommitWithRepositoryInfo selectWithRepositoryInfoById(@Param("id") int id);
 	
 	@Select("SELECT c.id, c.repository_id repositoryId, c.commit_message commitMessage, "
 			+ "c.commit_date commitDate, c.committer_name committerName, c.revision "
@@ -80,13 +89,16 @@ public interface SvnCommitMapper {
 	int selectStatsCountByRepositoryId(@Param("repositoryId") int repositoryId);
 	
 	@Select(" SELECT c.id, c.repository_id repositoryId, c.commit_message commitMessage, "
-			+ "c.commit_date commitDate, c.committer_name committerName, c.revision "
+			+ "c.commit_date commitDate, c.committer_name committerName, c.revision, "
+			+ "r.name repositoryName, r.base_url repositoryBaseUrl "
 			+ "FROM svn_commit c "
 			+ "INNER JOIN project_svn_commit pc "
 			+ "ON c.id = pc.commit_id "
+			+ "INNER JOIN svn_repository r "
+			+ "ON r.id = c.repository_id "
 			+ "WHERE pc.project_id = #{projectId} "
 			+ "${orderBy} ${limitOffset} ")
-	List<SvnCommit> selectByProjectId(
+	List<SvnCommitWithRepositoryInfo> selectByProjectId(
 			@Param("projectId") int projectId,
 			@Param("orderBy") OrderByClause orderBy,
 			@Param("limitOffset") LimitOffsetClause limitOffset);

@@ -15,7 +15,7 @@
 		</nav>
 
 		<header class="page-header">
-			<h1>{{repository.name}}</h1>
+			<h1><span class="entity-attribute">{{repository.name}}</span> の詳細</h1>
 		</header>
 
 		<article>
@@ -32,8 +32,6 @@
 				<div class="panel-body">
 					<div class="row">
 						<div class="col-lg-6">
-							<a class="btn btn-default" href="#" ng-href="project-resource-list.html#?id={{project.id}}" role="button">リソース一覧</a>
-							<a class="btn btn-default" href="#" ng-href="project-resource-contention-list.html#?id={{project.id}}" role="button">競合チェック</a>
 						</div><!-- /.col-lg-N -->
 						<div class="col-lg-4">
 						</div><!-- /.col-lg-N -->
@@ -72,7 +70,6 @@
 							<!-- empty -->
 						</div>
 						<div class="col-lg-1">
-							<a class="btn btn-default" href="project-edit.html">追加</a>
 						</div>
 					</div>
 				</div>
@@ -97,8 +94,7 @@
 							</td>
 							<td>
 								<div class="btn-group btn-group-xs" role="group">
-									<a class="btn btn-default" href="#" ng-href="#/repositories/{{item.id}}" role="button">リポジトリ詳細</a>
-									<a class="btn btn-default" href="#" ng-href="#/repositories/{{item.id}}/commits" role="button">コミット一覧</a>
+									<a class="btn btn-default" href="#" ng-href="#/repositories/{{repository.id}}/commits/{{item.id}}" role="button">コミット詳細</a>
 								</div>
 							</td>
 						</tr>
