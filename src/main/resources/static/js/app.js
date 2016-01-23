@@ -184,9 +184,15 @@
 		}).when('/repositories', {
 			templateUrl: 'js/templates/repositories.html',
 			reloadOnSearch: false
+		}).when('/repositories/new', {
+			templateUrl: 'js/templates/repositories$repositoryId$edit.html'
 		}).when('/repositories/:repositoryId', {
 			templateUrl: 'js/templates/repositories$repositoryId.html',
 			reloadOnSearch: false
+		}).when('/repositories/:repositoryId/edit', {
+			templateUrl: 'js/templates/repositories$repositoryId$edit.html'
+		}).when('/repositories/:repositoryId/delete', {
+			templateUrl: 'js/templates/repositories$repositoryId$delete.html'
 		}).when('/repositories/:repositoryId/commits/:commitId', {
 			templateUrl: 'js/templates/repositories$repositoryId$commits$commitId.html',
 			reloadOnSearch: false
@@ -360,6 +366,54 @@
 				$scope.list = paginated.list;
 			});
 		});
+	})
+	// リポジトリ編集画面のためのコントローラ
+	.controller('repositories$repositoryId$edit', function($log, $scope, $location, entities, paths) {
+		// パスからIDを読み取る
+		var ids = paths.pathToIds();
+		if (ids.repositoryId !== undefined) {
+			$scope.repository = entities.Repository.get({id: ids.repositoryId});
+		} else {
+			$scope.repository = new entities.Repository({
+				id: undefined,
+				baseUrl: 'http://www.example.com/svn',
+				trunkPathPattern: '/trunk',
+				branchPathPattern: '/branches/\w+',
+				username: '',
+				password: ''
+			});
+		}
+		
+		$scope.submit = function() {
+			var p;
+			if (ids.projectId > 0) {
+				p = $scope.repository.$resave();
+			} else {
+				p = $scope.repository.$save();
+			}
+			$log.debug(p);
+			p.then(function (data) {
+				paths.stringToPath('repositories/' + data.id);
+			}, function (error) {
+				// TODO
+			});
+		};
+	})
+	// リポジトリ削除画面のためのコントローラ
+	.controller('repositories$repositoryId$delete', function($log, $scope, $location, entities, paths) {
+		// パスからIDを読み取る
+		var ids = paths.pathToIds();
+		$scope.repository = entities.Repository.get({id: paths.pathToIds().repositoryId});
+		
+		$scope.submit = function() {
+			var p = $scope.repository.$remove();
+			$log.debug(p);
+			p.then(function (data) {
+				paths.stringToPath('repositories');
+			}, function (error) {
+				// TODO
+			});
+		};
 	})
 	// コミット詳細画面のためのコントローラ
 	.controller('repositories$repositoryId$commits$commitId', function($log, $scope, $location, entities, paths) {

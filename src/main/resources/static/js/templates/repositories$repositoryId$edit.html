@@ -1,0 +1,60 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+	<meta charset="utf-8" />
+</head>
+<body>
+	<div class="container" ng-controller="repositories$repositoryId$edit">
+		<nav>
+			<ol class="breadcrumb">
+				  <li><a href="#" ng-href="#/">
+				  <span class="glyphicon glyphicon-home" aria-hidden="true"></span> トップ</a></li>
+				  <li><a href="#" ng-href="#/repositories">リポジトリ一覧</a></li>
+				  <li ng-show="repository.id !== undefined"><a href="#" ng-href="#/repositories/{{repository.id}}">リポジトリ詳細</a></li>
+				  <li class="active" ng-show="repository.id !== undefined">リポジトリ編集</li>
+				  <li class="active" ng-show="repository.id === undefined">リポジトリ追加</li>
+			</ol>
+		</nav>
+
+		<header class="page-header">
+			<h1>リポジトリ{{repository.id !== undefined ? '編集' : '追加'}}</h1>
+		</header>
+
+		<article>
+			<form method="post" ng-submit="submit()">
+				<div class="panel panel-default">
+					<div class="panel-heading">
+						リポジトリ情報
+					</div>
+					<table class="table">
+						<tr><th>名前</th>
+						<td><input type="text" class="form-control" required="required" ng-model="repository.name" /></td></tr>
+						<tr><th>ベースURL</th>
+						<td><input type="text" class="form-control" required="required" ng-model="repository.baseUrl" /></td></tr>
+						<tr><th>trunkパス・パターン</th>
+						<td><input type="text" class="form-control" required="required" ng-model="repository.trunkPathPattern" /></td></tr>
+						<tr><th>branchパス・パターン</th>
+						<td><input type="text" class="form-control" required="required" ng-model="repository.branchPathPattern" /></td></tr>
+						<tr><th>接続ユーザ名</th>
+						<td><input type="text" class="form-control" ng-model="repository.username" /></td></tr>
+						<tr><th>接続ユーザ・パスワード</th>
+						<td><input type="password" class="form-control" ng-model="repository.password" /></td></tr>
+					</table>
+					<div class="panel-body">
+						<div class="row">
+							<div class="col-lg-6">
+							</div><!-- /.col-lg-N -->
+							<div class="col-lg-4">
+							</div><!-- /.col-lg-N -->
+							<div class="col-lg-2" style="text-align: right;">
+								<a class="btn btn-default" role="button" href="#" ng-href="#/repositories/{{repository.id}}">キャンセル</a>
+								<button class="btn btn-primary" type="submit">OK</button>
+							</div><!-- /.col-lg-N -->
+						</div><!-- /.row -->
+					</div>
+				</div>
+			</form>
+		</article>
+	</div><!-- /.container -->
+</body>
+</html>
