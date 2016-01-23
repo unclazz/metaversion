@@ -1,0 +1,87 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+	<meta charset="utf-8" />
+</head>
+<body>
+	<div class="container" ng-controller="repositories$repositoryId$commits$commitId$changedpaths">
+		<nav>
+			<ol class="breadcrumb">
+				  <li><a href="#" ng-href="#/">
+				  <span class="glyphicon glyphicon-home" aria-hidden="true"></span> トップ</a></li>
+				  <li><a href="#" ng-href="#/repositories">リポジトリ一覧</a></li>
+				  <li><a href="#" ng-href="#/repositories/{{commit.repositoryId}}">リポジトリ詳細</a></li>
+				  <li><a href="#" ng-href="#/repositories/{{commit.repositoryId}}/commits">コミット一覧</a></li>
+				  <li><a href="#" ng-href="#/repositories/{{commit.repositoryId}}/commits/{{commit.id}}">コミット詳細</a></li>
+				  <li class="active">変更パス一覧</li>
+			</ol>
+		</nav>
+
+		<header class="page-header">
+			<h1><span class="entity-attribute">{{commit.revision}}</span> の変更パス一覧</h1>
+		</header>
+
+		<article>
+			<div class="panel panel-default" ng-show="list.length > 0">
+				<div class="panel-heading">
+					変更パス一覧
+				</div>
+				<div class="panel-body">
+					<div class="row">
+						<div class="col-lg-3">
+							<!-- empty -->
+						</div>
+						<div class="col-lg-6" style="text-align: center;">
+							<uib-pagination total-items="totalSize"
+								ng-model="cond.page"
+								ng-change="pageChange()"
+								max-size="5"
+								class="pagination-sm"
+								boundary-links="true"
+								items-per-page="size"
+								first-text="最初"
+								previous-text="前"
+								next-text="次"
+								last-text="最後"
+							></uib-pagination>
+						</div>
+						<div class="col-lg-2">
+							<!-- empty -->
+						</div>
+						<div class="col-lg-1">
+							<a class="btn btn-default" href="project-edit.html">追加</a>
+						</div>
+					</div>
+				</div>
+				<table class="table table-hover table-condensed">
+					<thead>
+						<tr>
+							<th>変更タイプ</th>
+							<th>変更パス</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr  ng-repeat="item in list">
+							<td>
+								<span class="label label-info" ng-show="item.changeTypeId == 1">ADDED</span>
+								<span class="label label-danger" ng-show="item.changeTypeId == 2">DELETED</span>
+								<span class="label label-warning" ng-show="item.changeTypeId == 3">MODIFIED</span>
+								<span class="label label-danger" ng-show="item.changeTypeId == 4">REPLACED</span>
+							</td>
+							<td>{{item.path}}</td>
+						</tr>
+					</tbody>
+				</table>
+				<div class="panel-body">
+					<div class="row">
+						<div class="col-lg-6">
+						</div>
+						<div class="col-lg-6">
+						</div>
+					</div>
+				</div>
+			</div>
+		</article>
+	</div>
+</body>
+</html>

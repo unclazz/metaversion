@@ -231,15 +231,17 @@
 		}).when('/repositories/new', {
 			templateUrl: 'js/templates/repositories$repositoryId$edit.html'
 		}).when('/repositories/:repositoryId', {
-			templateUrl: 'js/templates/repositories$repositoryId.html',
-			reloadOnSearch: false
+			templateUrl: 'js/templates/repositories$repositoryId.html'
+		}).when('/repositories/:repositoryId/commits', {
+			templateUrl: 'js/templates/repositories$repositoryId$commits.html'
 		}).when('/repositories/:repositoryId/edit', {
 			templateUrl: 'js/templates/repositories$repositoryId$edit.html'
 		}).when('/repositories/:repositoryId/delete', {
 			templateUrl: 'js/templates/repositories$repositoryId$delete.html'
 		}).when('/repositories/:repositoryId/commits/:commitId', {
-			templateUrl: 'js/templates/repositories$repositoryId$commits$commitId.html',
-			reloadOnSearch: false
+			templateUrl: 'js/templates/repositories$repositoryId$commits$commitId.html'
+		}).when('/repositories/:repositoryId/commits/:commitId/changedpaths', {
+			templateUrl: 'js/templates/repositories$repositoryId$commits$commitId$changedpaths.html'
 		}).when('/users', {
 			templateUrl: 'js/templates/users.html',
 			reloadOnSearch: false
@@ -263,7 +265,6 @@
 		// Paginationディレクティブのためのデフォルト値
 		// ＊外部スコープにてページネーションに関わる値─とくにtotalSizeを初期化することで、
 		// 画面初期表示時にページ番号が強制的にリセットされてしまう問題への対策としている。
-		$scope.page = 1;
 		$scope.size = 25;
 		$scope.totalSize = Number.MAX_VALUE;
 		
@@ -443,12 +444,12 @@
 		$scope.cond = paths.queryToObject({page: 1});
 		// ページ変更時にコールされる関数を作成・設定
 		$scope.pageChange = function() {
-			paths.entryToQuery('page', $scope.cond.page)
 			// APIを介してリポジトリ一覧を取得
 			entities.Repository.query($scope.cond).$promise.then(function(paginated) {
 				$scope.totalSize = paginated.totalSize;
 				$scope.size = paginated.size;
 				$scope.list = paginated.list;
+				paths.entryToQuery('page', paginated.page)
 			});
 		};
 		// 初期表示
@@ -460,16 +461,23 @@
 		var ids = paths.pathToIds();
 		// APIを介してリポジトリ情報を取得
 		$scope.repository = entities.Repository.get({id: ids.repositoryId});
+	})
+	// リポジトリコミット一覧画面のためのコントローラ
+	.controller('repositories$repositoryId$commits', function($log, $scope, $location, entities, paths) {
+		// パスからリポジトリIDを読み取る
+		var ids = paths.pathToIds();
+		// APIを介してリポジトリ情報を取得
+		$scope.repository = entities.Repository.get({id: ids.repositoryId});
 		// クエリ文字列をもとに検索条件を初期化
 		$scope.cond = angular.extend(paths.queryToObject({page: 1}), ids);
 
 		// ページ変更時にコールされる関数を作成・設定
 		$scope.pageChange = function() {
-			paths.entryToQuery('page', $scope.cond.page);
 			entities.RepositoryCommitStats.query($scope.cond).$promise.then(function(paginated) {
 				$scope.list = paginated.list;
 				$scope.totalSize = paginated.totalSize;
 				$scope.size = paginated.size;
+				if (paginated.page > 1) paths.entryToQuery('page', paginated.page);
 			});
 		};
 		
@@ -533,16 +541,24 @@
 		$scope.commit = entities.RepositoryCommit.get(ids);
 		// APIを介してコミットの関連プロジェクトを取得
 		$scope.projectList = entities.RepositoryCommitProject.query(ids);
+	})
+	.controller('repositories$repositoryId$commits$commitId$changedpaths', function($log, $scope, entities, paths) {
+		// パスからリポジトリIDやコミットIDを読み取る
+		var ids = paths.pathToIds();
+		// APIを介してコミット情報を取得
+		$scope.commit = entities.RepositoryCommit.get(ids);
+		// APIを介してコミットの関連プロジェクトを取得
+		$scope.projectList = entities.RepositoryCommitProject.query(ids);
 		// クエリ文字列をもとに検索条件を初期化
 		$scope.cond = angular.extend(paths.queryToObject({page: 1}), ids);
 		// ページ変更時にコールされる関数を作成・設定
 		$scope.pageChange = function() {
-			paths.entryToQuery('page', $scope.cond.page)
 			entities.RepositoryCommitChangedPath.query($scope.cond).$promise.then(function(paginated) {
 				// 取得に成功したら結果を画面に反映させる
 				$scope.totalSize = paginated.totalSize;
 				$scope.size = paginated.size;
 				$scope.list = paginated.list;
+				if ($scope.cond.page > 1) paths.entryToQuery('page', $scope.cond.page);
 			});
 		};
 		// 初期表示
