@@ -355,9 +355,7 @@
 			$log.debug(p);
 			p.then(function (data) {
 				paths.stringToPath('projects/' + data.id);
-			}, function (error) {
-				// TODO
-			});
+			}, modals.errorModal);
 		};
 	})
 	// プロジェクト削除画面のためのコントローラ
@@ -371,9 +369,7 @@
 			$log.debug(p);
 			p.then(function (data) {
 				paths.stringToPath('projects');
-			}, function (error) {
-				// TODO
-			});
+			}, modals.errorModal);
 		};
 	})
 	// リポジトリ一覧画面のためのコントローラ
@@ -463,9 +459,7 @@
 			$log.debug(p);
 			p.then(function (data) {
 				paths.stringToPath('repositories');
-			}, function (error) {
-				// TODO
-			});
+			}, modals.errorModal);
 		};
 	})
 	// コミット詳細画面のためのコントローラ
