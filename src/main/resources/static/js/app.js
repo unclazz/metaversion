@@ -206,28 +206,23 @@
 		$routeProvider.when('/', {
 			templateUrl: 'js/templates/index.html'
 		}).when('/projects', {
-			templateUrl: 'js/templates/projects.html',
-			reloadOnSearch: false
+			templateUrl: 'js/templates/projects.html'
 		}).when('/projects/new', {
 			templateUrl: 'js/templates/projects$projectId$edit.html'
 		}).when('/projects/:projectId', {
-			templateUrl: 'js/templates/projects$projectId.html',
-			reloadOnSearch: false
+			templateUrl: 'js/templates/projects$projectId.html'
 		}).when('/projects/:projectId/edit', {
 			templateUrl: 'js/templates/projects$projectId$edit.html'
 		}).when('/projects/:projectId/delete', {
 			templateUrl: 'js/templates/projects$projectId$delete.html'
 		}).when('/projects/:projectId/commits', {
-			templateUrl: 'js/templates/projects$projectId$commits.html',
-			reloadOnSearch: false
+			templateUrl: 'js/templates/projects$projectId$commits.html'
 		}).when('/projects/:projectId/commits/:commitId/delete', {
 			templateUrl: 'js/templates/projects$projectId$commits$commitId$delete.html'
 		}).when('/projects/:projectId/changedpaths', {
-			templateUrl: 'js/templates/projects$projectId$changedpaths.html',
-			reloadOnSearch: false
+			templateUrl: 'js/templates/projects$projectId$changedpaths.html'
 		}).when('/repositories', {
-			templateUrl: 'js/templates/repositories.html',
-			reloadOnSearch: false
+			templateUrl: 'js/templates/repositories.html'
 		}).when('/repositories/new', {
 			templateUrl: 'js/templates/repositories$repositoryId$edit.html'
 		}).when('/repositories/:repositoryId', {
@@ -243,17 +238,13 @@
 		}).when('/repositories/:repositoryId/commits/:commitId/changedpaths', {
 			templateUrl: 'js/templates/repositories$repositoryId$commits$commitId$changedpaths.html'
 		}).when('/users', {
-			templateUrl: 'js/templates/users.html',
-			reloadOnSearch: false
+			templateUrl: 'js/templates/users.html'
 		}).when('/users/new', {
-			templateUrl: 'js/templates/users$new.html',
-			reloadOnSearch: false
+			templateUrl: 'js/templates/users$new.html'
 		}).when('/users/:userId/edit', {
-			templateUrl: 'js/templates/users$userId$edit.html',
-			reloadOnSearch: false
+			templateUrl: 'js/templates/users$userId$edit.html'
 		}).when('/users/:userId/delete', {
-			templateUrl: 'js/templates/users$userId$delete.html',
-			reloadOnSearch: false
+			templateUrl: 'js/templates/users$userId$delete.html'
 		}).otherwise({
 			redirectTo: '/'
 		});
@@ -334,13 +325,13 @@
 		};
 		// ページ変更時にコールされる関数を作成・設定
 		$scope.pageChange = function() {
-			paths.entryToQuery('page', $scope.cond.page)
 			// APIを介してプロジェクト一覧を取得
 			entities.Project.query($scope.cond).$promise.then(function(paginated) {
 				// 取得に成功したら結果を画面に反映させる
 				$scope.totalSize = paginated.totalSize;
 				$scope.size = paginated.size;
 				$scope.list = paginated.list;
+				if (paginated.page > 1) paths.entryToQuery('page', paginated.page);
 			});
 		};
 		// 初期表示
@@ -396,11 +387,11 @@
 		$scope.cond = angular.extend(paths.queryToObject({page: 1}), ids);
 		// ページ変更時にコールされる関数を作成・設定
 		$scope.pageChange = function() {
-			paths.entryToQuery('page', $scope.cond.page)
 			entities.ProjectCommit.query($scope.cond).$promise.then(function(paginated) {
 				$scope.totalSize = paginated.totalSize;
 				$scope.size = paginated.size;
 				$scope.list = paginated.list;
+				if (paginated.page > 1) paths.entryToQuery('page', paginated.page);
 			});
 		};
 		// 初期表示
@@ -428,11 +419,11 @@
 		$scope.cond = angular.extend(paths.queryToObject({page: 1}), ids);
 		// ページ変更時にコールされる関数を作成・設定
 		$scope.pageChange = function() {
-			paths.entryToQuery('page', $scope.cond.page)
 			entities.ProjectChangedPath.query($scope.cond).$promise.then(function(paginated) {
 				$scope.totalSize = paginated.totalSize;
 				$scope.size = paginated.size;
 				$scope.list = paginated.list;
+				if (paginated.page > 1) paths.entryToQuery('page', paginated.page);
 			});
 		};
 		// 初期表示
@@ -449,7 +440,7 @@
 				$scope.totalSize = paginated.totalSize;
 				$scope.size = paginated.size;
 				$scope.list = paginated.list;
-				paths.entryToQuery('page', paginated.page)
+				if (paginated.page > 1) paths.entryToQuery('page', paginated.page);
 			});
 		};
 		// 初期表示
@@ -558,7 +549,7 @@
 				$scope.totalSize = paginated.totalSize;
 				$scope.size = paginated.size;
 				$scope.list = paginated.list;
-				if ($scope.cond.page > 1) paths.entryToQuery('page', $scope.cond.page);
+				if (paginated.page > 1) paths.entryToQuery('page', paginated.page);
 			});
 		};
 		// 初期表示
@@ -570,11 +561,11 @@
 		$scope.cond = paths.queryToObject({page: 1});
 		// ページ変更時にコールされる関数を作成・設定
 		$scope.pageChange = function() {
-			paths.entryToQuery('page', $scope.cond.page)
 			entities.User.query($scope.cond).$promise.then(function(paginated) {
 				$scope.totalSize = paginated.totalSize;
 				$scope.size = paginated.size;
 				$scope.list = paginated.list;
+				if (paginated.page > 1) paths.entryToQuery('page', paginated.page);
 			});
 		};
 		// 初期表示
