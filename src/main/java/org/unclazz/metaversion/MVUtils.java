@@ -67,7 +67,7 @@ public final class MVUtils {
 	 * @return 変換後
 	 */
 	public static CharSequence charArrayToCharSequence(final char[] charArray) {
-		return new StringBuilder().append(charArray);
+		return new StringBuilder().append(charArray == null ? new char[0] : charArray);
 	}
 	
 	/**

@@ -1,0 +1,25 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="utf-8">
+</head>
+<body>
+	<article>
+		<div class="modal-header">
+			<h1 class="modal-title">エラー通知</h1>
+		</div>
+		<div class="modal-body">
+			<p>エラーが発生しました。エラー情報の詳細は以下の通りです：</p>
+			<table class="table">
+				<tr ng-repeat="(key, value) in error">
+					<th>{{key}}</th>
+					<td>{{value}}</td>
+				</tr>
+			</table>
+		</div>
+		<div class="modal-footer">
+			<button class="btn btn-default" tabindex="2" ng-click="close()">閉じる</button>
+		</div>
+	</article>
+</body>
+</html>

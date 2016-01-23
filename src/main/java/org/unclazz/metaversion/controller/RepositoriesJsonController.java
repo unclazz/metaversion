@@ -118,6 +118,7 @@ public class RepositoriesJsonController {
 			
 		} catch (final PatternSyntaxException ex) {
 			// 例外がスローされたら400 Bad Requestで返す
+			logger.error("{}", stackTraceToCharSequence(ex));
 			return httpResponseOfBadRequest(ex.getMessage());
 		}
 		
@@ -126,15 +127,17 @@ public class RepositoriesJsonController {
 
 		try {
 			checkConnectivity(repository);
-		} catch (final RuntimeException e) {
-			return httpResponseOfBadRequest(e.getMessage());
+		} catch (final RuntimeException ex) {
+			logger.error("{}", stackTraceToCharSequence(ex));
+			return httpResponseOfBadRequest(ex.getMessage());
 		}
 		
 		try {
 			repositoryService.modifyRepository(repository, MVUserDetails.of(principal));
 			return httpResponseOfOk(repository);
-		} catch (final RuntimeException e) {
-			return httpResponseOfInternalServerError(e.getMessage());
+		} catch (final RuntimeException ex) {
+			logger.error("{}", stackTraceToCharSequence(ex));
+			return httpResponseOfInternalServerError(ex.getMessage());
 		}
 	}
 	
@@ -166,6 +169,7 @@ public class RepositoriesJsonController {
 			
 		} catch (final PatternSyntaxException ex) {
 			// 例外がスローされたら400 Bad Requestで返す
+			logger.error("{}", stackTraceToCharSequence(ex));
 			return httpResponseOfBadRequest(ex.getMessage());
 		}
 		
@@ -174,15 +178,17 @@ public class RepositoriesJsonController {
 
 		try {
 			checkConnectivity(repository);
-		} catch (final RuntimeException e) {
-			return httpResponseOfBadRequest(e.getMessage());
+		} catch (final RuntimeException ex) {
+			logger.error("{}", stackTraceToCharSequence(ex));
+			return httpResponseOfBadRequest(ex.getMessage());
 		}
 		
 		try {
 			repositoryService.registerRepository(repository, MVUserDetails.of(principal));
 			return httpResponseOfOk(repository);
-		} catch (final RuntimeException e) {
-			return httpResponseOfInternalServerError(e.getMessage());
+		} catch (final RuntimeException ex) {
+			logger.error("{}", stackTraceToCharSequence(ex));
+			return httpResponseOfInternalServerError(ex.getMessage());
 		}
 	}
 	
@@ -207,6 +213,7 @@ public class RepositoriesJsonController {
 			return httpResponseOfOk();
 			
 		} catch (final RuntimeException e) {
+			logger.error(e.getMessage());
 			return httpResponseOfInternalServerError(e.getMessage());
 		}
 	}

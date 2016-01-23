@@ -90,6 +90,42 @@
 		
 		return entities;
 	})
+	.factory('modals', function($log, $uibModal, $location) {
+		var errorModal = function(error) {
+			var modalInstance = $uibModal.open({
+				templateUrl: 'js/templates/errorModal.html',
+				controller: 'errorModal',
+				size: 'lg',
+				backdrop: 'static',
+				resolve: {
+					error: function () {
+						return error;
+					}
+				}
+			});
+			return modalInstance;
+		};
+		
+		var waitingModal = function(message) {
+			var modalInstance = $uibModal.open({
+				templateUrl: 'js/templates/waitingModal.html',
+				controller: 'waitingModal',
+				size: 'lg',
+				backdrop: 'static',
+				resolve: {
+					message: function () {
+						return message;
+					}
+				}
+			});
+			return modalInstance;
+		};
+		
+		return {
+			errorModal: errorModal,
+			waitingModal: waitingModal
+		};
+	})
 	.factory('paths', function($log, $location) {
 		var queryToObject = function(defaultParams) {
 			var params = defaultParams === undefined ? {} : angular.copy(defaultParams);
@@ -229,6 +265,20 @@
 			}
 		});
 	})
+	.controller('errorModal', function ($scope, $uibModalInstance, $log, error) {
+		// オブジェクトの階層化された表示など便利な面が多々あるためコンソールにも出力する
+		$log.debug(error);
+		// スコープに登録する
+		$scope.error = error;
+		// 「閉じる」ボタンのコールバック関数を登録する
+		$scope.close = function () {
+			$uibModalInstance.dismiss('cancel');
+		};
+	})
+	.controller('waitingModal', function ($scope, $uibModalInstance, $log, message) {
+		$log.debug(message);
+		$scope.message = message;
+	})
 	// トップ画面のためのコントローラ
 	.controller('index', function($log, $scope, entities, paths) {
 		// サジェスト用の関数を作成・設定
@@ -297,7 +347,7 @@
 		
 		$scope.submit = function() {
 			var p;
-			if (ids.projectId > 0) {
+			if (ids.projectId === undefined) {
 				p = $scope.project.$resave();
 			} else {
 				p = $scope.project.$save();
@@ -368,7 +418,7 @@
 		});
 	})
 	// リポジトリ編集画面のためのコントローラ
-	.controller('repositories$repositoryId$edit', function($log, $scope, $location, entities, paths) {
+	.controller('repositories$repositoryId$edit', function($log, $scope, entities, paths, modals) {
 		// パスからIDを読み取る
 		var ids = paths.pathToIds();
 		if (ids.repositoryId !== undefined) {
@@ -378,7 +428,7 @@
 				id: undefined,
 				baseUrl: 'http://www.example.com/svn',
 				trunkPathPattern: '/trunk',
-				branchPathPattern: '/branches/\w+',
+				branchPathPattern: '/branches/\\\w+',
 				username: '',
 				password: ''
 			});
@@ -386,16 +436,19 @@
 		
 		$scope.submit = function() {
 			var p;
-			if (ids.projectId > 0) {
+			if (ids.repositoryId !== undefined) {
 				p = $scope.repository.$resave();
 			} else {
 				p = $scope.repository.$save();
 			}
-			$log.debug(p);
+			var waitingModal = modals.waitingModal('リポジトリの登録・更新処理を実行中です。');
 			p.then(function (data) {
 				paths.stringToPath('repositories/' + data.id);
-			}, function (error) {
-				// TODO
+				waitingModal.close({});
+			}, function(error) {
+				modals.errorModal(error).result.then(angular.noop,function() {
+					waitingModal.close();
+				});
 			});
 		};
 	})
