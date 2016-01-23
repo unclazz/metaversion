@@ -2,6 +2,7 @@ package org.unclazz.metaversion.mapper;
 
 import java.util.List;
 
+import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
@@ -65,6 +66,6 @@ public interface SvnRepositoryMapper {
 			+ "WHERE id = #{repo.id} ")
 	int update(@Param("repo") SvnRepository repo, @Param("auth") MVUserDetails auth);
 	
-	@Update("DELETE FROM svn_repository WHERE id = #{repo.id} ")
+	@Delete("DELETE FROM svn_repository WHERE id = #{id} ")
 	int delete(@Param("id") int id);
 }

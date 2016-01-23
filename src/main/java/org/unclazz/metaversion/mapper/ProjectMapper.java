@@ -2,6 +2,7 @@ package org.unclazz.metaversion.mapper;
 
 import java.util.List;
 
+import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
@@ -110,6 +111,6 @@ public interface ProjectMapper {
 			+ "WHERE id = #{proj.id} ")
 	int update(@Param("proj") Project project, @Param("auth") MVUserDetails auth);
 
-	@Update("DELETE FROM project WHERE id = #{proj.id} ")
+	@Delete("DELETE FROM project WHERE id = #{id} ")
 	int delete(@Param("id") int id);
 }

@@ -124,7 +124,9 @@
 		}
 		var stringToPath = function(path, data) {
 			$location.path(path);
-			$location.search(data);
+			if (data !== undefined) {
+				$location.search(data);
+			}
 		};
 		var objectToQuery = function(data) {
 			$location.search(data);
@@ -177,6 +179,8 @@
 			reloadOnSearch: false
 		}).when('/projects/:projectId/edit', {
 			templateUrl: 'js/templates/projects$projectId$edit.html'
+		}).when('/projects/:projectId/delete', {
+			templateUrl: 'js/templates/projects$projectId$delete.html'
 		}).when('/repositories', {
 			templateUrl: 'js/templates/repositories.html',
 			reloadOnSearch: false
@@ -275,7 +279,7 @@
 	.controller('projects$projectId', function($log, $scope, $location, entities, paths) {
 		$scope.project = entities.ProjectStats.get({id: paths.pathToIds().projectId});
 	})
-	// プロジェクト詳細画面のためのコントローラ
+	// プロジェクト編集画面のためのコントローラ
 	.controller('projects$projectId$edit', function($log, $scope, $location, entities, paths) {
 		// パスからIDを読み取る
 		var ids = paths.pathToIds();
@@ -295,6 +299,22 @@
 			$log.debug(p);
 			p.then(function (data) {
 				paths.stringToPath('projects/' + data.id);
+			}, function (error) {
+				// TODO
+			});
+		};
+	})
+	// プロジェクト削除画面のためのコントローラ
+	.controller('projects$projectId$delete', function($log, $scope, $location, entities, paths) {
+		// パスからIDを読み取る
+		var ids = paths.pathToIds();
+		$scope.project = entities.Project.get({id: paths.pathToIds().projectId});
+		
+		$scope.submit = function() {
+			var p = $scope.project.$remove();
+			$log.debug(p);
+			p.then(function (data) {
+				paths.stringToPath('projects');
 			}, function (error) {
 				// TODO
 			});
