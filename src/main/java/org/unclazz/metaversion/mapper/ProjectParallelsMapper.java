@@ -10,6 +10,8 @@ import org.unclazz.metaversion.vo.OrderByClause;
 
 public interface ProjectParallelsMapper {
 	@Select("SELECT self_project_id selfProjectId, "
+			+ "		repository_id repositoryId, "
+			+ "		repository_name repositoryName, "
 			+ "		path path, "
 			+ "		parallel_type parallelType, "
 			+ "		self_min_revision selfMinRevision, "
