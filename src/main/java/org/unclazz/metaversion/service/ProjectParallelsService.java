@@ -4,6 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
+import java.text.SimpleDateFormat;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
@@ -65,6 +66,7 @@ public class ProjectParallelsService {
 				"OTHER_MAX_COMMIT_DATE");
 		// CSVプリンタを初期化
 		final CSVPrinter printer = format.print(osw);
+		final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 		
 		for (final ProjectParallels rec : projectParallelsMapper
 				.selectByProjectId(id, orderBy, limitOffset)) {
@@ -76,17 +78,17 @@ public class ProjectParallelsService {
 					rec.getPath(),
 					rec.getParallelType(),
 					rec.getSelfMinRevision(),
-					rec.getSelfMinCommitDate(),
+					dateFormat.format(rec.getSelfMinCommitDate()),
 					rec.getSelfMaxRevision(),
-					rec.getSelfMaxCommitDate(),
+					dateFormat.format(rec.getSelfMaxCommitDate()),
 					rec.getOtherProjectId(),
 					rec.getOtherProjectName(),
 					rec.getOtherProjectCode(),
 					rec.getOtherProjectResponsiblePerson(),
 					rec.getOtherMinRevision(),
-					rec.getOtherMinCommitDate(),
+					dateFormat.format(rec.getOtherMinCommitDate()),
 					rec.getOtherMaxRevision(),
-					rec.getOtherMaxCommitDate());
+					dateFormat.format(rec.getOtherMaxCommitDate()));
 		}
 		
 		// プリンタをクローズ

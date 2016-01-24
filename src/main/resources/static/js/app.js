@@ -1,7 +1,8 @@
 (function(angular) {
 	var app = angular.module('app', ['ngResource', 'ui.bootstrap', 'ngRoute']);
 	
-	app.filter('excerpt', function () {
+	app
+	.filter('excerpt', function () {
 		return function (text, len) {
 			if (len === undefined) {
 				len = 100;
@@ -83,6 +84,9 @@
 				{projectId: "@projectId", commitId: "@commitId"}, pagingParams);
 		// ProjectChagedPathエンティティのためのResourceオブジェクトを作成
 		entity("ProjectChangedPath", "api/projects/:projectId/changedpaths",
+				{projectId: "@projectId"}, pagingParams);
+		// ProjectChagedPathエンティティのためのResourceオブジェクトを作成
+		entity("ProjectParallels", "api/projects/:projectId/parallels",
 				{projectId: "@projectId"}, pagingParams);
 		
 		// サジェスト用のResourceオブジェクトを作成
@@ -222,6 +226,8 @@
 			templateUrl: 'js/templates/projects$projectId$commits$commitId$delete.html'
 		}).when('/projects/:projectId/changedpaths', {
 			templateUrl: 'js/templates/projects$projectId$changedpaths.html'
+		}).when('/projects/:projectId/parallels', {
+			templateUrl: 'js/templates/projects$projectId$parallels.html'
 		}).when('/repositories', {
 			templateUrl: 'js/templates/repositories.html'
 		}).when('/repositories/new', {
@@ -432,6 +438,48 @@
 		};
 		// 初期表示
 		$scope.pageChange();
+	})
+	.controller('prjects$projectId$parallels', function($log, $scope, $location, entities, paths) {
+		var ids = paths.pathToIds();
+		$scope.project = entities.ProjectStats.get({id: ids.projectId});
+		// クエリ文字列をもとに検索条件を初期化
+		$scope.cond = angular.extend(paths.queryToObject({page: 1}), ids);
+		// ページ変更時にコールされる関数を作成・設定
+		$scope.pageChange = function() {
+			entities.ProjectParallels.query($scope.cond).$promise.then(function(paginated) {
+				$scope.totalSize = paginated.totalSize;
+				$scope.size = paginated.size;
+				markRepeatedItems(paginated.list);
+				$scope.list = paginated.list;
+				if (paginated.page > 1) paths.entryToQuery('page', paginated.page);
+			});
+		};
+		// 初期表示
+		$scope.pageChange();
+		$scope.csvDowloadUrl = function () {
+			var nativePath = window.location.pathname.replace(/index$/, '');
+			var ngPath = $location.path();
+			return nativePath + 'csv' + ngPath + '.csv';
+		};
+		var markRepeatedItems = function name(list) {
+			var previous = {}
+			var repeated = function(name, value) {
+				var prevValue = previous[name];
+				previous[name] = value;
+				return (prevValue !== undefined && prevValue == value); 
+			};
+			for (var i = 0; i < list.length; i ++) {
+				var item = list[i];
+				var repositoryRepeated = repeated('repositoryId', item.repositoryId);
+				if (repositoryRepeated) {
+					item.repositoryRepeated = true;
+					var pathRepeated = repeated('path', item.path);
+					if (pathRepeated) {
+						item.pathRepeated = true;
+					}
+				}
+			}
+		};
 	})
 	// リポジトリ一覧画面のためのコントローラ
 	.controller('repositories', function($log, $scope, $location, entities, paths) {
