@@ -338,9 +338,11 @@ CREATE VIEW project_parallels_view AS
     b_path.min_revision AS other_min_revision,
     b_path.min_commit_date AS other_min_commit_date,
     b_path.max_revision AS other_max_revision,
-    b_path.max_commit_date AS other_max_commit_date
+    b_path.max_commit_date AS other_max_commit_date,
+    a_path.svn_repository_id AS repository_id,
+    a_path.svn_repository_name AS repository_name
    FROM (((project_changedpath_view a_path
-     JOIN project_changedpath_view b_path ON ((a_path.path = b_path.path)))
+     JOIN project_changedpath_view b_path ON (((a_path.path = b_path.path) AND (a_path.svn_repository_id = b_path.svn_repository_id))))
      JOIN project_stats_view a_stat ON ((a_path.project_id = a_stat.id)))
      JOIN project b_proj ON ((b_path.project_id = b_proj.id)))
   WHERE ((a_path.project_id <> b_path.project_id) AND (((((b_path.min_commit_date >= a_stat.min_commit_date) AND (b_path.min_commit_date <= a_stat.max_commit_date)) OR ((b_path.max_commit_date >= a_stat.min_commit_date) AND (b_path.max_commit_date <= a_stat.max_commit_date))) OR ((a_stat.min_commit_date >= b_path.min_commit_date) AND (a_stat.min_commit_date <= b_path.max_commit_date))) OR ((a_stat.max_commit_date >= b_path.min_commit_date) AND (a_stat.max_commit_date <= b_path.max_commit_date))));
