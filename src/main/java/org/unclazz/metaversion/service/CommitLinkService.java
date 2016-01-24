@@ -59,7 +59,7 @@ public class CommitLinkService {
 		
 		for (final ProjectSvnRepository obsoleted : obsoletedList) {
 			final List<SvnCommit> commitList = svnCommitMapper.
-					selectForMatchingByProjectIdAndRepositoryId(projectId, obsoleted.getRepositoryId());
+					selectAutolinkCandidateByProjectIdAndRepositoryId(projectId, obsoleted.getRepositoryId());
 			final MaxRevision maxRevision = MaxRevision.startsWith(obsoleted.getLastRevision());
 			
 			for (final SvnCommit commit : commitList) {

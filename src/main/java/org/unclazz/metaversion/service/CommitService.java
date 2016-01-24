@@ -38,8 +38,8 @@ public class CommitService {
 		final OrderByClause orderBy = OrderByClause.of("revision", Order.DESC);
 		final LimitOffsetClause limitOffset = LimitOffsetClause.of(paging);
 		return Paginated.of(paging,
-				svnCommitMapper.selectProjectUndeterminedListByRepositoryId(repositoryId, orderBy, limitOffset),
-				svnCommitMapper.selectProjectUndeterminedCountByRepositoryId(repositoryId));
+				svnCommitMapper.selectUnlinkedByRepositoryId(repositoryId, orderBy, limitOffset),
+				svnCommitMapper.selectUnlinkedCountByRepositoryId(repositoryId));
 	}
 	
 	public Paginated<SvnCommit> getCommitListByRepositoryId(final int repositoryId, final Paging paging) {

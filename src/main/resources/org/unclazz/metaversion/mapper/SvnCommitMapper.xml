@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.unclazz.metaversion.mapper.SvnCommitMapper">
+ 	<select id="selectNextVal" resultType="int">
+		SELECT nextval('svn_commit_seq') 
+	</select>
+	<select id="selectOneById" resultType="SvnCommit">
+		SELECT id, 
+			repository_id repositoryId, 
+			commit_message commitMessage,
+			commit_date commitDate, 
+			committer_name committerName, 
+			revision
+		FROM svn_commit 
+		WHERE id = #{id} 
+	</select>
+	<select id="selectWithRepositoryInfoById" resultType="SvnCommitWithRepositoryInfo">
+		SELECT c.id, 
+			repository_id repositoryId, 
+			r.name repositoryName, 
+			r.base_url repositoryBaseUrl,
+			commit_message commitMessage, 
+			commit_date commitDate, 
+			committer_name committerName, 
+			revision
+		FROM svn_commit c
+		INNER JOIN svn_repository r
+		ON c.repository_id = r.id
+		WHERE c.id = #{id} 
+	</select>
+	<select id="selectAutolinkCandidateByProjectIdAndRepositoryId" resultType="SvnCommit">
+		SELECT c.id, 
+			c.repository_id repositoryId, 
+			c.commit_message commitMessage,
+			c.commit_date commitDate, 
+			c.committer_name committerName, 
+			c.revision
+		FROM svn_commit c
+		INNER JOIN project_svn_repository pr
+		ON c.repository_id = pr.repository_id
+		WHERE c.revision > pr.last_revision
+		AND pr.project_id = #{projectId} 
+		AND pr.repository_id = #{repositoryId} 
+	</select>
+	<select id="selectUnlinkedByRepositoryId" resultType="SvnCommit">
+		SELECT c.id, 
+			c.repository_id repositoryId, 
+			c.commit_message commitMessage,
+			c.commit_date commitDate, 
+			c.committer_name committerName, 
+			c.revision
+		FROM svn_commit c
+		LEFT OUTER JOIN project_svn_commit pc
+		ON c.id = pc.commit_id
+		WHERE pc.commit_id IS NULL 
+		AND c.repository_id = #{repositoryId}
+		${orderBy} ${limitOffset} 
+	</select>
+	<select id="selectUnlinkedCountByRepositoryId" resultType="int">
+		SELECT count(1) 
+		FROM svn_commit c
+		LEFT OUTER JOIN project_svn_commit pc
+		ON c.id = pc.commit_id
+		WHERE pc.commit_id IS NULL 
+		AND c.repository_id = #{repositoryId} 
+	</select>
+	<select id="selectByRepositoryId" resultType="SvnCommit">
+		SELECT c.id, 
+			c.repository_id repositoryId, 
+			c.commit_message commitMessage,
+			c.commit_date commitDate, 
+			c.committer_name committerName, 
+			c.revision
+		FROM svn_commit c
+		WHERE c.repository_id = #{repositoryId}
+		${orderBy} ${limitOffset} 
+	</select>
+	<select id="selectCountByRepositoryId" resultType="int">
+		SELECT count(1) 
+		FROM svn_commit c
+		WHERE c.repository_id = #{repositoryId} 
+	</select>
+	<select id="selectStatsOneByCommitId" resultType="SvnCommitStats">
+		SELECT c.id, 
+			c.repository_id repositoryId, 
+			c.commit_message commitMessage,
+			c.commit_date commitDate, 
+			c.committer_name committerName, 
+			c.revision,
+			c.project_count projectCount, 
+			c.path_count pathCount,
+			c.min_project_id projectId, 
+			c.min_project_code projectCode, 
+			c.min_project_name projectName
+		FROM svn_commit_stats_view c
+		WHERE c.id = #{commitId} 
+	</select>
+	<select id="selectStatsByRepositoryId" resultType="SvnCommitStats">
+		SELECT c.id, 
+			c.repository_id repositoryId, 
+			c.commit_message commitMessage,
+			c.commit_date commitDate, 
+			c.committer_name committerName, 
+			c.revision,
+			c.project_count projectCount, 
+			c.path_count pathCount,
+			c.min_project_id projectId, 
+			c.min_project_code projectCode, 
+			c.min_project_name projectName
+		FROM svn_commit_stats_view c
+		WHERE c.repository_id = #{repositoryId}
+		${orderBy} ${limitOffset} 
+	</select>
+	<select id="selectStatsCountByRepositoryId" resultType="int">
+		SELECT count(1) 
+		FROM svn_commit_stats_view c
+		WHERE c.repository_id = #{repositoryId} 
+	</select>
+	<select id="selectByProjectId" resultType="SvnCommitWithRepositoryInfo">
+		SELECT c.id, 
+			c.repository_id repositoryId, 
+			c.commit_message commitMessage,
+			c.commit_date commitDate, 
+			c.committer_name committerName, 
+			c.revision,
+			r.name repositoryName, 
+			r.base_url repositoryBaseUrl
+		FROM svn_commit c
+		INNER JOIN project_svn_commit pc
+		ON c.id = pc.commit_id
+		INNER JOIN svn_repository r
+		ON r.id = c.repository_id
+		WHERE pc.project_id = #{projectId}
+		${orderBy} ${limitOffset} 
+	</select>
+	<select id="selectCountByProjectId" resultType="int">
+		SELECT count(1) 
+		FROM svn_commit c
+		INNER JOIN project_svn_commit pc
+		ON c.id = pc.commit_id
+		WHERE pc.project_id = #{projectId} 
+	</select>
+	<insert id="insert">
+		INSERT INTO svn_commit (id, 
+			repository_id, 
+			commit_message,
+			commit_date, 
+			committer_name, 
+			revision, 
+			create_user_id)
+		VALUES (#{commit.id}, 
+			#{commit.repositoryId}, 
+			#{commit.commitMessage},
+			#{commit.commitDate}, 
+			#{commit.committerName}, 
+			#{commit.revision}, 
+			#{auth.id}) 
+	</insert>
+	<delete id="deleteBySvnRepositoryId">
+		DELETE FROM svn_commit 
+		WHERE repository_id = #{repositoryId} 
+	</delete>
+</mapper>

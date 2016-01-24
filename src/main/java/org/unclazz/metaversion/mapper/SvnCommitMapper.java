@@ -2,10 +2,7 @@ package org.unclazz.metaversion.mapper;
 
 import java.util.List;
 
-import org.apache.ibatis.annotations.Delete;
-import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.Select;
 import org.unclazz.metaversion.MVUserDetails;
 import org.unclazz.metaversion.entity.SvnCommit;
 import org.unclazz.metaversion.entity.SvnCommitStats;
@@ -14,116 +11,118 @@ import org.unclazz.metaversion.vo.LimitOffsetClause;
 import org.unclazz.metaversion.vo.OrderByClause;
 
 public interface SvnCommitMapper {
-	@Select("SELECT nextval('svn_commit_seq') ")
+	/**
+	 * シーケンスから新しいIDを採番する.
+	 * @return ID
+	 */
 	int selectNextVal();
-	
-	@Select("SELECT id, repository_id repositoryId, commit_message commitMessage, "
-			+ "commit_date commitDate, committer_name committerName, revision "
-			+ "FROM svn_commit WHERE id = #{id} ")
+	/**
+	 * IDによってコミット情報を取得する.
+	 * @param id ID
+	 * @return コミット情報
+	 */
 	SvnCommit selectOneById(@Param("id") int id);
-	
-	@Select("SELECT c.id, repository_id repositoryId, r.name repositoryName, r.base_url repositoryBaseUrl, "
-			+ "commit_message commitMessage, commit_date commitDate, committer_name committerName, revision "
-			+ "FROM svn_commit c "
-			+ "INNER JOIN svn_repository r "
-			+ "ON c.repository_id = r.id "
-			+ "WHERE c.id = #{id} ")
+	/**
+	 * IDによってコミット情報とそれが紐づくリポジトリ情報を取得する.
+	 * @param id ID
+	 * @return コミット情報およびそれが紐づくリポジトリ情報
+	 */
 	SvnCommitWithRepositoryInfo selectWithRepositoryInfoById(@Param("id") int id);
-	
-	@Select("SELECT c.id, c.repository_id repositoryId, c.commit_message commitMessage, "
-			+ "c.commit_date commitDate, c.committer_name committerName, c.revision "
-			+ "FROM svn_commit c "
-			+ "INNER JOIN project_svn_repository pr "
-			+ "ON c.repository_id = pr.repository_id "
-			+ "WHERE c.revision > pr.last_revision "
-			+ "AND pr.project_id = #{projectId} AND pr.repository_id = #{repositoryId} ")
-	List<SvnCommit> selectForMatchingByProjectIdAndRepositoryId(
+	/**
+	 * プロジェクトIDとリポジトリIDをキーにプロジェクト-コミット自動紐付けの候補となるコミット情報を取得する.
+	 * @param projectId プロジェクトID
+	 * @param repositoryId リポジトリID
+	 * @return コミット情報リスト
+	 */
+	List<SvnCommit> selectAutolinkCandidateByProjectIdAndRepositoryId(
 			@Param("projectId") int projectId, @Param("repositoryId") int repositoryId);
-	
-	@Select(" SELECT c.id, c.repository_id repositoryId, c.commit_message commitMessage, "
-			+ "c.commit_date commitDate, c.committer_name committerName, c.revision "
-			+ "FROM svn_commit c "
-			+ "LEFT OUTER JOIN project_svn_commit pc "
-			+ "ON c.id = pc.commit_id "
-			+ "WHERE pc.commit_id IS NULL AND c.repository_id = #{repositoryId} "
-			+ "${orderBy} ${limitOffset} ")
-	List<SvnCommit> selectProjectUndeterminedListByRepositoryId(
+	/**
+	 * リポジトリIDをキーにしてプロジェクト紐付けのされていないコミットの情報を取得する.
+	 * @param repositoryId リポジトリID
+	 * @param orderBy ORDER BY句の情報を格納するVO
+	 * @param limitOffset LIMIT/OFFSET句の情報を格納するVO
+	 * @return コミット情報リスト
+	 */
+	List<SvnCommit> selectUnlinkedByRepositoryId(
 			@Param("repositoryId") int repositoryId,
 			@Param("orderBy") OrderByClause orderBy,
 			@Param("limitOffset") LimitOffsetClause limitOffset);
-	
-	@Select(" SELECT count(1) FROM svn_commit c "
-			+ "LEFT OUTER JOIN project_svn_commit pc "
-			+ "ON c.id = pc.commit_id "
-			+ "WHERE pc.commit_id IS NULL AND c.repository_id = #{repositoryId} ")
-	int selectProjectUndeterminedCountByRepositoryId(@Param("repositoryId") int repositoryId);
-	
-	@Select(" SELECT c.id, c.repository_id repositoryId, c.commit_message commitMessage, "
-			+ "c.commit_date commitDate, c.committer_name committerName, c.revision "
-			+ "FROM svn_commit c "
-			+ "WHERE c.repository_id = #{repositoryId} "
-			+ "${orderBy} ${limitOffset} ")
+	/**
+	 * リポジトリIDをキーにしてプロジェクト紐付けのされていないコミットの情報をカウントする.
+	 * @param repositoryId リポジトリID
+	 * @return コミット情報の件数
+	 */
+	int selectUnlinkedCountByRepositoryId(@Param("repositoryId") int repositoryId);
+	/**
+	 * リポジトリIDをキーにしてコミット情報を取得する.
+	 * @param repositoryId リポジトリID
+	 * @param orderBy ORDER BY句の情報を格納するVO
+	 * @param limitOffset LIMIT/OFFSET句の情報を格納するVO
+	 * @return コミット情報リスト
+	 */
 	List<SvnCommit> selectByRepositoryId(
 			@Param("repositoryId") int repositoryId,
 			@Param("orderBy") OrderByClause orderBy,
 			@Param("limitOffset") LimitOffsetClause limitOffset);
-	
-	@Select(" SELECT count(1) FROM svn_commit c "
-			+ "WHERE c.repository_id = #{repositoryId} ")
+	/**
+	 * リポジトリIDをキーにしてコミット情報をカウントする.
+	 * @param repositoryId リポジトリID
+	 * @return コミット情報リスト
+	 */
 	int selectCountByRepositoryId(@Param("repositoryId") int repositoryId);
-	
-	@Select(" SELECT c.id, c.repository_id repositoryId, c.commit_message commitMessage, "
-			+ "c.commit_date commitDate, c.committer_name committerName, c.revision,"
-			+ "c.project_count projectCount, c.path_count pathCount, "
-			+ "c.min_project_id projectId, c.min_project_code projectCode, c.min_project_name projectName "
-			+ "FROM svn_commit_stats_view c "
-			+ "WHERE c.id = #{commitId} ")
+	/**
+	 * コミットIDをキーにしてコミット統計情報を取得する.
+	 * @param commitId コミットID
+	 * @return コミット統計情報
+	 */
 	SvnCommitStats selectStatsOneByCommitId(
 			@Param("commitId") int commitId);
-	
-	@Select(" SELECT c.id, c.repository_id repositoryId, c.commit_message commitMessage, "
-			+ "c.commit_date commitDate, c.committer_name committerName, c.revision,"
-			+ "c.project_count projectCount, c.path_count pathCount, "
-			+ "c.min_project_id projectId, c.min_project_code projectCode, c.min_project_name projectName "
-			+ "FROM svn_commit_stats_view c "
-			+ "WHERE c.repository_id = #{repositoryId} "
-			+ "${orderBy} ${limitOffset} ")
+	/**
+	 * リポジトリIDをキーにしてコミット統計情報を取得する.
+	 * @param repositoryId リポジトリID
+	 * @param orderBy ORDER BY句の情報を格納するVO
+	 * @param limitOffset LIMIT/OFFSET句の情報を格納するVO
+	 * @return コミット統計情報リスト
+	 */
 	List<SvnCommitStats> selectStatsByRepositoryId(
 			@Param("repositoryId") int repositoryId,
 			@Param("orderBy") OrderByClause orderBy,
 			@Param("limitOffset") LimitOffsetClause limitOffset);
-	
-	@Select(" SELECT count(1) FROM svn_commit_stats_view c "
-			+ "WHERE c.repository_id = #{repositoryId} ")
+	/**
+	 * リポジトリIDをキーにしてコミット統計情報をカウントする.
+	 * @param repositoryId リポジトリID
+	 * @return コミット統計情報の件数
+	 */
 	int selectStatsCountByRepositoryId(@Param("repositoryId") int repositoryId);
-	
-	@Select(" SELECT c.id, c.repository_id repositoryId, c.commit_message commitMessage, "
-			+ "c.commit_date commitDate, c.committer_name committerName, c.revision, "
-			+ "r.name repositoryName, r.base_url repositoryBaseUrl "
-			+ "FROM svn_commit c "
-			+ "INNER JOIN project_svn_commit pc "
-			+ "ON c.id = pc.commit_id "
-			+ "INNER JOIN svn_repository r "
-			+ "ON r.id = c.repository_id "
-			+ "WHERE pc.project_id = #{projectId} "
-			+ "${orderBy} ${limitOffset} ")
+	/**
+	 * プロジェクトIDをキーにして紐付きのあるコミット情報とそのリポジトリ情報を取得する.
+	 * @param projectId プロジェクトID
+	 * @param orderBy ORDER BY句の情報を格納するVO
+	 * @param limitOffset LIMIT/OFFSET句の情報を格納するVO
+	 * @return コミット情報とそのリポジトリ情報
+	 */
 	List<SvnCommitWithRepositoryInfo> selectByProjectId(
 			@Param("projectId") int projectId,
 			@Param("orderBy") OrderByClause orderBy,
 			@Param("limitOffset") LimitOffsetClause limitOffset);
-	
-	@Select(" SELECT count(1) FROM svn_commit c "
-			+ "INNER JOIN project_svn_commit pc "
-			+ "ON c.id = pc.commit_id "
-			+ "WHERE pc.project_id = #{projectId} ")
+	/**
+	 * プロジェクトIDをキーにして紐付きのあるコミット情報をカウントする.
+	 * @param projectId プロジェクトID
+	 * @return コミット情報の件数
+	 */
 	int selectCountByProjectId(@Param("projectId") int projectId);
-	
-	@Insert("INSERT INTO svn_commit (id, repository_id, commit_message, "
-			+ "commit_date, committer_name, revision, create_user_id) "
-			+ "VALUES (#{commit.id}, #{commit.repositoryId}, #{commit.commitMessage}, "
-			+ "#{commit.commitDate}, #{commit.committerName}, #{commit.revision}, #{auth.id}) ")
+	/**
+	 * コミット情報をINSERTする.
+	 * IDはあらかじめシーケンスから採番した値で初期化されていることを前提とする。
+	 * @param commit コミット情報
+	 * @param auth 認証済みユーザ情報
+	 * @return 処理件数
+	 */
 	int insert(@Param("commit") SvnCommit commit, @Param("auth") MVUserDetails auth);
-	
-	@Delete("DELETE FROM svn_commit WHERE repository_id = #{repositoryId} ")
+	/**
+	 * リポジトリIDをキーにしてコミット情報を一括DELETEする.
+	 * @param repositoryId リポジトリID
+	 * @return 処理件数
+	 */
 	int deleteBySvnRepositoryId(@Param("repositoryId") int repositoryId);
 }
