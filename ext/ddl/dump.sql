@@ -292,20 +292,6 @@ CREATE VIEW project_changedpath_view AS
 ALTER TABLE project_changedpath_view OWNER TO postgres;
 
 --
--- Name: project_seq; Type: SEQUENCE; Schema: public; Owner: postgres
---
-
-CREATE SEQUENCE project_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER TABLE project_seq OWNER TO postgres;
-
---
 -- Name: project_stats_view; Type: VIEW; Schema: public; Owner: postgres
 --
 
@@ -328,6 +314,53 @@ CREATE VIEW project_stats_view AS
 
 
 ALTER TABLE project_stats_view OWNER TO postgres;
+
+--
+-- Name: project_parallels_view; Type: VIEW; Schema: public; Owner: postgres
+--
+
+CREATE VIEW project_parallels_view AS
+ SELECT a_stat.id AS self_project_id,
+    a_path.path,
+        CASE
+            WHEN ((b_path.min_commit_date >= a_stat.min_commit_date) AND (b_path.min_commit_date <= a_stat.max_commit_date)) THEN 'A'::text
+            WHEN ((b_path.max_commit_date >= a_stat.min_commit_date) AND (b_path.max_commit_date <= a_stat.max_commit_date)) THEN 'A'::text
+            ELSE 'B'::text
+        END AS parallel_type,
+    a_path.min_revision AS self_min_revision,
+    a_path.min_commit_date AS self_min_commit_date,
+    a_path.max_revision AS self_max_revision,
+    a_path.max_commit_date AS self_max_commit_date,
+    b_path.project_id AS other_project_id,
+    b_proj.name AS other_project_name,
+    b_proj.code AS other_project_code,
+    b_proj.responsible_person AS other_project_responsible_person,
+    b_path.min_revision AS other_min_revision,
+    b_path.min_commit_date AS other_min_commit_date,
+    b_path.max_revision AS other_max_revision,
+    b_path.max_commit_date AS other_max_commit_date
+   FROM (((project_changedpath_view a_path
+     JOIN project_changedpath_view b_path ON ((a_path.path = b_path.path)))
+     JOIN project_stats_view a_stat ON ((a_path.project_id = a_stat.id)))
+     JOIN project b_proj ON ((b_path.project_id = b_proj.id)))
+  WHERE ((a_path.project_id <> b_path.project_id) AND (((((b_path.min_commit_date >= a_stat.min_commit_date) AND (b_path.min_commit_date <= a_stat.max_commit_date)) OR ((b_path.max_commit_date >= a_stat.min_commit_date) AND (b_path.max_commit_date <= a_stat.max_commit_date))) OR ((a_stat.min_commit_date >= b_path.min_commit_date) AND (a_stat.min_commit_date <= b_path.max_commit_date))) OR ((a_stat.max_commit_date >= b_path.min_commit_date) AND (a_stat.max_commit_date <= b_path.max_commit_date))));
+
+
+ALTER TABLE project_parallels_view OWNER TO postgres;
+
+--
+-- Name: project_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE project_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE project_seq OWNER TO postgres;
 
 --
 -- Name: project_svn_repository; Type: TABLE; Schema: public; Owner: postgres
