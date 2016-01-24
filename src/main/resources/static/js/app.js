@@ -408,15 +408,15 @@
 		$scope.pageChange();
 	})
 	// プロジェクトコミット紐付け解除画面のためのコントローラ
-	.controller('projects$projectId$commits$commitId$delete', function($log, $scope, $location, entities, paths) {
+	.controller('projects$projectId$commits$commitId$delete', function($log, $scope, $location, entities, paths, modals) {
 		var ids = paths.pathToIds();
 		$scope.project = entities.ProjectStats.get({id: ids.projectId});
 		$scope.commit = entities.ProjectCommit.get(ids);
 
 		$scope.submit = function() {
-			var p = $scope.commit.$remove();
+			var p = entities.ProjectCommit.remove(ids);
 			$log.debug(p);
-			p.then(function (data) {
+			p.$promise.then(function (data) {
 				paths.stringToPath('projects/' + ids.projectId + '/commits');
 			}, modals.errorModal);
 		};
@@ -438,6 +438,11 @@
 		};
 		// 初期表示
 		$scope.pageChange();
+		$scope.csvDowloadUrl = function () {
+			var nativePath = window.location.pathname.replace(/index$/, '');
+			var ngPath = $location.path();
+			return nativePath + 'csv' + ngPath + '.csv';
+		};
 	})
 	.controller('prjects$projectId$parallels', function($log, $scope, $location, entities, paths) {
 		var ids = paths.pathToIds();
