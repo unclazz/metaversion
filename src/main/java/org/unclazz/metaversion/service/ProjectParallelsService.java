@@ -27,7 +27,7 @@ public class ProjectParallelsService {
 	private ProjectParallelsMapper projectParallelsMapper;
 	
 	public Paginated<ProjectParallels> getProjectParallelsByProjectId(final int projectId, final Paging paging) {
-		final OrderByClause orderBy = OrderByClause.of("path");
+		final OrderByClause orderBy = OrderByClause.of("repositoryName").and("path");
 		final LimitOffsetClause limitOffset = LimitOffsetClause.of(paging);
 
 		// コミット情報を検索する
@@ -38,7 +38,7 @@ public class ProjectParallelsService {
 	}
 	
 	public Resource getProjectParallelsCsvByProjectId(final int id) throws IOException {
-		final OrderByClause orderBy = OrderByClause.of("path");
+		final OrderByClause orderBy = OrderByClause.of("repositoryName").and("path");
 		final LimitOffsetClause limitOffset = LimitOffsetClause.ALL;
 		
 		// CSVファイルのコンテンツを一時的に格納するためバイト配列出力ストリームを初期化
