@@ -17,12 +17,14 @@ import org.springframework.web.bind.annotation.RestController;
 import org.unclazz.metaversion.MVApplication;
 import org.unclazz.metaversion.MVUserDetails;
 import org.unclazz.metaversion.entity.ProjectChangedPath;
+import org.unclazz.metaversion.entity.ProjectParallels;
 import org.unclazz.metaversion.entity.Project;
 import org.unclazz.metaversion.entity.ProjectStats;
 import org.unclazz.metaversion.entity.ProjectSvnCommit;
 import org.unclazz.metaversion.entity.SvnCommitWithRepositoryInfo;
 import org.unclazz.metaversion.service.CommitLinkService;
 import org.unclazz.metaversion.service.CommitService;
+import org.unclazz.metaversion.service.ProjectParallelsService;
 import org.unclazz.metaversion.service.ProjectService;
 import org.unclazz.metaversion.vo.Paginated;
 import org.unclazz.metaversion.vo.Paging;
@@ -39,6 +41,8 @@ public class ProjectsJsonController {
 	private CommitService commitService;
 	@Autowired
 	private CommitLinkService commitLinkService;
+	@Autowired
+	private ProjectParallelsService parallelsService;
 	
 	/**
 	 * 引数で指定された部分文字列を使用してプロジェクトを検索してその名称の一覧を返す.
@@ -175,6 +179,12 @@ public class ProjectsJsonController {
 			@PathVariable("projectId") final int projectId,
 			@PathVariable("commitId") final int commitId) {
 		return httpResponseOfOkOrNotFound(commitService.getCommitWithRepositoryInfoByCommitId(commitId));
+	}
+
+	@RequestMapping(value="/projects/{projectId}/parallels", method=RequestMethod.GET)
+	public Paginated<ProjectParallels> getProjectsParallels(final Principal principal,
+			@PathVariable("projectId") final int projectId, @ModelAttribute final Paging paging) {
+		return parallelsService.getProjectParallelsByProjectId(projectId, paging);
 	}
 
 	/**
