@@ -30,6 +30,7 @@
 					<tr><th nowrap="nowrap">コミット日時</th><td>{{commit.commitDate}}</td></tr>
 					<tr><th>コミッター</th><td>{{commit.committerName}}</td></tr>
 					<tr><th>メッセージ</th><td>{{commit.commitMessage}}</td></tr>
+					<tr><th>変更パス数</th><td>{{commit.pathCount}}</td></tr>
 					<tr><th nowrap="nowrap">関連プロジェクト</th><td>
 						<span ng-show="projectList.totalSize == 0">（関連プロジェクトなし）</span>
 						<span ng-repeat="item in projectList.list">
@@ -44,7 +45,9 @@
 				<div class="panel-body">
 					<div class="row">
 						<div class="col-lg-6">
-							<a class="btn btn-default" href="#" ng-href="#/repositories/{{commit.repositoryId}}/commits/{{commit.id}}/changedpaths" role="button">変更パス一覧</a>
+							<a class="btn btn-default" role="button" href="#" 
+							ng-href="#/repositories/{{commit.repositoryId}}/commits/{{commit.id}}/changedpaths" 
+							ng-disabled="commit.pathCount == 0">変更パス一覧</a>
 						</div><!-- /.col-lg-N -->
 						<div class="col-lg-4">
 						</div><!-- /.col-lg-N -->

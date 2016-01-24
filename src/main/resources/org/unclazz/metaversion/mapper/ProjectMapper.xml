@@ -57,15 +57,15 @@
 		    responsible_person responsiblePerson,
 		    commit_sign_pattern commitSignPattern
 		FROM project p
-		LEFT JOIN project_svn_commit pc
-		ON p.id = pc.project_id
 		WHERE 0 = 0
 		<if test="like.length() &gt; 0">
 		AND name like ('%' || #{like} || '%')
 		</if>
 		<if test="unlinkedCommitId &gt; 0">
-		AND (pc.commit_id IS NULL 
-			OR (pc.commit_id &lt; #{unlinkedCommitId} AND #{unlinkedCommitId} &lt; pc.commit_id))
+		AND NOT EXISTS (SELECT 1 
+			FROM project_svn_commit pc
+			WHERE pc.project_id = p.id
+			AND pc.commit_id = #{unlinkedCommitId})
 		</if>
 		GROUP BY p.id
 		${orderBy} ${limitOffset} 
@@ -73,18 +73,19 @@
 	
 	<select id="selectCountByPartialName" resultType="int">
 		SELECT count(1) 
-		FROM project p
-		LEFT JOIN project_svn_commit pc
-		ON p.id = pc.project_id
-		WHERE 0 = 0
-		<if test="like.length() &gt; 0">
-		AND name like ('%' || #{like} || '%')
-		</if>
-		<if test="unlinkedCommitId &gt; 0">
-		AND (pc.commit_id IS NULL 
-			OR (pc.commit_id &lt; #{unlinkedCommitId} AND #{unlinkedCommitId} &lt; pc.commit_id))
-		</if>
-		GROUP BY p.id
+		FROM (SELECT p.id
+			FROM project p
+			WHERE 0 = 0
+			<if test="like.length() &gt; 0">
+			AND name like ('%' || #{like} || '%')
+			</if>
+			<if test="unlinkedCommitId &gt; 0">
+			AND NOT EXISTS (SELECT 1 
+				FROM project_svn_commit pc
+				WHERE pc.project_id = p.id
+				AND pc.commit_id = #{unlinkedCommitId})
+			</if>
+			GROUP BY p.id) a
 	</select>
 	
 	<select id="selectByPartialPath" resultType="Project">
@@ -94,8 +95,6 @@
 				responsible_person responsiblePerson,
 				commit_sign_pattern commitSignPattern
 		FROM project p
-		LEFT JOIN project_svn_commit pc
-		ON p.id = pc.project_id
 		WHERE 0 = 0
 		<if test="like.length() &gt; 0">
 		AND p.id IN ("
@@ -106,8 +105,10 @@
 				WHERE path like ('%' || #{like} || '%'))
 		</if>
 		<if test="unlinkedCommitId &gt; 0">
-		AND (pc.commit_id IS NULL 
-			OR (pc.commit_id &lt; #{unlinkedCommitId} AND #{unlinkedCommitId} &lt; pc.commit_id))
+		AND NOT EXISTS (SELECT 1 
+			FROM project_svn_commit pc
+			WHERE pc.project_id = p.id
+			AND pc.commit_id = #{unlinkedCommitId})
 		</if> 
 		GROUP BY p.id
 		${orderBy} ${limitOffset} 
@@ -115,23 +116,24 @@
 	
 	<select id="selectCountByPartialPath" resultType="int">
 		SELECT count(1)
-		FROM project p
-		INNER JOIN project_svn_commit pc
-		ON p.id = pc.project_id
-		WHERE 0 = 0
-		<if test="like.length() &gt; 0">
-		AND p.id IN ("
-				SELECT pc.project_id
+		FROM (SELECT p.id
+			FROM project p
+			WHERE 0 = 0
+			<if test="like.length() &gt; 0">
+			AND p.id IN ("
+					SELECT pc.project_id
+					FROM project_svn_commit pc
+					INNER JOIN svn_commit_path cp
+					ON pc.commit_id = cp.commit_id
+					WHERE path like ('%' || #{like} || '%'))
+			</if>
+			<if test="unlinkedCommitId &gt; 0">
+			AND NOT EXISTS (SELECT 1 
 				FROM project_svn_commit pc
-				INNER JOIN svn_commit_path cp
-				ON pc.commit_id = cp.commit_id
-				WHERE path like ('%' || #{like} || '%'))
-		</if>
-		<if test="unlinkedCommitId &gt; 0">
-		AND (pc.commit_id IS NULL 
-			OR (pc.commit_id &lt; #{unlinkedCommitId} AND #{unlinkedCommitId} &lt; pc.commit_id))
-		</if> 
-		GROUP BY p.id
+				WHERE pc.project_id = p.id
+				AND pc.commit_id = #{unlinkedCommitId})
+			</if> 
+			GROUP BY p.id) a
 	</select>
 
 	<select id="selectByCommitId" resultType="Project">

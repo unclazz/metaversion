@@ -74,7 +74,16 @@ public interface SvnCommitMapper {
 	
 	@Select(" SELECT c.id, c.repository_id repositoryId, c.commit_message commitMessage, "
 			+ "c.commit_date commitDate, c.committer_name committerName, c.revision,"
-			+ "c.project_count projectCount, "
+			+ "c.project_count projectCount, c.path_count pathCount, "
+			+ "c.min_project_id projectId, c.min_project_code projectCode, c.min_project_name projectName "
+			+ "FROM svn_commit_stats_view c "
+			+ "WHERE c.id = #{commitId} ")
+	SvnCommitStats selectStatsOneByCommitId(
+			@Param("commitId") int commitId);
+	
+	@Select(" SELECT c.id, c.repository_id repositoryId, c.commit_message commitMessage, "
+			+ "c.commit_date commitDate, c.committer_name committerName, c.revision,"
+			+ "c.project_count projectCount, c.path_count pathCount, "
 			+ "c.min_project_id projectId, c.min_project_code projectCode, c.min_project_name projectName "
 			+ "FROM svn_commit_stats_view c "
 			+ "WHERE c.repository_id = #{repositoryId} "

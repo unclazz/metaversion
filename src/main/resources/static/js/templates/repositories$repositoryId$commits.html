@@ -56,6 +56,7 @@
 							<th>リビジョン</th>
 							<th>コミット日時</th>
 							<th>メッセージ</th>
+							<th>変更パス数</th>
 							<th>関連プロジェクト</th>
 							<th>アクション</th>
 						</tr>
@@ -65,6 +66,7 @@
 							<td><a href="#" ng-href="#/repositories/{{repository.id}}/commits/{{item.id}}">{{item.revision}}</a></td>
 							<td>{{item.commitDate}}</td>
 							<td>{{item.commitMessage | excerpt:50}}</td>
+							<td>{{item.pathCount}} ファイル</td>
 							<td>
 								<span ng-show="item.projectCount == 0">なし</span>
 								<span ng-show="item.projectCount > 0">{{item.projectCount}} プロジェクト</span>

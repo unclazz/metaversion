@@ -254,6 +254,14 @@ public class RepositoriesJsonController {
 		return commitService.getCommitStatsListByRepositoryId(repositoryId, paging);
 	}
 
+	@RequestMapping(value="/repositories/{repositoryId}/commitstats/{commitId}", method=RequestMethod.GET)
+	public ResponseEntity<SvnCommitStats> getRepositoriesCommitStats(final Principal principal,
+			@PathVariable("repositoryId") final int repositoryId,
+			@PathVariable("commitId") final int commitId,
+			@ModelAttribute final Paging paging) {
+		return httpResponseOfOkOrNotFound(commitService.getCommitStatsByCommitId(commitId));
+	}
+
 	@RequestMapping(value="/repositories/{repositoryId}/commits/{commitId}", method=RequestMethod.GET)
 	public ResponseEntity<SvnCommit> getRepositoriesCommitsCommitId(final Principal principal,
 			@PathVariable("repositoryId") final int repositoryId,

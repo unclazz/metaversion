@@ -52,6 +52,11 @@ public class CommitService {
 		
 	}
 	
+	public SvnCommitStats getCommitStatsByCommitId(final int commitId) {
+		return svnCommitMapper.selectStatsOneByCommitId(commitId);
+		
+	}
+	
 	public Paginated<SvnCommitWithRepositoryInfo> getCommitListByProjectId(final int projectId, final Paging paging) {
 		final OrderByClause orderBy = OrderByClause.of("revision", Order.DESC);
 		final LimitOffsetClause limitOffset = LimitOffsetClause.of(paging);

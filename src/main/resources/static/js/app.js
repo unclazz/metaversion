@@ -66,8 +66,8 @@
 		entity("RepositoryCommit", "api/repositories/:repositoryId/commits/:commitId", 
 				{repositoryId: "@repositoryId", commitId: "@commitId"},
 				angular.extend({unlinked: false}, pagingParams));
-		entity("RepositoryCommitStats", "api/repositories/:repositoryId/commitstats", 
-				{repositoryId: "@repositoryId"}, pagingParams);
+		entity("RepositoryCommitStats", "api/repositories/:repositoryId/commitstats/:commitId", 
+				{repositoryId: "@repositoryId", repositoryId: "@commitId"}, pagingParams);
 		entity("RepositoryCommitProject", "api/repositories/:repositoryId/commits/:commitId/projects", 
 				{repositoryId: "@repositoryId", commitId: "@commitId"}, pagingParams);
 		// SvnCommitPathエンティティのためのResourceオブジェクトを作成
@@ -533,7 +533,7 @@
 		// パスからリポジトリIDやコミットIDを読み取る
 		var ids = paths.pathToIds();
 		// APIを介してコミット情報を取得
-		$scope.commit = entities.RepositoryCommit.get(ids);
+		$scope.commit = entities.RepositoryCommitStats.get(ids);
 		// APIを介してコミットの関連プロジェクトを取得
 		$scope.projectList = entities.RepositoryCommitProject.query(ids);
 	})
@@ -591,7 +591,7 @@
 				var link = new entities.ProjectCommit({commitId: ids.commitId, projectId: item.id});
 				link.$save().then((function(item) {
 					return function(data) {
-						item.selected = false;
+						$scope.pageChange();
 					}
 				})(item));
 			}

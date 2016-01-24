@@ -390,7 +390,8 @@ CREATE TABLE svn_commit_stats_view (
     project_count bigint,
     min_project_id integer,
     min_project_name text,
-    min_project_code text
+    min_project_code text,
+    path_count bigint
 );
 
 ALTER TABLE ONLY svn_commit_stats_view REPLICA IDENTITY NOTHING;
@@ -652,7 +653,10 @@ CREATE RULE "_RETURN" AS
     c_pc.project_count,
     c_pc.min_project_id,
     p.name AS min_project_name,
-    p.code AS min_project_code
+    p.code AS min_project_code,
+    ( SELECT count(1) AS count
+           FROM svn_commit_path cp
+          WHERE (cp.commit_id = c_pc.id)) AS path_count
    FROM (( SELECT c.id,
             c.repository_id,
             c.revision,

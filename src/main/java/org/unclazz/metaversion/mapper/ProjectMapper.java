@@ -79,7 +79,7 @@ public interface ProjectMapper {
 	 * @return プロジェクト情報の件数
 	 */
 	int selectCountByPartialName(
-			@Param("like") String partialName,
+			@Param("like") String like,
 			@Param("unlinkedCommitId") int unlinkedCommitId);
 	
 	/**
