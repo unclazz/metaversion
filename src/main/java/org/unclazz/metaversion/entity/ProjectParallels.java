@@ -4,6 +4,8 @@ import java.util.Date;
 
 public class ProjectParallels {
 	private int selfProjectId;
+	private int repositoryId;
+	private String repositoryName;
 	private String path;
 	private String parallelType;
 	private int selfMinRevision;
@@ -107,5 +109,17 @@ public class ProjectParallels {
 	}
 	public final void setOtherMaxCommitDate(Date otherMaxCommitDate) {
 		this.otherMaxCommitDate = otherMaxCommitDate;
+	}
+	public final int getRepositoryId() {
+		return repositoryId;
+	}
+	public final void setRepositoryId(int repositoryId) {
+		this.repositoryId = repositoryId;
+	}
+	public final String getRepositoryName() {
+		return repositoryName;
+	}
+	public final void setRepositoryName(String repositoryName) {
+		this.repositoryName = repositoryName;
 	}
 }
