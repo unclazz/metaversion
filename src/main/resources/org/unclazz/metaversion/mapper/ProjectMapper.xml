@@ -67,6 +67,7 @@
 		AND (pc.commit_id IS NULL 
 			OR (pc.commit_id &lt; #{unlinkedCommitId} AND #{unlinkedCommitId} &lt; pc.commit_id))
 		</if>
+		GROUP BY p.id
 		${orderBy} ${limitOffset} 
 	</select>
 	
@@ -83,6 +84,7 @@
 		AND (pc.commit_id IS NULL 
 			OR (pc.commit_id &lt; #{unlinkedCommitId} AND #{unlinkedCommitId} &lt; pc.commit_id))
 		</if>
+		GROUP BY p.id
 	</select>
 	
 	<select id="selectByPartialPath" resultType="Project">
@@ -107,6 +109,7 @@
 		AND (pc.commit_id IS NULL 
 			OR (pc.commit_id &lt; #{unlinkedCommitId} AND #{unlinkedCommitId} &lt; pc.commit_id))
 		</if> 
+		GROUP BY p.id
 		${orderBy} ${limitOffset} 
 	</select>
 	
@@ -128,6 +131,7 @@
 		AND (pc.commit_id IS NULL 
 			OR (pc.commit_id &lt; #{unlinkedCommitId} AND #{unlinkedCommitId} &lt; pc.commit_id))
 		</if> 
+		GROUP BY p.id
 	</select>
 
 	<select id="selectByCommitId" resultType="Project">
