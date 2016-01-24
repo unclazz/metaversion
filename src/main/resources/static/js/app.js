@@ -75,7 +75,8 @@
 				{repositoryId: "@repositoryId", commitId: "@commitId"}, pagingParams);
 		
 		// ProjectエンティティのためのResourceオブジェクトを作成
-		entity("Project", "api/projects/:id", {id: "@id"}, pagingParams);
+		entity("Project", "api/projects/:id", {id: "@id"}, 
+				angular.extend({like: '', pathbase: false, unlinkedCommitId: 0}, pagingParams));
 		entity("ProjectStats", "api/projectstats/:id", {id: "@id"}, pagingParams);
 		// ProjectSvnCommitエンティティのためのResourceオブジェクトを作成
 		entity("ProjectCommit", "api/projects/:projectId/commits/:commitId",
@@ -106,15 +107,15 @@
 			return modalInstance;
 		};
 		
-		var waitingModal = function(message) {
+		var waitingModal = function(messages) {
 			var modalInstance = $uibModal.open({
 				templateUrl: 'js/templates/waitingModal.html',
 				controller: 'waitingModal',
 				size: 'lg',
 				backdrop: 'static',
 				resolve: {
-					message: function () {
-						return message;
+					messages: function () {
+						return angular.isString(messages) ? [messages] : messages;
 					}
 				}
 			});
@@ -235,6 +236,8 @@
 			templateUrl: 'js/templates/repositories$repositoryId$delete.html'
 		}).when('/repositories/:repositoryId/commits/:commitId', {
 			templateUrl: 'js/templates/repositories$repositoryId$commits$commitId.html'
+		}).when('/repositories/:repositoryId/commits/:commitId/link', {
+			templateUrl: 'js/templates/repositories$repositoryId$commits$commitId$link.html'
 		}).when('/repositories/:repositoryId/commits/:commitId/changedpaths', {
 			templateUrl: 'js/templates/repositories$repositoryId$commits$commitId$changedpaths.html'
 		}).when('/users', {
@@ -284,9 +287,8 @@
 			$uibModalInstance.dismiss('cancel');
 		};
 	})
-	.controller('waitingModal', function ($scope, $uibModalInstance, $log, message) {
-		$log.debug(message);
-		$scope.message = message;
+	.controller('waitingModal', function ($scope, $uibModalInstance, $log, messages) {
+		$scope.messages = messages;
 	})
 	// トップ画面のためのコントローラ
 	.controller('index', function($log, $scope, entities, paths) {
@@ -303,10 +305,12 @@
 	})
 	// プロジェクト一覧画面のためのコントローラ
 	.controller('projects', function($log, $scope, $location, entities, paths) {
+		$scope.open = true;
 		// クエリ文字列をもとに検索条件を初期化
 		$scope.cond = paths.queryToObject({page: 1, pathbase: false, like: ''});
 		// サジェスト用の関数を作成・設定
 		$scope.projectOrPathNames = function (partialName) {
+			if (partialName.length < 3) return;
 			// 変更パス・ベースの検索かどうかをチェック
 			if ($scope.cond.pathbase) {
 				// 変更パス・ベースの検索の場合
@@ -532,6 +536,72 @@
 		$scope.commit = entities.RepositoryCommit.get(ids);
 		// APIを介してコミットの関連プロジェクトを取得
 		$scope.projectList = entities.RepositoryCommitProject.query(ids);
+	})
+	.controller('repositories$repositoryId$commits$commitId$link', function($log, $scope, entities, paths) {
+		// パスからリポジトリIDやコミットIDを読み取る
+		var ids = paths.pathToIds();
+		// APIを介してコミット情報を取得
+		$scope.commit = entities.RepositoryCommit.get(ids);
+		$scope.open = false;
+		// クエリ文字列をもとに検索条件を初期化
+		$scope.cond = paths.queryToObject({
+			page: 1,
+			pathbase: false,
+			like: '',
+			unlinkedCommitId: ids.commitId
+		});
+		// サジェスト用の関数を作成・設定
+		$scope.projectOrPathNames = function (partialName) {
+			if (partialName.length < 3) return;
+			// 変更パス・ベースの検索かどうかをチェック
+			if ($scope.cond.pathbase) {
+				// 変更パス・ベースの検索の場合
+				// APIを通じて変更パス名を取得して返す
+				return entities.PathName.query({like: partialName}).$promise;
+			} else {
+				// そうでない場合
+				// APIを通じてプロジェクト名を取得して返す
+				return entities.ProjectName.query({like: partialName}).$promise;
+			}
+		};
+		// 検索ボタンがクリックされたときにコールされる関数を作成・設定
+		$scope.submit = function() {
+			// プロジェクト一覧画面に遷移させる
+			paths.objectToQuery($scope.cond);
+		};
+		// ページ変更時にコールされる関数を作成・設定
+		$scope.pageChange = function() {
+			// APIを介してプロジェクト一覧を取得
+			entities.Project.query($scope.cond).$promise.then(function(paginated) {
+				// 取得に成功したら結果を画面に反映させる
+				$scope.totalSize = paginated.totalSize;
+				$scope.size = paginated.size;
+				appendSelectedStatus(paginated.list);
+				$scope.list = paginated.list;
+				if (paginated.page > 1) paths.entryToQuery('page', paginated.page);
+			});
+		};
+		// 初期表示
+		$scope.pageChange();
+		
+		$scope.click = function() {
+			for (var i = 0; i < $scope.list.length; i ++) {
+				var item = $scope.list[i];
+				if (!item.selected) continue;
+				var link = new entities.ProjectCommit({commitId: ids.commitId, projectId: item.id});
+				link.$save().then((function(item) {
+					return function(data) {
+						item.selected = false;
+					}
+				})(item));
+			}
+		};
+		
+		var appendSelectedStatus = function (list) {
+			for (var i = 0; i < list.length; i ++) {
+				list[i].selected = false;
+			}
+		}
 	})
 	.controller('repositories$repositoryId$commits$commitId$changedpaths', function($log, $scope, entities, paths) {
 		// パスからリポジトリIDやコミットIDを読み取る

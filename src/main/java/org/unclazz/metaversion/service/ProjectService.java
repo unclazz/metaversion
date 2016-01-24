@@ -16,6 +16,7 @@ import org.unclazz.metaversion.vo.LimitOffsetClause;
 import org.unclazz.metaversion.vo.OrderByClause;
 import org.unclazz.metaversion.vo.Paginated;
 import org.unclazz.metaversion.vo.Paging;
+import org.unclazz.metaversion.vo.ProjectSearchCondition;
 import org.unclazz.metaversion.vo.OrderByClause.Order;
 
 @Service
@@ -48,12 +49,27 @@ public class ProjectService {
 				projectMapper.selectCount());
 	}
 	
-	public Paginated<Project> getProjectListByPartialName(final String partialName, final Paging paging) {
-		final LimitOffsetClause limitOffset = LimitOffsetClause.of(paging);
+	public Paginated<Project> getProjectListByCondition(final ProjectSearchCondition cond) {
+		final LimitOffsetClause limitOffset = LimitOffsetClause.of(cond.getPaging());
 		final OrderByClause orderBy = OrderByClause.of("name", Order.ASC);
-		return Paginated.of(paging,
-				projectMapper.selectByPartialName(partialName, orderBy, limitOffset),
-				projectMapper.selectCountByPartialName(partialName));
+		
+		if (cond.isPathbase()) {
+			return Paginated.of(cond.getPaging(),
+					projectMapper.selectByPartialPath(cond.getLike(), 
+							cond.getUnlinkedCommitId(), orderBy, limitOffset),
+					projectMapper.selectCountByPartialPath(cond.getLike(), 
+							cond.getUnlinkedCommitId()));
+		} else {
+			return Paginated.of(cond.getPaging(),
+						projectMapper.selectByPartialName(
+								cond.getLike(), 
+								cond.getUnlinkedCommitId(), 
+								orderBy, 
+								limitOffset),
+						projectMapper.selectCountByPartialName(
+								cond.getLike(), 
+								cond.getUnlinkedCommitId()));
+		}
 	}
 	
 	public Paginated<Project> getProjectListByCommitId(final int commitId, final Paging paging) {
@@ -62,14 +78,6 @@ public class ProjectService {
 		return Paginated.of(paging,
 				projectMapper.selectByCommitId(commitId, orderBy, limitOffset),
 				projectMapper.selectCountByCommitId(commitId));
-	}
-	
-	public Paginated<Project> getProjectListByPartialPath(final String partialPath, final Paging paging) {
-		final LimitOffsetClause limitOffset = LimitOffsetClause.of(paging);
-		final OrderByClause orderBy = OrderByClause.of("name", Order.ASC);
-		return Paginated.of(paging,
-				projectMapper.selectByPartialPath(partialPath, orderBy, limitOffset),
-				projectMapper.selectCountByPartialPath(partialPath));
 	}
 	
 	public void regisiterProject(final Project project, final MVUserDetails auth) {

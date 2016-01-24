@@ -26,6 +26,8 @@ import org.unclazz.metaversion.service.CommitService;
 import org.unclazz.metaversion.service.ProjectService;
 import org.unclazz.metaversion.vo.Paginated;
 import org.unclazz.metaversion.vo.Paging;
+import org.unclazz.metaversion.vo.ProjectSearchCondition;
+
 import static org.unclazz.metaversion.MVUtils.*;
 
 @RestController
@@ -70,17 +72,8 @@ public class ProjectsJsonController {
 	 */
 	@RequestMapping(value="/projects", method=RequestMethod.GET)
 	public Paginated<Project> getProjects(final Principal principal,
-			@RequestParam(value="like", defaultValue="") final String like,
-			@RequestParam(value="pathbase", defaultValue="false") final boolean pathBase,
-			@ModelAttribute final Paging paging) {
-		final String likeTrimmed = like.trim();
-		if (likeTrimmed.isEmpty()) {
-			return projectService.getProjectListAll(paging);
-		} else if (pathBase) {
-			return projectService.getProjectListByPartialPath(likeTrimmed, paging);
-		} else {
-			return projectService.getProjectListByPartialName(likeTrimmed, paging);
-		}
+			@ModelAttribute final ProjectSearchCondition cond) {
+		return projectService.getProjectListByCondition(cond);
 	}
 	
 	/**
@@ -210,6 +203,12 @@ public class ProjectsJsonController {
 		} catch (final RuntimeException e) {
 			return httpResponseOfInternalServerError(e.getMessage());
 		}
+	}
+	
+	@RequestMapping(value="/projects/{projectId}/commits/{commitId}", method=RequestMethod.POST)
+	public ResponseEntity<ProjectSvnCommit> postProjectsCommits2(final Principal principal,
+			@PathVariable("projectId") final int projectId, @PathVariable("commitId") final int commitId) {
+		return postProjectsCommits(principal, projectId, commitId);
 	}
 	
 	/**

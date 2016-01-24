@@ -4,17 +4,21 @@
 	<meta charset="utf-8" />
 </head>
 <body>
-	<div class="container" ng-controller="projects">
+	<div class="container" ng-controller="repositories$repositoryId$commits$commitId$link">
 		<nav>
 			<ol class="breadcrumb">
 				  <li><a href="#" ng-href="#/">
 				  <span class="glyphicon glyphicon-home" aria-hidden="true"></span> トップ</a></li>
-				  <li class="active">プロジェクト一覧</li>
+				  <li><a href="#" ng-href="#/repositories">リポジトリ一覧</a></li>
+				  <li><a href="#" ng-href="#/repositories/{{repository.id}}">リポジトリ詳細</a></li>
+				  <li><a href="#" ng-href="#/repositories/{{commit.repositoryId}}/commits">コミット一覧</a></li>
+				  <li><a href="#" ng-href="#/repositories/{{commit.repositoryId}}/commits{{commit.id}}">コミット一覧</a></li>
+				  <li class="active">プロジェクト紐付け</li>
 			</ol>
 		</nav>
 
 		<header class="page-header">
-			<h1>プロジェクト一覧</h1>
+			<h1><span class="entity-attribute">{{commit.revision}}</span> のプロジェクト紐付け</h1>
 		</header>
 
 		<article>
@@ -60,11 +64,11 @@
 				</uib-accordion>
 			</form>
 		</article>
-
-		<article ng-show="list.length > 0">
-			<div class="panel panel-default">
+		
+		<article>
+			<div class="panel panel-default" ng-show="list.length > 0">
 				<div class="panel-heading">
-					検索結果一覧
+					プロジェクト一覧
 				</div>
 				<div class="panel-body">
 					<div class="row">
@@ -89,29 +93,26 @@
 							<!-- empty -->
 						</div>
 						<div class="col-lg-1">
-							<a class="btn btn-default" href="#" ng-href="#/projects/new">追加</a>
+							<button type="button" class="btn btn-default" 
+							href="#" ng-click="click()">紐付け</button>
 						</div>
 					</div>
 				</div>
 				<table class="table table-hover table-condensed">
 					<thead>
 						<tr>
+							<th style="width: 60px;">選択</th>
 							<th>プロジェクト名</th>
 							<th>プロジェクトコード</th>
-							<th>アクション</th>
+							<th>責任者</th>
 						</tr>
 					</thead>
 					<tbody>
-						<tr  ng-repeat="item in list">
+						<tr ng-repeat="item in list">
+							<td><input type="checkbox" ng-model="item.selected" ng-disabled="item.linked" /></td>
 							<td><a href="#" ng-href="#/projects/{{item.id}}">{{item.name}}</a></td>
 							<td>{{item.code}}</td>
-							<td>
-								<div class="btn-group btn-group-xs" role="group">
-									<a class="btn btn-default" href="#" ng-href="#/projects/{{item.id}}" role="button">プロジェクト詳細</a>
-									<a class="btn btn-default" href="#" ng-href="#/projects/{{item.id}}/commits" role="button">コミット一覧</a>
-									<a class="btn btn-default" href="#" ng-href="#/projects/{{item.id}}/changedpaths" role="button">変更パス一覧</a>
-								</div>
-							</td>
+							<td>{{item.responsiblePerson}}</td>
 						</tr>
 					</tbody>
 				</table>
@@ -138,12 +139,13 @@
 							<!-- empty -->
 						</div>
 						<div class="col-lg-1">
-							<a class="btn btn-default" href="#" ng-href="#/projects/new">追加</a>
+							<button type="button" class="btn btn-default" 
+							href="#" ng-click="click()">紐付け</button>
 						</div>
 					</div>
 				</div>
 			</div>
 		</article>
-	</div>
+	</div><!-- /.container -->
 </body>
 </html>

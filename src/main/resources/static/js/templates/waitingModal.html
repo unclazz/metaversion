@@ -9,7 +9,7 @@
 			<h1 class="modal-title">処理中...</h1>
 		</div>
 		<div class="modal-body">
-			<p>{{message}}</p>
+			<p><span ng-repeat="message in messages">{{message}}</span></p>
 			<uib-progressbar class="progress-striped active" animate="false" value="100">
 			</uib-progressbar>
 		</div>

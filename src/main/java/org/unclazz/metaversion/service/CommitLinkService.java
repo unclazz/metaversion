@@ -80,6 +80,10 @@ public class CommitLinkService {
 	}
 	
 	public void registerCommitLink(final ProjectSvnCommit projectSvnCommit, final MVUserDetails auth) {
+		if (projectSvnCommitMapper.selectCountByProjectIdAndCommitId
+			(projectSvnCommit.getProjectId(), projectSvnCommit.getCommitId()) > 0) {
+			return;
+		}
 		if (projectSvnCommitMapper.insert(projectSvnCommit, auth) != 1) {
 			
 			throw MVUtils.unexpectedResult("Unexpected error has occurred while "

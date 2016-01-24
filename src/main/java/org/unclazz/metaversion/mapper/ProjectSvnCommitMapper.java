@@ -7,6 +7,10 @@ import org.unclazz.metaversion.MVUserDetails;
 import org.unclazz.metaversion.entity.ProjectSvnCommit;
 
 public interface ProjectSvnCommitMapper {
+	@Insert("SELECT count(1) FROM project_svn_commit "
+			+ "WHERE project_id = #{projectId} AND commit_id = #{commitId} ")
+	int selectCountByProjectIdAndCommitId(@Param("projectId") int projectId, @Param("commitId") int commitId);
+	
 	@Insert("INSERT INTO project_svn_commit "
 			+ "(project_id, commit_id, create_user_id) "
 			+ "VALUES (#{vo.projectId}, #{vo.commitId}, #{auth.id}) ")

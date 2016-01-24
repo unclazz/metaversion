@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.unclazz.metaversion.mapper.ProjectMapper">
+ 	<select id="selectNextVal" resultType="int">
+		SELECT nextval('project_seq') 
+	</select>
+	
+	<select id="selectNameByPartialName" resultType="String">
+		SELECT name 
+		FROM project 
+		WHERE name like ('%' || #{partialName} || '%')
+		ORDER BY name ${limitOffset} 
+	</select>
+	
+	<select id="selectOneById" resultType="Project">
+		SELECT id, 
+			code, 
+			name, 
+			responsible_person responsiblePerson, 
+			commit_sign_pattern commitSignPattern 
+		FROM project 
+		WHERE id = #{id} 
+	</select>
+	
+	<select id="selectStatsOneById" resultType="ProjectStats">
+		SELECT id, 
+			code, 
+			name, 
+			responsible_person responsiblePerson, 
+			commit_sign_pattern commitSignPattern,
+			commit_count commitCount, 
+			min_commit_date minCommitDate, 
+			max_commit_date maxCommitDate,
+			path_count pathCount
+		FROM project_stats_view
+		WHERE id = #{id} 
+	</select>
+	
+	<select id="selectAll" resultType="Project">
+		SELECT id, 
+			code, 
+			name, 
+			responsible_person responsiblePerson, 
+			commit_sign_pattern commitSignPattern
+		FROM project 
+		${orderBy} ${limitOffset}
+	</select>
+	
+	<select id="selectCount" resultType="int">
+		SELECT count(1) FROM project 
+	</select>
+	
+	<select id="selectByPartialName" resultType="Project">
+		SELECT p.id,
+		    code,
+		    name,
+		    responsible_person responsiblePerson,
+		    commit_sign_pattern commitSignPattern
+		FROM project p
+		LEFT JOIN project_svn_commit pc
+		ON p.id = pc.project_id
+		WHERE 0 = 0
+		<if test="like.length() &gt; 0">
+		AND name like ('%' || #{like} || '%')
+		</if>
+		<if test="unlinkedCommitId &gt; 0">
+		AND (pc.commit_id IS NULL 
+			OR (pc.commit_id &lt; #{unlinkedCommitId} AND #{unlinkedCommitId} &lt; pc.commit_id))
+		</if>
+		${orderBy} ${limitOffset} 
+	</select>
+	
+	<select id="selectCountByPartialName" resultType="int">
+		SELECT count(1) 
+		FROM project p
+		LEFT JOIN project_svn_commit pc
+		ON p.id = pc.project_id
+		WHERE 0 = 0
+		<if test="like.length() &gt; 0">
+		AND name like ('%' || #{like} || '%')
+		</if>
+		<if test="unlinkedCommitId &gt; 0">
+		AND (pc.commit_id IS NULL 
+			OR (pc.commit_id &lt; #{unlinkedCommitId} AND #{unlinkedCommitId} &lt; pc.commit_id))
+		</if>
+	</select>
+	
+	<select id="selectByPartialPath" resultType="Project">
+		SELECT p.id,
+				code,
+				name,
+				responsible_person responsiblePerson,
+				commit_sign_pattern commitSignPattern
+		FROM project p
+		LEFT JOIN project_svn_commit pc
+		ON p.id = pc.project_id
+		WHERE 0 = 0
+		<if test="like.length() &gt; 0">
+		AND p.id IN ("
+				SELECT pc.project_id
+				FROM project_svn_commit pc
+				INNER JOIN svn_commit_path cp
+				ON pc.commit_id = cp.commit_id
+				WHERE path like ('%' || #{like} || '%'))
+		</if>
+		<if test="unlinkedCommitId &gt; 0">
+		AND (pc.commit_id IS NULL 
+			OR (pc.commit_id &lt; #{unlinkedCommitId} AND #{unlinkedCommitId} &lt; pc.commit_id))
+		</if> 
+		${orderBy} ${limitOffset} 
+	</select>
+	
+	<select id="selectCountByPartialPath" resultType="int">
+		SELECT count(1)
+		FROM project p
+		INNER JOIN project_svn_commit pc
+		ON p.id = pc.project_id
+		WHERE 0 = 0
+		<if test="like.length() &gt; 0">
+		AND p.id IN ("
+				SELECT pc.project_id
+				FROM project_svn_commit pc
+				INNER JOIN svn_commit_path cp
+				ON pc.commit_id = cp.commit_id
+				WHERE path like ('%' || #{like} || '%'))
+		</if>
+		<if test="unlinkedCommitId &gt; 0">
+		AND (pc.commit_id IS NULL 
+			OR (pc.commit_id &lt; #{unlinkedCommitId} AND #{unlinkedCommitId} &lt; pc.commit_id))
+		</if> 
+	</select>
+
+	<select id="selectByCommitId" resultType="Project">
+		SELECT p.id, code, name, 
+			responsible_person responsiblePerson, 
+			commit_sign_pattern commitSignPattern
+		FROM project p
+		INNER JOIN project_svn_commit pc
+		ON p.id = pc.project_id
+		WHERE pc.commit_id = #{commitId}
+		${orderBy} ${limitOffset} 
+	</select>
+	
+	<select id="selectCountByCommitId" resultType="int">
+		SELECT count(1)
+		FROM project p
+		INNER JOIN project_svn_commit pc
+		ON p.id = pc.project_id
+		WHERE pc.commit_id = #{commitId} 
+	</select>
+
+	<insert id="insert">
+		INSERT INTO project (id, 
+			code, 
+			name, 
+			responsible_person, 
+			commit_sign_pattern, 
+			create_user_id, 
+			update_user_id) 
+		VALUES (#{proj.id}, 
+			#{proj.code}, 
+			#{proj.name}, 
+			#{proj.responsiblePerson}, 
+			#{proj.commitSignPattern}, 
+			#{auth.id}, 
+			#{auth.id})
+	</insert>
+	
+	<update id="update">
+		UPDATE project
+		SET code = #{proj.code}, 
+			name = #{proj.name}, 
+			responsible_person = #{proj.responsiblePerson},
+			commit_sign_pattern = #{proj.commitSignPattern}, 
+			update_user_id = #{auth.id}
+		WHERE id = #{proj.id} 
+	</update>
+
+	<delete id="delete">
+		DELETE FROM project WHERE id = #{id} 
+	</delete>
+</mapper>
