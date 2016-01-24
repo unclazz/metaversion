@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -20,6 +21,8 @@ import org.unclazz.metaversion.entity.OnlineBatchProgram;
 import org.unclazz.metaversion.service.CommitLinkService;
 import org.unclazz.metaversion.service.LogImportService;
 import org.unclazz.metaversion.vo.BatchResult;
+import org.unclazz.metaversion.vo.Paginated;
+import org.unclazz.metaversion.vo.Paging;
 
 import static org.unclazz.metaversion.MVUtils.*;
 
@@ -38,12 +41,15 @@ public class BatchesJsonController {
 	 * @return オンラインバッチプログラム情報の一覧
 	 */
 	@RequestMapping(value="/batches", method=RequestMethod.GET)
-	public ResponseEntity<List<IOnlineBatchProgram>> getBathces(final Principal principal) {
+	public Paginated<IOnlineBatchProgram> getBathces(
+			final Principal principal, 
+			@ModelAttribute final Paging paging) {
+		
 		final List<IOnlineBatchProgram> result = new LinkedList<IOnlineBatchProgram>();
 		for (final IOnlineBatchProgram p : OnlineBatchProgram.values()) {
 			result.add(p);
 		}
-		return httpResponseOfOk(result);
+		return Paginated.of(paging, result, result.size());
 	}
 	
 	/**
