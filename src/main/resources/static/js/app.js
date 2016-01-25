@@ -17,84 +17,6 @@
 			}
 		};
 	})
-	.factory('entities', function($log, $resource) {
-		var entities = {};
-		var pagingParams = {page: 1, size: 25};
-		var suggestParams = {like: '', size: 25};
-		var entity = function(entityName, urlPattern, urlParams, queryParams) {
-			var xformResp = function(data) {
-				var paginated = angular.fromJson(data);
-				paginated.list = paginated.list.map(function (item) {
-					return new entities[entityName](item)
-				});
-				return paginated;
-			};
-			var paginatedQueryAction = {
-					method: 'GET',
-					params: queryParams,
-					isArray:false,
-					transformResponse : xformResp
-				};
-			var resaveAction = {
-					method: 'PUT',
-					isArray:false
-				};
-			var customActions = {
-				'query' : paginatedQueryAction,
-				'resave' : resaveAction
-			};
-			entities[entityName] = $resource(urlPattern,urlParams, customActions);
-		};
-		var suggest = function(entityName, urlPattern, urlParams, queryParams) {
-			var paginatedQueryAction = {
-				method: 'GET',
-				params: queryParams,
-				isArray: true
-			};
-			var customActions = {
-				'query' : paginatedQueryAction
-			};
-			entities[entityName] = $resource(urlPattern,urlParams, customActions);
-		};
-		
-		// UserエンティティのためのResourceオブジェクトを作成
-		entity("User", "api/users/:id", {id: "@id"}, pagingParams);
-
-		// SvnRepositoryエンティティのためのResourceオブジェクトを作成
-		entity("Repository", "api/repositories/:id", {id: "@id"}, pagingParams);
-		// SvnCommitエンティティのためのResourceオブジェクトを作成
-		// ＊クエリ用パラメータのデフォルトとしてunlinkedプロパティを追加している
-		entity("RepositoryCommit", "api/repositories/:repositoryId/commits/:commitId", 
-				{repositoryId: "@repositoryId", commitId: "@commitId"},
-				angular.extend({unlinked: false}, pagingParams));
-		entity("RepositoryCommitStats", "api/repositories/:repositoryId/commitstats/:commitId", 
-				{repositoryId: "@repositoryId", repositoryId: "@commitId"}, pagingParams);
-		entity("RepositoryCommitProject", "api/repositories/:repositoryId/commits/:commitId/projects", 
-				{repositoryId: "@repositoryId", commitId: "@commitId"}, pagingParams);
-		// SvnCommitPathエンティティのためのResourceオブジェクトを作成
-		entity("RepositoryCommitChangedPath", "api/repositories/:repositoryId/commits/:commitId/changedpaths", 
-				{repositoryId: "@repositoryId", commitId: "@commitId"}, pagingParams);
-		
-		// ProjectエンティティのためのResourceオブジェクトを作成
-		entity("Project", "api/projects/:id", {id: "@id"}, 
-				angular.extend({like: '', pathbase: false, unlinkedCommitId: 0}, pagingParams));
-		entity("ProjectStats", "api/projectstats/:id", {id: "@id"}, pagingParams);
-		// ProjectSvnCommitエンティティのためのResourceオブジェクトを作成
-		entity("ProjectCommit", "api/projects/:projectId/commits/:commitId",
-				{projectId: "@projectId", commitId: "@commitId"}, pagingParams);
-		// ProjectChagedPathエンティティのためのResourceオブジェクトを作成
-		entity("ProjectChangedPath", "api/projects/:projectId/changedpaths",
-				{projectId: "@projectId"}, pagingParams);
-		// ProjectChagedPathエンティティのためのResourceオブジェクトを作成
-		entity("ProjectParallels", "api/projects/:projectId/parallels",
-				{projectId: "@projectId"}, pagingParams);
-		
-		// サジェスト用のResourceオブジェクトを作成
-		suggest("PathName", "api/pathnames", {}, suggestParams);
-		suggest("ProjectName", "api/projectnames", {}, suggestParams);
-		
-		return entities;
-	})
 	.factory('modals', function($log, $uibModal, $location) {
 		var errorModal = function(error) {
 			var modalInstance = $uibModal.open({
@@ -156,13 +78,6 @@
 			}
 			return params;
 		};
-		var watch = function(scopeInstance, callback) {
-			scopeInstance.$watch(function() {
-				return $location.search().page;
-			}, function(page) {
-				callback(page === undefined ? 1 : page - 0);
-			});
-		}
 		var stringToPath = function(path, data) {
 			$location.path(path);
 			if (data !== undefined) {
@@ -201,12 +116,90 @@
 			objectToQuery: objectToQuery,
 			entryToQuery: entryToQuery,
 			stringToPath: stringToPath,
-			pathToIds: pathToIds,
-			watchPage: watch
+			pathToIds: pathToIds
 		};
-	});
-	
-	angular.module('app')
+	})
+	.factory('entities', function($log, $resource) {
+		var entities = {};
+		var pagingParams = {page: 1, size: 25};
+		var suggestParams = {like: '', size: 25};
+		var entity = function(entityName, urlPattern, urlParams, queryParams) {
+			var xformResp = function(data) {
+				var paginated = angular.fromJson(data);
+				if (paginated.list === undefined) {
+					return data;
+				}
+				paginated.list = paginated.list.map(function (item) {
+					return new entities[entityName](item)
+				});
+				return paginated;
+			};
+			var paginatedQueryAction = {
+				method: 'GET',
+				params: queryParams,
+				isArray:false,
+				transformResponse : xformResp
+			};
+			var resaveAction = {
+					method: 'PUT',
+					isArray:false
+				};
+			var customActions = {
+				'query' : paginatedQueryAction,
+				'resave' : resaveAction
+			};
+			entities[entityName] = $resource(urlPattern,urlParams, customActions);
+		};
+		var suggest = function(entityName, urlPattern, urlParams, queryParams) {
+			var paginatedQueryAction = {
+				method: 'GET',
+				params: queryParams,
+				isArray: true
+			};
+			var customActions = {
+				'query' : paginatedQueryAction
+			};
+			entities[entityName] = $resource(urlPattern,urlParams, customActions);
+		};
+		
+		// UserエンティティのためのResourceオブジェクトを作成
+		entity("User", "api/users/:id", {id: "@id"}, pagingParams);
+
+		// SvnRepositoryエンティティのためのResourceオブジェクトを作成
+		entity("Repository", "api/repositories/:id", {id: "@id"}, pagingParams);
+		// SvnCommitエンティティのためのResourceオブジェクトを作成
+		// ＊クエリ用パラメータのデフォルトとしてunlinkedプロパティを追加している
+		entity("RepositoryCommit", "api/repositories/:repositoryId/commits/:commitId", 
+				{repositoryId: "@repositoryId", commitId: "@commitId"},
+				angular.extend({unlinked: false}, pagingParams));
+		entity("RepositoryCommitStats", "api/repositories/:repositoryId/commitstats/:commitId", 
+				{repositoryId: "@repositoryId", repositoryId: "@commitId"}, pagingParams);
+		entity("RepositoryCommitProject", "api/repositories/:repositoryId/commits/:commitId/projects", 
+				{repositoryId: "@repositoryId", commitId: "@commitId"}, pagingParams);
+		// SvnCommitPathエンティティのためのResourceオブジェクトを作成
+		entity("RepositoryCommitChangedPath", "api/repositories/:repositoryId/commits/:commitId/changedpaths", 
+				{repositoryId: "@repositoryId", commitId: "@commitId"}, pagingParams);
+		
+		// ProjectエンティティのためのResourceオブジェクトを作成
+		entity("Project", "api/projects/:id", {id: "@id"}, 
+				angular.extend({like: '', pathbase: false, unlinkedCommitId: 0}, pagingParams));
+		entity("ProjectStats", "api/projectstats/:id", {id: "@id"}, pagingParams);
+		// ProjectSvnCommitエンティティのためのResourceオブジェクトを作成
+		entity("ProjectCommit", "api/projects/:projectId/commits/:commitId",
+				{projectId: "@projectId", commitId: "@commitId"}, pagingParams);
+		// ProjectChagedPathエンティティのためのResourceオブジェクトを作成
+		entity("ProjectChangedPath", "api/projects/:projectId/changedpaths",
+				{projectId: "@projectId"}, pagingParams);
+		// ProjectChagedPathエンティティのためのResourceオブジェクトを作成
+		entity("ProjectParallels", "api/projects/:projectId/parallels",
+				{projectId: "@projectId"}, pagingParams);
+		
+		// サジェスト用のResourceオブジェクトを作成
+		suggest("PathName", "api/pathnames", {}, suggestParams);
+		suggest("ProjectName", "api/projectnames", {}, suggestParams);
+		
+		return entities;
+	})
 	.config(function($routeProvider){
 		$routeProvider.when('/', {
 			templateUrl: 'js/templates/index.html'
@@ -293,15 +286,16 @@
 			$uibModalInstance.dismiss('cancel');
 		};
 	})
-	.controller('waitingModal', function ($scope, $uibModalInstance, $log, messages) {
+	.controller('waitingModal', function ($scope, $uibModalInstance, $log, modals, messages) {
 		$scope.messages = messages;
 	})
 	// トップ画面のためのコントローラ
-	.controller('index', function($log, $scope, entities, paths) {
+	.controller('index', function($log, $scope, entities, paths, modals) {
 		// サジェスト用の関数を作成・設定
 		$scope.projectNames = function (partialName) {
 			// APIを通じてプロジェクト名を取得して返す
-			return entities.ProjectName.query({like: partialName}).$promise;
+			return entities.ProjectName.query({like: partialName},
+					angular.noop, modals.errorModal).$promise;
 		};
 		// 検索ボタンがクリックされたときにコールされる関数を作成・設定
 		$scope.submit = function() {
@@ -310,10 +304,11 @@
 		};
 	})
 	// プロジェクト一覧画面のためのコントローラ
-	.controller('projects', function($log, $scope, $location, entities, paths) {
+	.controller('projects', function($log, $scope, $location, entities, paths, modals) {
 		$scope.open = true;
 		// クエリ文字列をもとに検索条件を初期化
-		$scope.cond = paths.queryToObject({page: 1, pathbase: false, like: ''});
+		$scope.cond = paths.queryToObject({page: 1, pathbase: false, like: ''},
+				angular.noop, modals.errorModal);
 		// サジェスト用の関数を作成・設定
 		$scope.projectOrPathNames = function (partialName) {
 			if (partialName.length < 3) return;
@@ -321,11 +316,13 @@
 			if ($scope.cond.pathbase) {
 				// 変更パス・ベースの検索の場合
 				// APIを通じて変更パス名を取得して返す
-				return entities.PathName.query({like: partialName}).$promise;
+				return entities.PathName.query({like: partialName},
+						angular.noop, modals.errorModal).$promise;
 			} else {
 				// そうでない場合
 				// APIを通じてプロジェクト名を取得して返す
-				return entities.ProjectName.query({like: partialName}).$promise;
+				return entities.ProjectName.query({like: partialName},
+						angular.noop, modals.errorModal).$promise;
 			}
 		};
 		// 検索ボタンがクリックされたときにコールされる関数を作成・設定
@@ -342,21 +339,23 @@
 				$scope.size = paginated.size;
 				$scope.list = paginated.list;
 				if (paginated.page > 1) paths.entryToQuery('page', paginated.page);
-			});
+			}, modals.errorModal);
 		};
 		// 初期表示
 		$scope.pageChange();
 	})
 	// プロジェクト詳細画面のためのコントローラ
-	.controller('projects$projectId', function($log, $scope, $location, entities, paths) {
-		$scope.project = entities.ProjectStats.get({id: paths.pathToIds().projectId});
+	.controller('projects$projectId', function($log, $scope, entities, paths, modals) {
+		$scope.project = entities.ProjectStats.get({id: paths.pathToIds().projectId},
+				angular.noop, modals.errorModal);
 	})
 	// プロジェクト編集画面のためのコントローラ
 	.controller('projects$projectId$edit', function($log, $scope, $location, entities, paths, modals) {
 		// パスからIDを読み取る
 		var ids = paths.pathToIds();
 		if (ids.projectId !== undefined) {
-			$scope.project = entities.Project.get({id: paths.pathToIds().projectId});
+			$scope.project = entities.Project.get({id: paths.pathToIds().projectId},
+					angular.noop, modals.errorModal);
 		} else {
 			$scope.project = new entities.Project({id: undefined});
 		}
@@ -375,10 +374,11 @@
 		};
 	})
 	// プロジェクト削除画面のためのコントローラ
-	.controller('projects$projectId$delete', function($log, $scope, $location, entities, paths, modals) {
+	.controller('projects$projectId$delete', function($log, $scope, entities, paths, modals) {
 		// パスからIDを読み取る
 		var ids = paths.pathToIds();
-		$scope.project = entities.Project.get({id: paths.pathToIds().projectId});
+		$scope.project = entities.Project.get({id: paths.pathToIds().projectId},
+				angular.noop, modals.errorModal);
 		
 		$scope.submit = function() {
 			var p = $scope.project.$remove();
@@ -389,9 +389,10 @@
 		};
 	})
 	// プロジェクトコミット一覧画面のためのコントローラ
-	.controller('prjects$projectId$commits', function($log, $scope, $location, entities, paths) {
+	.controller('prjects$projectId$commits', function($log, $scope, entities, paths, modals) {
 		var ids = paths.pathToIds();
-		$scope.project = entities.ProjectStats.get({id: ids.projectId});
+		$scope.project = entities.ProjectStats.get({id: ids.projectId},
+				angular.noop, modals.errorModal);
 
 		// クエリ文字列をもとに検索条件を初期化
 		$scope.cond = angular.extend(paths.queryToObject({page: 1}), ids);
@@ -402,16 +403,17 @@
 				$scope.size = paginated.size;
 				$scope.list = paginated.list;
 				if (paginated.page > 1) paths.entryToQuery('page', paginated.page);
-			});
+			}, modals.errorModal);
 		};
 		// 初期表示
 		$scope.pageChange();
 	})
 	// プロジェクトコミット紐付け解除画面のためのコントローラ
-	.controller('projects$projectId$commits$commitId$delete', function($log, $scope, $location, entities, paths, modals) {
+	.controller('projects$projectId$commits$commitId$delete', function($log, $scope, entities, paths, modals) {
 		var ids = paths.pathToIds();
-		$scope.project = entities.ProjectStats.get({id: ids.projectId});
-		$scope.commit = entities.ProjectCommit.get(ids);
+		$scope.project = entities.ProjectStats.get({id: ids.projectId},
+				angular.noop, modals.errorModal);
+		$scope.commit = entities.ProjectCommit.get(ids, angular.noop, modals.errorModal);
 
 		$scope.submit = function() {
 			var p = entities.ProjectCommit.remove(ids);
@@ -422,9 +424,10 @@
 		};
 	})
 	// プロジェクト変更パス一覧画面のためのコントローラ
-	.controller('prjects$projectId$changedpaths', function($log, $scope, $location, entities, paths) {
+	.controller('prjects$projectId$changedpaths', function($log, $scope, $location, entities, paths, modals) {
 		var ids = paths.pathToIds();
-		$scope.project = entities.ProjectStats.get({id: ids.projectId});
+		$scope.project = entities.ProjectStats.get({id: ids.projectId},
+				angular.noop, modals.errorModal);
 		// クエリ文字列をもとに検索条件を初期化
 		$scope.cond = angular.extend(paths.queryToObject({page: 1}), ids);
 		// ページ変更時にコールされる関数を作成・設定
@@ -434,7 +437,7 @@
 				$scope.size = paginated.size;
 				$scope.list = paginated.list;
 				if (paginated.page > 1) paths.entryToQuery('page', paginated.page);
-			});
+			}, modals.errorModal);
 		};
 		// 初期表示
 		$scope.pageChange();
@@ -444,9 +447,10 @@
 			return nativePath + 'csv' + ngPath + '.csv';
 		};
 	})
-	.controller('prjects$projectId$parallels', function($log, $scope, $location, entities, paths) {
+	.controller('prjects$projectId$parallels', function($log, $scope, $location, entities, paths, modals) {
 		var ids = paths.pathToIds();
-		$scope.project = entities.ProjectStats.get({id: ids.projectId});
+		$scope.project = entities.ProjectStats.get({id: ids.projectId},
+				angular.noop, modals.errorModal);
 		// クエリ文字列をもとに検索条件を初期化
 		$scope.cond = angular.extend(paths.queryToObject({page: 1}), ids);
 		// ページ変更時にコールされる関数を作成・設定
@@ -457,7 +461,7 @@
 				markRepeatedItems(paginated.list);
 				$scope.list = paginated.list;
 				if (paginated.page > 1) paths.entryToQuery('page', paginated.page);
-			});
+			}, modals.errorModal);
 		};
 		// 初期表示
 		$scope.pageChange();
@@ -487,7 +491,7 @@
 		};
 	})
 	// リポジトリ一覧画面のためのコントローラ
-	.controller('repositories', function($log, $scope, $location, entities, paths) {
+	.controller('repositories', function($log, $scope, $location, entities, paths, modals) {
 		// クエリ文字列をもとに検索条件を初期化
 		$scope.cond = paths.queryToObject({page: 1});
 		// ページ変更時にコールされる関数を作成・設定
@@ -498,24 +502,26 @@
 				$scope.size = paginated.size;
 				$scope.list = paginated.list;
 				if (paginated.page > 1) paths.entryToQuery('page', paginated.page);
-			});
+			}, modals.errorModal);
 		};
 		// 初期表示
 		$scope.pageChange();
 	})
 	// リポジトリ詳細画面のためのコントローラ
-	.controller('repositories$repositoryId', function($log, $scope, $location, entities, paths) {
+	.controller('repositories$repositoryId', function($log, $scope, $location, entities, paths, modals) {
 		// パスからリポジトリIDを読み取る
 		var ids = paths.pathToIds();
 		// APIを介してリポジトリ情報を取得
-		$scope.repository = entities.Repository.get({id: ids.repositoryId});
+		$scope.repository = entities.Repository.get({id: ids.repositoryId},
+				angular.noop, modals.errorModal);
 	})
 	// リポジトリコミット一覧画面のためのコントローラ
-	.controller('repositories$repositoryId$commits', function($log, $scope, $location, entities, paths) {
+	.controller('repositories$repositoryId$commits', function($log, $scope, $location, entities, paths, modals) {
 		// パスからリポジトリIDを読み取る
 		var ids = paths.pathToIds();
 		// APIを介してリポジトリ情報を取得
-		$scope.repository = entities.Repository.get({id: ids.repositoryId});
+		$scope.repository = entities.Repository.get({id: ids.repositoryId},
+				angular.noop, modals.errorModal);
 		// クエリ文字列をもとに検索条件を初期化
 		$scope.cond = angular.extend(paths.queryToObject({page: 1}), ids);
 
@@ -526,7 +532,7 @@
 				$scope.totalSize = paginated.totalSize;
 				$scope.size = paginated.size;
 				if (paginated.page > 1) paths.entryToQuery('page', paginated.page);
-			});
+			}, modals.errorModal);
 		};
 		
 		// 初期表示
@@ -537,7 +543,8 @@
 		// パスからIDを読み取る
 		var ids = paths.pathToIds();
 		if (ids.repositoryId !== undefined) {
-			$scope.repository = entities.Repository.get({id: ids.repositoryId});
+			$scope.repository = entities.Repository.get({id: ids.repositoryId},
+					angular.noop, modals.errorModal);
 		} else {
 			$scope.repository = new entities.Repository({
 				id: undefined,
@@ -571,7 +578,8 @@
 	.controller('repositories$repositoryId$delete', function($log, $scope, $location, entities, paths, modals) {
 		// パスからIDを読み取る
 		var ids = paths.pathToIds();
-		$scope.repository = entities.Repository.get({id: paths.pathToIds().repositoryId});
+		$scope.repository = entities.Repository.get({id: paths.pathToIds().repositoryId},
+				angular.noop, modals.errorModal);
 		
 		$scope.submit = function() {
 			var p = $scope.repository.$remove();
@@ -582,19 +590,22 @@
 		};
 	})
 	// コミット詳細画面のためのコントローラ
-	.controller('repositories$repositoryId$commits$commitId', function($log, $scope, entities, paths) {
+	.controller('repositories$repositoryId$commits$commitId', function($log, $scope, entities, paths, modals) {
 		// パスからリポジトリIDやコミットIDを読み取る
 		var ids = paths.pathToIds();
 		// APIを介してコミット情報を取得
-		$scope.commit = entities.RepositoryCommitStats.get(ids);
+		$scope.commit = entities.RepositoryCommitStats.get(ids,
+				angular.noop, modals.errorModal);
 		// APIを介してコミットの関連プロジェクトを取得
-		$scope.projectList = entities.RepositoryCommitProject.query(ids);
+		$scope.projectList = entities.RepositoryCommitProject.query(ids,
+				angular.noop, modals.errorModal);
 	})
-	.controller('repositories$repositoryId$commits$commitId$link', function($log, $scope, entities, paths) {
+	.controller('repositories$repositoryId$commits$commitId$link', function($log, $scope, entities, paths, modals) {
 		// パスからリポジトリIDやコミットIDを読み取る
 		var ids = paths.pathToIds();
 		// APIを介してコミット情報を取得
-		$scope.commit = entities.RepositoryCommit.get(ids);
+		$scope.commit = entities.RepositoryCommit.get(ids,
+				angular.noop, modals.errorModal);
 		$scope.open = false;
 		// クエリ文字列をもとに検索条件を初期化
 		$scope.cond = paths.queryToObject({
@@ -610,11 +621,13 @@
 			if ($scope.cond.pathbase) {
 				// 変更パス・ベースの検索の場合
 				// APIを通じて変更パス名を取得して返す
-				return entities.PathName.query({like: partialName}).$promise;
+				return entities.PathName.query({like: partialName},
+						angular.noop, modals.errorModal).$promise;
 			} else {
 				// そうでない場合
 				// APIを通じてプロジェクト名を取得して返す
-				return entities.ProjectName.query({like: partialName}).$promise;
+				return entities.ProjectName.query({like: partialName},
+						angular.noop, modals.errorModal).$promise;
 			}
 		};
 		// 検索ボタンがクリックされたときにコールされる関数を作成・設定
@@ -632,7 +645,7 @@
 				appendSelectedStatus(paginated.list);
 				$scope.list = paginated.list;
 				if (paginated.page > 1) paths.entryToQuery('page', paginated.page);
-			});
+			}, modals.errorModal);
 		};
 		// 初期表示
 		$scope.pageChange();
@@ -646,7 +659,7 @@
 					return function(data) {
 						$scope.pageChange();
 					}
-				})(item));
+				})(item), modals.errorModal);
 			}
 		};
 		
@@ -656,13 +669,15 @@
 			}
 		}
 	})
-	.controller('repositories$repositoryId$commits$commitId$changedpaths', function($log, $scope, entities, paths) {
+	.controller('repositories$repositoryId$commits$commitId$changedpaths', function($log, $scope, entities, paths, modals) {
 		// パスからリポジトリIDやコミットIDを読み取る
 		var ids = paths.pathToIds();
 		// APIを介してコミット情報を取得
-		$scope.commit = entities.RepositoryCommit.get(ids);
+		$scope.commit = entities.RepositoryCommit.get(ids,
+				angular.noop, modals.errorModal);
 		// APIを介してコミットの関連プロジェクトを取得
-		$scope.projectList = entities.RepositoryCommitProject.query(ids);
+		$scope.projectList = entities.RepositoryCommitProject.query(ids,
+				angular.noop, modals.errorModal);
 		// クエリ文字列をもとに検索条件を初期化
 		$scope.cond = angular.extend(paths.queryToObject({page: 1}), ids);
 		// ページ変更時にコールされる関数を作成・設定
@@ -673,13 +688,13 @@
 				$scope.size = paginated.size;
 				$scope.list = paginated.list;
 				if (paginated.page > 1) paths.entryToQuery('page', paginated.page);
-			});
+			}, modals.errorModal);
 		};
 		// 初期表示
 		$scope.pageChange();
 	})
 	// ユーザ一覧画面のためのコントローラ
-	.controller('users', function($log, $scope, $location, entities, paths) {
+	.controller('users', function($log, $scope, $location, entities, paths, modals) {
 		// クエリ文字列をもとに検索条件を初期化
 		$scope.cond = paths.queryToObject({page: 1});
 		// ページ変更時にコールされる関数を作成・設定
@@ -689,7 +704,7 @@
 				$scope.size = paginated.size;
 				$scope.list = paginated.list;
 				if (paginated.page > 1) paths.entryToQuery('page', paginated.page);
-			});
+			}, modals.errorModal);
 		};
 		// 初期表示
 		$scope.pageChange();
@@ -699,7 +714,8 @@
 		// パスからIDを読み取る
 		var ids = paths.pathToIds();
 		if (ids.userId !== undefined) {
-			$scope.user = entities.User.get({id: paths.pathToIds().userId});
+			$scope.user = entities.User.get({id: paths.pathToIds().userId},
+					angular.noop, modals.errorModal);
 			$scope.user.password = null;
 		} else {
 			$scope.user = new entities.User({id: undefined});
@@ -721,7 +737,8 @@
 	.controller('users$userId$delete', function($log, $scope, $location, entities, paths, modals) {
 		// パスからIDを読み取る
 		var ids = paths.pathToIds();
-		$scope.user = entities.User.get({id: paths.pathToIds().userId});
+		$scope.user = entities.User.get({id: paths.pathToIds().userId},
+				angular.noop, modals.errorModal);
 		
 		$scope.submit = function() {
 			var p = $scope.user.$remove();
