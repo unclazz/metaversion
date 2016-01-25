@@ -22,9 +22,6 @@ import org.unclazz.metaversion.entity.SvnRepository;
 import org.unclazz.metaversion.mapper.SvnCommitMapper;
 import org.unclazz.metaversion.mapper.SvnCommitPathMapper;
 import org.unclazz.metaversion.mapper.SvnRepositoryMapper;
-import org.unclazz.metaversion.service.BatchExecutorService.OnlineBatchRunnable;
-import org.unclazz.metaversion.service.BatchExecutorService.OnlineBatchRunnableFactory;
-import org.unclazz.metaversion.service.BatchExecutorService.OnlineBatchRunnableFactorySupport;
 import org.unclazz.metaversion.service.SvnCommandService.SvnCommitAndItsPathList;
 import org.unclazz.metaversion.vo.LimitOffsetClause;
 import org.unclazz.metaversion.vo.MaxRevision;
@@ -34,7 +31,7 @@ import org.unclazz.metaversion.vo.SvnRepositoryInfo;
 import org.unclazz.metaversion.vo.SvnRepositoryPathInfo;
 
 @Service
-public class LogImportService {
+public class LogImporterService {
 	private Logger logger = LoggerFactory.getLogger(this.getClass());
 	@Autowired
 	private SvnRepositoryMapper svnRepositoryMapper;
@@ -50,49 +47,6 @@ public class LogImportService {
 	private BatchExecutorService executorService;
 	@Autowired
 	private SystemBootLogService bootLogService;
-	
-	public OnlineBatchRunnableFactory getRunnableFactory(final MVUserDetails auth) {
-		final OnlineBatchRunnableFactory factory = new OnlineBatchRunnableFactorySupport() {
-			@Override
-			public OnlineBatchRunnable create() {
-				MVUtils.argsMustBeNotNull("Program and UserDetails", getProgram(), getUserDetails());
-				final OrderByClause orderBy = OrderByClause.noParticularOrder();
-				final LimitOffsetClause limitOffset = LimitOffsetClause.ALL;
-				final Runnable runnable;
-				if (getArguments().size() > 0) {
-					final Object o = getArguments().get(0);
-					final int repositoryId;
-					if (o instanceof String) {
-						repositoryId = Integer.parseInt(o.toString());
-					} else if (o instanceof Integer) {
-						repositoryId = (Integer) o;
-					} else {
-						throw MVUtils.illegalArgument("Unknown argument was found (%s).", o);
-					}
-					runnable = new Runnable() {
-						@Override
-						public void run() {
-							doLogImportMain(repositoryId, auth);
-						}
-					};
-				} else {
-					final List<SvnRepository> list = svnRepositoryMapper.selectAll(orderBy, limitOffset);
-					runnable = new Runnable() {
-						@Override
-						public void run() {
-							for (final SvnRepository r : list) {
-								doLogImportMain(r.getId(), auth);
-							}
-						}
-					};
-				}
-				return executorService.wrapRunnableWithLock(OnlineBatchProgram.LOG_IMPORTER,
-						runnable, auth);
-			}
-		};
-		factory.setProgram(OnlineBatchProgram.LOG_IMPORTER);
-		return factory;
-	}
 	
 	public void doLogImportAsynchronously(final MVUserDetails auth) {
 		final OnlineBatchLock lock = executorService.getLastExecutionLock(OnlineBatchProgram.LOG_IMPORTER);

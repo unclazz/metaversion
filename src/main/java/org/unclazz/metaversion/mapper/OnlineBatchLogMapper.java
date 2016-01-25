@@ -11,10 +11,26 @@ public interface OnlineBatchLogMapper {
 	@Select("SELECT nextval('online_batch_log_seq') ")
 	int selectNextVal();
 	
-	@Select("SELECT id, program_id programId, start_date startDate, end_date endDate, status_id statusId "
+	@Select("SELECT id, "
+			+ "		program_id programId, "
+			+ "		start_date startDate, "
+			+ "		end_date endDate, "
+			+ "		status_id statusId "
 			+ "FROM online_batch_log "
 			+ "WHERE id = #{id} ")
 	OnlineBatchLog selectOneById(@Param("id") int id);
+	
+	
+	@Select("SELECT id, "
+			+ "		program_id programId, "
+			+ "		start_date startDate, "
+			+ "		end_date endDate, "
+			+ "		status_id statusId "
+			+ "FROM online_batch_log "
+			+ "WHERE id = (SELECT max(id) " 
+			+ "		FROM online_batch_log "
+			+ "		WHERE program_id = 1) ")
+	OnlineBatchLog selectLastOneByProgramId(@Param("programId") int programId);
 	
 	@Insert("INSERT INTO online_batch_log (id, program_id, start_date, end_date, status_id, "
 			+ "create_user_id, update_user_id) "

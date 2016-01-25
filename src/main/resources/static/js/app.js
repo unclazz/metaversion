@@ -193,6 +193,8 @@
 		// ProjectChagedPathエンティティのためのResourceオブジェクトを作成
 		entity("ProjectParallels", "api/projects/:projectId/parallels",
 				{projectId: "@projectId"}, pagingParams);
+		entity("Batches", "api/batches/:programId",
+				{programId: "@programId"}, pagingParams);
 		
 		// サジェスト用のResourceオブジェクトを作成
 		suggest("PathName", "api/pathnames", {}, suggestParams);
@@ -254,7 +256,7 @@
 	.config(function($logProvider) {
 		$logProvider.debugEnabled(true);
 	})
-	.controller('parent', function($scope, $location, $log) {
+	.controller('parent', function($scope, $location, $interval, $log, entities) {
 		// Paginationディレクティブのためのデフォルト値
 		// ＊外部スコープにてページネーションに関わる値─とくにtotalSizeを初期化することで、
 		// 画面初期表示時にページ番号が強制的にリセットされてしまう問題への対策としている。
@@ -275,6 +277,21 @@
 				$scope.navItems[k] = path.endsWith(k);
 			}
 		});
+		
+		var updateLogImporter = function() {
+			entities.Batches.query({}, function(data) {
+				var list = data.list;
+				for (var i in list) {
+					var item = list[i];
+					if (item.program === 'LOG_IMPORTER') {
+						$scope.logImporter = item;
+						break;
+					}
+				}
+			});
+		};
+		updateLogImporter();
+		$interval(updateLogImporter, 60000);
 	})
 	.controller('errorModal', function ($scope, $uibModalInstance, $log, error) {
 		// オブジェクトの階層化された表示など便利な面が多々あるためコンソールにも出力する

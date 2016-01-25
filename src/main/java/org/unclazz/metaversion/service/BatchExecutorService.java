@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -22,6 +23,9 @@ import org.unclazz.metaversion.mapper.OnlineBatchErrorMapper;
 import org.unclazz.metaversion.mapper.OnlineBatchLockMapper;
 import org.unclazz.metaversion.mapper.OnlineBatchLogMapper;
 import org.unclazz.metaversion.vo.BatchResult;
+import org.unclazz.metaversion.vo.OnlineBatchExecution;
+import org.unclazz.metaversion.vo.Paginated;
+import org.unclazz.metaversion.vo.Paging;
 
 @Service
 public class BatchExecutorService {
@@ -102,6 +106,19 @@ public class BatchExecutorService {
 	@Autowired
 	private OnlineBatchErrorMapper onlineBatchErrorMapper;
 
+	public Paginated<OnlineBatchExecution> getOnlineBatchExecutionList(final Paging paging) {
+		final List<OnlineBatchExecution> list = new LinkedList<OnlineBatchExecution>();
+		for (final OnlineBatchProgram p : OnlineBatchProgram.values()) {
+			final OnlineBatchLog log = onlineBatchLogMapper.selectLastOneByProgramId(p.getId());
+			final OnlineBatchExecution exec = new OnlineBatchExecution();
+			exec.setProgram(p);
+			exec.setLastStatus(OnlineBatchStatus.valueOfStatusId(log.getStatusId()));
+			exec.setLastLog(log);
+			list.add(exec);
+		}
+		return Paginated.of(paging, list, OnlineBatchProgram.values().length);
+	}
+	
 	public OnlineBatchLock getLastExecutionLock(final OnlineBatchProgram p) {
 		return onlineBatchLockMapper.selectOneByProgramId(p.getId());
 	}

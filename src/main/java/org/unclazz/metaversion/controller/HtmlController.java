@@ -13,9 +13,10 @@ import org.unclazz.metaversion.MVProperties;
 import org.unclazz.metaversion.MVUserDetails;
 import org.unclazz.metaversion.MVUtils;
 import org.unclazz.metaversion.entity.User;
-import org.unclazz.metaversion.service.LogImportService;
+import org.unclazz.metaversion.service.LogImporterService;
 import org.unclazz.metaversion.service.MasterService;
 import org.unclazz.metaversion.service.MasterService.ApplicationMayBeAlreadyInitialized;
+import org.unclazz.metaversion.service.P2CLinkerService;
 
 @Controller
 public class HtmlController {
@@ -24,7 +25,9 @@ public class HtmlController {
 	@Autowired
 	private MVProperties props;
 	@Autowired
-	private LogImportService logImportService;
+	private LogImporterService logImporterService;
+	@Autowired
+	private P2CLinkerService p2cLinkerService;
 	private Map<String, String> applicationModelAttributes;
 	
 	@ModelAttribute("user")
@@ -69,7 +72,9 @@ public class HtmlController {
     
     @RequestMapping({"/", "/index"})
     public String index(final Principal principal, final Model model) {
-		logImportService.doLogImportAsynchronously(MVUserDetails.of(principal));
+    	final MVUserDetails auth = MVUserDetails.of(principal);
+		logImporterService.doLogImportAsynchronously(auth);
+		p2cLinkerService.doP2CLinkAsynchronously(auth);
         return "index";
     }
 }

@@ -1,14 +1,19 @@
 package org.unclazz.metaversion.service;
 
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.unclazz.metaversion.MVUserDetails;
 import org.unclazz.metaversion.MVUtils;
+import org.unclazz.metaversion.entity.OnlineBatchLock;
 import org.unclazz.metaversion.entity.OnlineBatchProgram;
 import org.unclazz.metaversion.entity.Project;
 import org.unclazz.metaversion.entity.ProjectSvnCommit;
@@ -18,15 +23,13 @@ import org.unclazz.metaversion.mapper.ProjectMapper;
 import org.unclazz.metaversion.mapper.ProjectSvnCommitMapper;
 import org.unclazz.metaversion.mapper.ProjectSvnRepositoryMapper;
 import org.unclazz.metaversion.mapper.SvnCommitMapper;
-import org.unclazz.metaversion.service.BatchExecutorService.OnlineBatchRunnable;
-import org.unclazz.metaversion.service.BatchExecutorService.OnlineBatchRunnableFactory;
-import org.unclazz.metaversion.service.BatchExecutorService.OnlineBatchRunnableFactorySupport;
 import org.unclazz.metaversion.vo.LimitOffsetClause;
 import org.unclazz.metaversion.vo.MaxRevision;
 import org.unclazz.metaversion.vo.OrderByClause;
 
 @Service
-public class CommitLinkService {
+public class P2CLinkerService {
+	private Logger logger = LoggerFactory.getLogger(getClass());
 	@Autowired
 	private ProjectMapper projectMapper;
 	@Autowired
@@ -37,48 +40,56 @@ public class CommitLinkService {
 	private ProjectSvnCommitMapper projectSvnCommitMapper;
 	@Autowired
 	private BatchExecutorService executorService;
+	@Autowired
+	private SystemBootLogService bootLogService;
 	
-	public OnlineBatchRunnableFactory getRunnableFactory(final MVUserDetails auth) {
-		final OnlineBatchRunnableFactory factory = new OnlineBatchRunnableFactorySupport() {
+	public void doP2CLinkAsynchronously(final MVUserDetails auth) {
+		final OnlineBatchLock lock = executorService.getLastExecutionLock(OnlineBatchProgram.P2C_LINKER);
+		final Date nowBootDate = bootLogService.getSystemBootDate();
+		
+		logger.info("プロジェクト・コミット紐付け（非同期）を開始");
+		logger.info("ロック状態： {}", lock.isLocked());
+		logger.info("ロック時システムブート日時： {}", lock.getSystemBootDate());
+		logger.info("現在時点システムブート日時： {}", nowBootDate);
+		
+		if (lock.isLocked() && lock.getSystemBootDate().compareTo(nowBootDate) >= 0) {
+			logger.info("プロジェクト・コミット紐付け（非同期）を中止");
+			return;
+		}
+		final Date lastExecDate = lock.getLastUnlockDate();
+		final Calendar cal = Calendar.getInstance();
+		cal.setTime(new Date());
+		cal.add(Calendar.MINUTE, -60);
+		final Date xMinutesBefore = cal.getTime();
+
+		logger.info("最終バッチ実行日時： {}", lastExecDate);
+		logger.info("バッチ起動閾値日時： {}", xMinutesBefore);
+
+		if (lastExecDate.compareTo(xMinutesBefore) > 0) {
+			logger.info("プロジェクト・コミット紐付け（非同期）を中止");
+			return;
+		}
+		
+		final OrderByClause orderBy = OrderByClause.noParticularOrder();
+		final LimitOffsetClause limitOffset = LimitOffsetClause.ALL;
+		final List<Project> list = projectMapper.selectAll(orderBy, limitOffset);
+		final Runnable runnable = new Runnable() {
 			@Override
-			public OnlineBatchRunnable create() {
-				MVUtils.argsMustBeNotNull("Program and UserDetails", getProgram(), getUserDetails());
-				final OrderByClause orderBy = OrderByClause.noParticularOrder();
-				final LimitOffsetClause limitOffset = LimitOffsetClause.ALL;
-				final Runnable runnable;
-				if (getArguments().size() > 0) {
-					final Object o = getArguments().get(0);
-					final int projectId;
-					if (o instanceof String) {
-						projectId = Integer.parseInt(o.toString());
-					} else if (o instanceof Integer) {
-						projectId = (Integer) o;
-					} else {
-						throw MVUtils.illegalArgument("Unknown argument was found (%s).", o);
+			public void run() {
+				logger.info("対象プロジェクト数： {}", list.size());
+				for (final Project r : list) {
+					logger.info("対象プロジェクト： {}({})", r.getName(), r.getId());
+					try {
+						doCommitLinkMain(r.getId(), auth);
+					} catch (final Exception e) {
+						logger.info("処理中の例外スロー： {}", r.getName(), r.getId(), e);
 					}
-					runnable = new Runnable() {
-						@Override
-						public void run() {
-							doCommitLinkMain(projectId, auth);
-						}
-					};
-				} else {
-					final List<Project> list = projectMapper.selectAll(orderBy, limitOffset);
-					runnable = new Runnable() {
-						@Override
-						public void run() {
-							for (final Project p : list) {
-								doCommitLinkMain(p.getId(), auth);
-							}
-						}
-					};
 				}
-				return executorService.wrapRunnableWithLock(OnlineBatchProgram.LOG_IMPORTER,
-						runnable, auth);
+				logger.info("プロジェクト・コミット紐付け（非同期）を終了");
 			}
 		};
-		factory.setProgram(OnlineBatchProgram.LOG_IMPORTER);
-		return factory;
+		new Thread(executorService.wrapRunnableWithLock(OnlineBatchProgram.P2C_LINKER,
+				runnable, auth)).start();
 	}
 	
 	@Transactional

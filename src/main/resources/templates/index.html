@@ -28,6 +28,24 @@
 					<li ng-class="{'active': navItems.users}" th:if="${user.admin}"><a href="#/users">ユーザ</a></li>
 				</ul>
 				<ul class="nav navbar-nav navbar-right">
+					<li class="navbar-text" ng-show="logImporter">
+						<span ng-show="logImporter.lastStatus === 'RUNNING'">
+							<span class="glyphicon glyphicon-import" aria-hidden="true"></span>
+							<span>SVNインポート中...</span>
+						</span>
+						<span ng-show="logImporter.lastStatus === 'ENDED'">
+							<span class="glyphicon glyphicon-saved" aria-hidden="true"></span>
+							<span>SVNインポート完了</span>
+						</span>
+						<span ng-show="logImporter.lastStatus === 'ABENDED'">
+							<span class="glyphicon glyphicon-warning-sign" aria-hidden="true"></span>
+							<span>SVNインポート失敗</span>
+						</span>
+						<span ng-show="logImporter.lastStatus === 'QUITTED'">
+							<span class="glyphicon glyphicon-warning-sign" aria-hidden="true"></span>
+							<span>SVNインポート中断</span>
+						</span>
+					</li>
 					<li class="navbar-text">
 					<span class="glyphicon glyphicon-user" aria-hidden="true"></span>
 					<span th:text="${user.name}">foo</span></li>

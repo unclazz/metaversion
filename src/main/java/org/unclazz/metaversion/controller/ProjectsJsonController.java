@@ -22,7 +22,7 @@ import org.unclazz.metaversion.entity.Project;
 import org.unclazz.metaversion.entity.ProjectStats;
 import org.unclazz.metaversion.entity.ProjectSvnCommit;
 import org.unclazz.metaversion.entity.SvnCommitWithRepositoryInfo;
-import org.unclazz.metaversion.service.CommitLinkService;
+import org.unclazz.metaversion.service.P2CLinkerService;
 import org.unclazz.metaversion.service.CommitService;
 import org.unclazz.metaversion.service.ProjectParallelsService;
 import org.unclazz.metaversion.service.ProjectService;
@@ -40,7 +40,7 @@ public class ProjectsJsonController {
 	@Autowired
 	private CommitService commitService;
 	@Autowired
-	private CommitLinkService commitLinkService;
+	private P2CLinkerService commitLinkService;
 	@Autowired
 	private ProjectParallelsService parallelsService;
 	

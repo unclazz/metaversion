@@ -23,6 +23,15 @@ public enum OnlineBatchStatus implements IOnlineBatchStatus {
 		return name;
 	}
 	
+	public static OnlineBatchStatus valueOfStatusId(final int id) {
+		for (final OnlineBatchStatus v : values()) {
+			if (v.id == id) {
+				return v;
+			}
+		}
+		throw new IllegalArgumentException();
+	}
+	
 	public static OnlineBatchStatus valueOfStatusName(final String name) {
 		for (final OnlineBatchStatus v : values()) {
 			if (v.name.equals(name)) {
