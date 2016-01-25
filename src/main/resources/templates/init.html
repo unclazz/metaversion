@@ -18,25 +18,22 @@
 					管理者ユーザでログインしてユーザ情報やリポジトリ情報を登録してください。</p>
 				</div>
 			</div>
-			<div th:unless="${successful}" class="panel panel-danger panel-init">
+			<div th:unless="${successful}" class="panel panel-danger">
 				<div class="panel-heading">
 					<h1>アプリケーション初期化</h1>
 				</div>
+				<div class="panel-body">
+					<p>アプリケーションの初期化に失敗しました。
+					データベースへの接続設定を確認してください。
+					設定に問題がない場合はアプリケーションがすでに初期化されたあとである可能性もあります。</p>
+				</div>
 				<table class="table">
-					<tr>
-						<th nowrap="nowrap">タイムスタンプ</th>
-						<td th:text="${timestamp}">Sun Jan 17 23:39:54 JST 2016</td>
-					</tr>
-					<tr>
-						<th>ステータス</th>
-						<td><span th:text="${status}"></span> <span th:text="${error}"></span></td>
-					</tr>
-					<tr>
-						<th>メッセージ</th>
-						<td th:text="${message}">Error resolving template "foo", 
-						template might not exist or might not be accessible 
-						by any of the configured Template Resolvers</td>
-					</tr>
+					<tr><td>例外名</td><td th:text="${exceptionName}">SomeException</td></tr>
+					<tr><td>メッセージ</td><td><pre th:text="${exceptionMessage}" style="width: 800px; overflow-x: auto; word-break: normal; word-wrap: normal; white-space: pre;">Unexpected error has occurred.</pre></td></tr>
+					<tr><td>スタックトレース</td><td>
+					<pre th:text="${exceptionStackTrace}" style="width: 800px; overflow-x: auto; word-break: normal; word-wrap: normal; white-space: pre;">at org.unclazz.metaversion.AClass.aMethod (AClass.java:123)
+			at org.unclazz.metaversion.BClass.bMethod (BClass.java:123)
+			at org.unclazz.metaversion.CClass.cMethod (CClass.java:123)</pre></td></tr>
 				</table>
 			</div>
 		</article>
