@@ -15,7 +15,7 @@ public interface ProjectSvnRepositoryMapper {
 			+ "FROM project_svn_repository pr "
 			+ "INNER JOIN svn_repository r "
 			+ "ON pr.repository_id = r.id "
-			+ "WHERE pr.last_revision < r.id ")
+			+ "WHERE pr.last_revision < r.max_revision ")
 	List<ProjectSvnRepository> selectObsoletedRecordByProjectId(@Param("projectId") int id);
 	
 	@Insert("INSERT INTO project_svn_repository "

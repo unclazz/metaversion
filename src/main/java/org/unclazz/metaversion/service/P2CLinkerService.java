@@ -80,7 +80,7 @@ public class P2CLinkerService {
 				for (final Project r : list) {
 					logger.info("対象プロジェクト： {}({})", r.getName(), r.getId());
 					try {
-						doCommitLinkMain(r.getId(), auth);
+						doCommitLinkMain(r, auth);
 					} catch (final Exception e) {
 						logger.info("処理中の例外スロー： {}", r.getName(), r.getId(), e);
 					}
@@ -93,22 +93,23 @@ public class P2CLinkerService {
 	}
 	
 	@Transactional
-	public void doCommitLinkMain(final int projectId, final MVUserDetails auth) {
-		final Project proj = projectMapper.selectOneById(projectId);
-		if (proj == null) {
-			throw MVUtils.illegalArgument("Unknown project(id=%s).", projectId);
-		}
-		
-		final Pattern compiledPattern = Pattern.compile(proj.getCommitSignPattern());
+	public void doCommitLinkMain(final Project project, final MVUserDetails auth) {
+		final int projectId = project.getId();
+		final Pattern compiledPattern = Pattern.compile(project.getCommitSignPattern());
 		projectSvnRepositoryMapper.insertMissingLink(auth);
 		
 		final List<ProjectSvnRepository> obsoletedList = projectSvnRepositoryMapper.
 				selectObsoletedRecordByProjectId(projectId);
 		
+		logger.info("紐付け対象リポジトリ数： {}", obsoletedList.size());
+		
 		for (final ProjectSvnRepository obsoleted : obsoletedList) {
 			final List<SvnCommit> commitList = svnCommitMapper.
 					selectAutolinkCandidateByProjectIdAndRepositoryId(projectId, obsoleted.getRepositoryId());
 			final MaxRevision maxRevision = MaxRevision.startsWith(obsoleted.getLastRevision());
+			
+			logger.info("紐付け対象リポジトリID： {}", obsoleted.getRepositoryId());
+			logger.info("前回処理済みリビジョン： {}", obsoleted.getLastRevision());
 			
 			for (final SvnCommit commit : commitList) {
 				maxRevision.trySetNewValue(commit.getRevision());
@@ -121,6 +122,8 @@ public class P2CLinkerService {
 				vo.setProjectId(projectId);
 				projectSvnCommitMapper.insert(vo, auth);
 			}
+			
+			logger.info("今回処理済みリビジョン： {}", maxRevision.getValue());
 			
 			obsoleted.setLastRevision(maxRevision.getValue());
 			projectSvnRepositoryMapper.update(obsoleted, auth);
