@@ -113,7 +113,8 @@ CREATE TABLE online_batch_lock (
     last_lock_date timestamp without time zone DEFAULT now() NOT NULL,
     last_unlock_date timestamp without time zone DEFAULT now() NOT NULL,
     last_lock_user_id integer NOT NULL,
-    last_unlock_user_id integer NOT NULL
+    last_unlock_user_id integer NOT NULL,
+    system_boot_date timestamp without time zone NOT NULL
 );
 
 
@@ -483,6 +484,32 @@ CREATE VIEW svn_repository_stats_view AS
 ALTER TABLE svn_repository_stats_view OWNER TO postgres;
 
 --
+-- Name: system_boot_log; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE system_boot_log (
+    id integer NOT NULL,
+    boot_date timestamp without time zone DEFAULT now() NOT NULL
+);
+
+
+ALTER TABLE system_boot_log OWNER TO postgres;
+
+--
+-- Name: system_boot_log_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE system_boot_log_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE system_boot_log_seq OWNER TO postgres;
+
+--
 -- Name: change_type_pk; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -640,6 +667,14 @@ ALTER TABLE ONLY svn_repository
 
 ALTER TABLE ONLY svn_repository
     ADD CONSTRAINT svn_repository_uniq0 UNIQUE (name);
+
+
+--
+-- Name: system_boot_log_pk; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY system_boot_log
+    ADD CONSTRAINT system_boot_log_pk PRIMARY KEY (id);
 
 
 --
