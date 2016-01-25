@@ -14,6 +14,10 @@ body {
 	width: 360px;
 	margin: 80px auto;
 }
+.panel-init {
+	width: 600px;
+	margin: 80px auto;
+}
 .panel-login .panel-heading h1 {
 	background: url(../img/logo_40x70.png) no-repeat;
 	text-indent: 80px;

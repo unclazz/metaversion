@@ -43,5 +43,4 @@ public class MVApplication {
     public static void main(String[] args) throws Exception {
         SpringApplication.run(MVApplication.class, args);
     }
-
 }

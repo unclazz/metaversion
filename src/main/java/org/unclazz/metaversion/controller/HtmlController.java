@@ -8,13 +8,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.unclazz.metaversion.MVProperties;
 import org.unclazz.metaversion.MVUserDetails;
 import org.unclazz.metaversion.MVUtils;
 import org.unclazz.metaversion.entity.User;
+import org.unclazz.metaversion.service.LogImportService;
 import org.unclazz.metaversion.service.MasterService;
 import org.unclazz.metaversion.service.MasterService.ApplicationMayBeAlreadyInitialized;
 
@@ -24,6 +23,8 @@ public class HtmlController {
 	private MasterService masterService;
 	@Autowired
 	private MVProperties props;
+	@Autowired
+	private LogImportService logImportService;
 	private Map<String, String> applicationModelAttributes;
 	
 	@ModelAttribute("user")
@@ -68,57 +69,7 @@ public class HtmlController {
     
     @RequestMapping({"/", "/index"})
     public String index(final Principal principal, final Model model) {
+		logImportService.doLogImportAsynchronously(MVUserDetails.of(principal));
         return "index";
     }
-    
-    @RequestMapping({"/projects"})
-    public String projects(final Principal principal, final Model model) {
-        return "projects";
-    }
-    
-    @RequestMapping({"/projects/new"})
-    public String projectsNew(final Principal principal, final Model model) {
-        return "projects$projectId$edit";
-    }
-    
-    @RequestMapping({"/projects/{projectId}/edit"})
-    public String projectsProjectIdEdit(final Principal principal, 
-    		@PathVariable("projectId") final int projectId, final Model model) {
-        return "projects$projectId$edit";
-    }
-    
-    @RequestMapping({"/projects/{projectId}/delete"})
-    public String projectsProjectIdDelete(final Principal principal, 
-    		@PathVariable("projectId") final int projectId, final Model model) {
-        return "projects$projectId$delete";
-    }
-    
-    @RequestMapping({"/projects/{projectId}"})
-    public String projectsProjectId(final Principal principal, 
-    		@PathVariable("projectId") final int projectId, final Model model) {
-        return "projects$projectId";
-    }
-    
-    @RequestMapping({"/projects/{projectId}/commits"})
-    public String projectsProjectIdCommits(final Principal principal, 
-    		@PathVariable("projectId") final int projectId, final Model model) {
-        return "projects$projectId$commits";
-    }
-    
-    @RequestMapping({"/repositories"})
-    public String repositories(final Principal principal, final Model model) {
-        return "repositories";
-    }
-    
-    @RequestMapping({"/repositories/{repositoryId}"})
-    public String repositoriesRepositoryId(final Principal principal, 
-    		@PathVariable("repositoryId") final int repositoryId, final Model model) {
-        return "index";
-    }
-    
-    @RequestMapping(value="/apitester", method=RequestMethod.GET)
-    public String getApiTester() {
-        return "apitester";
-    }
-    
 }

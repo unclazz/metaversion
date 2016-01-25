@@ -1,20 +1,45 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="utf-8"/>
-    <title>Init | MetaVersion</title>
+	<meta charset="utf-8" />
+	<title>アプリケーション初期化</title>
+	<link href="../static/css/bootstrap.min.css" th:href="@{/css/bootstrap.min.css}" rel="stylesheet"/>
+	<link href="../static/css/app.css" th:href="@{/css/app.css}" rel="stylesheet"/>
 </head>
 <body>
-	<h1>Init</h1>
-	<p><span th:if="${successful}">アプリケーションの初期化に成功しました。</span>
-	<span th:unless="${successful}">アプリケーションの初期化に失敗しました。すでに初期化済みである可能性があります。</span></p>
-	<table th:unless="${successful}">
-		<tr><td>例外名</td><td th:text="${exceptionName}">SomeException</td></tr>
-		<tr><td>メッセージ</td><td><pre th:text="${exceptionMessage}">Unexpected error has occurred.</pre></td></tr>
-		<tr><td>スタックトレース</td><td>
-		<pre th:text="${exceptionStackTrace}">at org.unclazz.metaversion.AClass.aMethod (AClass.java:123)
-at org.unclazz.metaversion.BClass.bMethod (BClass.java:123)
-at org.unclazz.metaversion.CClass.cMethod (CClass.java:123)</pre></td></tr>
-	</table>
+	<div class="container">
+		<article>
+			<div th:if="${successful}" class="panel panel-success panel-init">
+				<div class="panel-heading">
+					<h1>アプリケーション初期化</h1>
+				</div>
+				<div class="panel-body">
+					<p>アプリケーションの初期化に成功しました。
+					管理者ユーザでログインしてユーザ情報やリポジトリ情報を登録してください。</p>
+				</div>
+			</div>
+			<div th:unless="${successful}" class="panel panel-danger panel-init">
+				<div class="panel-heading">
+					<h1>アプリケーション初期化</h1>
+				</div>
+				<table class="table">
+					<tr>
+						<th nowrap="nowrap">タイムスタンプ</th>
+						<td th:text="${timestamp}">Sun Jan 17 23:39:54 JST 2016</td>
+					</tr>
+					<tr>
+						<th>ステータス</th>
+						<td><span th:text="${status}"></span> <span th:text="${error}"></span></td>
+					</tr>
+					<tr>
+						<th>メッセージ</th>
+						<td th:text="${message}">Error resolving template "foo", 
+						template might not exist or might not be accessible 
+						by any of the configured Template Resolvers</td>
+					</tr>
+				</table>
+			</div>
+		</article>
+	</div>
 </body>
 </html>
