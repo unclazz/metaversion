@@ -273,6 +273,7 @@
 		$scope.$watch(function() {
 			return $location.path();
 		}, function(path) {
+			$scope.makeTitle(undefined);
 			for (var k in $scope.navItems) {
 				$scope.navItems[k] = path.endsWith(k);
 			}
@@ -288,10 +289,22 @@
 						break;
 					}
 				}
+			}, function(error) {
+				$scope.logImporter = {};
 			});
 		};
 		updateLogImporter();
 		$interval(updateLogImporter, 60000);
+		$scope.appName = angular.element(document.getElementById('app-name')).text();
+		$scope.headTitle = $scope.appName;
+		$scope.title = '';
+		$scope.appVersion = angular.element(document.getElementById('app-version')).text();
+		$scope.appNameVersion = $scope.appName + ' ' + $scope.appVersion;
+		$scope.makeTitle = function(title) {
+			$scope.title = title;
+			$scope.headTitle = (title !== undefined ? (title + ' | ') : '') + $scope.appName;
+			return title;
+		}
 	})
 	.controller('errorModal', function ($scope, $uibModalInstance, $log, error) {
 		// オブジェクトの階層化された表示など便利な面が多々あるためコンソールにも出力する

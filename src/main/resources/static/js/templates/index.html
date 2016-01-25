@@ -6,7 +6,7 @@
 <body>
 	<div ng-controller="index" class="container">
 		<header class="jumbotron">
-			<h1><span>MetaVersion</span> へようこそ！</h1>
+			<h1><span style="display:none;">{{makeTitle()}}</span><span>MetaVersion</span> へようこそ！</h1>
 			<p>プロジェクトの情報を登録してSVNコミット変更パスの競合をチェックしましょう。</p>
 			<form method="get" name="thisForm" ng-submit="submit()">
 				<div class="input-group input-group-lg">

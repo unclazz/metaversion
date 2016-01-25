@@ -11,8 +11,7 @@
 				  <span class="glyphicon glyphicon-home" aria-hidden="true"></span> トップ</a></li>
 				  <li><a href="#" ng-href="#/repositories">リポジトリ一覧</a></li>
 				  <li ng-show="repository.id !== undefined"><a href="#" ng-href="#/repositories/{{repository.id}}">リポジトリ詳細</a></li>
-				  <li class="active" ng-show="repository.id !== undefined">リポジトリ編集</li>
-				  <li class="active" ng-show="repository.id === undefined">リポジトリ追加</li>
+				  <li class="active" ng-bind="makeTitle('リポジトリ' + (repository.id === undefined ? '追加' : '編集'))">リポジトリ編集</li>
 			</ol>
 		</nav>
 

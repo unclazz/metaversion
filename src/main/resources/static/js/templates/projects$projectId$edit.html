@@ -11,8 +11,7 @@
 				  <span class="glyphicon glyphicon-home" aria-hidden="true"></span> トップ</a></li>
 				  <li><a href="#" ng-href="#/projects">プロジェクト一覧</a></li>
 				  <li ng-show="project.id !== undefined"><a href="#" ng-href="#/projects/{{project.id}}">プロジェクト詳細</a></li>
-				  <li class="active" ng-show="project.id !== undefined">プロジェクト編集</li>
-				  <li class="active" ng-show="project.id === undefined">プロジェクト追加</li>
+				  <li class="active" ng-bind="makeTitle('リポジトリ' + (project.id === undefined ? '追加' : '編集'))">プロジェクト編集</li>
 			</ol>
 		</nav>
 
