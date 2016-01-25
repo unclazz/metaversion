@@ -18,8 +18,12 @@ import org.unclazz.metaversion.mapper.ProjectMapper;
 import org.unclazz.metaversion.mapper.ProjectSvnCommitMapper;
 import org.unclazz.metaversion.mapper.ProjectSvnRepositoryMapper;
 import org.unclazz.metaversion.mapper.SvnCommitMapper;
-import org.unclazz.metaversion.service.BatchExecutorService.Executable;
+import org.unclazz.metaversion.service.BatchExecutorService.OnlineBatchRunnable;
+import org.unclazz.metaversion.service.BatchExecutorService.OnlineBatchRunnableFactory;
+import org.unclazz.metaversion.service.BatchExecutorService.OnlineBatchRunnableFactorySupport;
+import org.unclazz.metaversion.vo.LimitOffsetClause;
 import org.unclazz.metaversion.vo.MaxRevision;
+import org.unclazz.metaversion.vo.OrderByClause;
 
 @Service
 public class CommitLinkService {
@@ -34,16 +38,49 @@ public class CommitLinkService {
 	@Autowired
 	private BatchExecutorService executorService;
 	
-	public void doCommitLink(final int projectId, final MVUserDetails auth) {
-		executorService.execute(OnlineBatchProgram.P2C_LINKER,
-				new Executable() {
-					@Override
-					public void execute() {
-						doCommitLinkMain(projectId, auth);
+	public OnlineBatchRunnableFactory getRunnableFactory(final MVUserDetails auth) {
+		final OnlineBatchRunnableFactory factory = new OnlineBatchRunnableFactorySupport() {
+			@Override
+			public OnlineBatchRunnable create() {
+				MVUtils.argsMustBeNotNull("Program and UserDetails", getProgram(), getUserDetails());
+				final OrderByClause orderBy = OrderByClause.noParticularOrder();
+				final LimitOffsetClause limitOffset = LimitOffsetClause.ALL;
+				final Runnable runnable;
+				if (getArguments().size() > 0) {
+					final Object o = getArguments().get(0);
+					final int projectId;
+					if (o instanceof String) {
+						projectId = Integer.parseInt(o.toString());
+					} else if (o instanceof Integer) {
+						projectId = (Integer) o;
+					} else {
+						throw MVUtils.illegalArgument("Unknown argument was found (%s).", o);
 					}
-		}, auth);
+					runnable = new Runnable() {
+						@Override
+						public void run() {
+							doCommitLinkMain(projectId, auth);
+						}
+					};
+				} else {
+					final List<Project> list = projectMapper.selectAll(orderBy, limitOffset);
+					runnable = new Runnable() {
+						@Override
+						public void run() {
+							for (final Project p : list) {
+								doCommitLinkMain(p.getId(), auth);
+							}
+						}
+					};
+				}
+				return executorService.wrapRunnableWithLock(OnlineBatchProgram.LOG_IMPORTER,
+						runnable, auth);
+			}
+		};
+		factory.setProgram(OnlineBatchProgram.LOG_IMPORTER);
+		return factory;
 	}
-
+	
 	@Transactional
 	public void doCommitLinkMain(final int projectId, final MVUserDetails auth) {
 		final Project proj = projectMapper.selectOneById(projectId);

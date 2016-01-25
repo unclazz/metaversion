@@ -3,15 +3,19 @@ package org.unclazz.metaversion;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
+import org.unclazz.metaversion.service.LogImportService;
 
 @Component
 public class MVHandlerInterceptor implements HandlerInterceptor {
-	
+	@Autowired
+	private LogImportService logImportService;
+
 	@Override
 	public void afterCompletion(
 			final HttpServletRequest request, 
@@ -40,10 +44,18 @@ public class MVHandlerInterceptor implements HandlerInterceptor {
 			throws Exception {
 		
 		// 匿名ユーザとしてのアクセス かつ RESTコントローラへのマッピングがされているとき
-		if (anonymousUser() && restApiUrl(handler)) {
-			// アクセス権限不足としてアクセスを拒否する
-			response.sendError(HttpServletResponse.SC_FORBIDDEN);
-			return false;
+		if (anonymousUser()){
+			if (restApiUrl(handler)) {
+				// アクセス権限不足としてアクセスを拒否する
+				response.sendError(HttpServletResponse.SC_FORBIDDEN);
+				return false;
+			}			
+		} else if (!restApiUrl(handler)) {
+			final MVUserDetails auth = MVUtils.userDetails();
+			if (auth != null) {
+				// ログ取込みを開始
+				logImportService.doLogImportAsynchronously(auth);
+			}
 		}
 		
 		// それ以外の場合はアクセスを許可する

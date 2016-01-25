@@ -18,6 +18,7 @@ import org.unclazz.metaversion.MVApplication;
 import org.unclazz.metaversion.MVUserDetails;
 import org.unclazz.metaversion.entity.IOnlineBatchProgram;
 import org.unclazz.metaversion.entity.OnlineBatchProgram;
+import org.unclazz.metaversion.service.BatchExecutorService.OnlineBatchRunnableFactory;
 import org.unclazz.metaversion.service.CommitLinkService;
 import org.unclazz.metaversion.service.LogImportService;
 import org.unclazz.metaversion.vo.BatchResult;
@@ -114,7 +115,10 @@ public class BatchesJsonController {
 		
 		final BatchResult res = BatchResult.ofNowStarting(OnlineBatchProgram.LOG_IMPORTER);
 		try {
-			logImportService.doLogImport(repositoryId, MVUserDetails.of(principal));
+			final OnlineBatchRunnableFactory factory = logImportService.
+					getRunnableFactory(MVUserDetails.of(principal));
+			factory.setArguments(repositoryId);
+			factory.create().run();
 			return httpResponseOfOk(res.andEnded());
 			
 		} catch (final RuntimeException e) {
@@ -130,7 +134,10 @@ public class BatchesJsonController {
 		
 		final BatchResult res = BatchResult.ofNowStarting(OnlineBatchProgram.P2C_LINKER);
 		try {
-			commitLinkService.doCommitLink(projectId, MVUserDetails.of(principal));
+			final OnlineBatchRunnableFactory factory = commitLinkService.
+					getRunnableFactory(MVUserDetails.of(principal));
+			factory.setArguments(projectId);
+			factory.create().run();
 			return httpResponseOfOk(res.andEnded());
 			
 		} catch (final RuntimeException e) {

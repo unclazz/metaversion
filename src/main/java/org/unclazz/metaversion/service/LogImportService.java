@@ -1,5 +1,7 @@
 package org.unclazz.metaversion.service;
 
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.regex.Matcher;
 
@@ -11,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.unclazz.metaversion.MVProperties;
 import org.unclazz.metaversion.MVUserDetails;
 import org.unclazz.metaversion.MVUtils;
+import org.unclazz.metaversion.entity.OnlineBatchLock;
 import org.unclazz.metaversion.entity.OnlineBatchProgram;
 import org.unclazz.metaversion.entity.SvnCommit;
 import org.unclazz.metaversion.entity.SvnCommitPath;
@@ -19,9 +22,13 @@ import org.unclazz.metaversion.entity.SvnRepository;
 import org.unclazz.metaversion.mapper.SvnCommitMapper;
 import org.unclazz.metaversion.mapper.SvnCommitPathMapper;
 import org.unclazz.metaversion.mapper.SvnRepositoryMapper;
-import org.unclazz.metaversion.service.BatchExecutorService.Executable;
+import org.unclazz.metaversion.service.BatchExecutorService.OnlineBatchRunnable;
+import org.unclazz.metaversion.service.BatchExecutorService.OnlineBatchRunnableFactory;
+import org.unclazz.metaversion.service.BatchExecutorService.OnlineBatchRunnableFactorySupport;
 import org.unclazz.metaversion.service.SvnCommandService.SvnCommitAndItsPathList;
+import org.unclazz.metaversion.vo.LimitOffsetClause;
 import org.unclazz.metaversion.vo.MaxRevision;
+import org.unclazz.metaversion.vo.OrderByClause;
 import org.unclazz.metaversion.vo.RevisionRange;
 import org.unclazz.metaversion.vo.SvnRepositoryInfo;
 import org.unclazz.metaversion.vo.SvnRepositoryPathInfo;
@@ -41,15 +48,101 @@ public class LogImportService {
 	private MVProperties props;
 	@Autowired
 	private BatchExecutorService executorService;
+	@Autowired
+	private SystemBootLogService bootLogService;
 	
-	public void doLogImport(final int repositoryId, final MVUserDetails auth) {
-		executorService.execute(OnlineBatchProgram.LOG_IMPORTER,
-				new Executable() {
-					@Override
-					public void execute() {
-						doLogImportMain(repositoryId, auth);
+	public OnlineBatchRunnableFactory getRunnableFactory(final MVUserDetails auth) {
+		final OnlineBatchRunnableFactory factory = new OnlineBatchRunnableFactorySupport() {
+			@Override
+			public OnlineBatchRunnable create() {
+				MVUtils.argsMustBeNotNull("Program and UserDetails", getProgram(), getUserDetails());
+				final OrderByClause orderBy = OrderByClause.noParticularOrder();
+				final LimitOffsetClause limitOffset = LimitOffsetClause.ALL;
+				final Runnable runnable;
+				if (getArguments().size() > 0) {
+					final Object o = getArguments().get(0);
+					final int repositoryId;
+					if (o instanceof String) {
+						repositoryId = Integer.parseInt(o.toString());
+					} else if (o instanceof Integer) {
+						repositoryId = (Integer) o;
+					} else {
+						throw MVUtils.illegalArgument("Unknown argument was found (%s).", o);
 					}
-		}, auth);
+					runnable = new Runnable() {
+						@Override
+						public void run() {
+							doLogImportMain(repositoryId, auth);
+						}
+					};
+				} else {
+					final List<SvnRepository> list = svnRepositoryMapper.selectAll(orderBy, limitOffset);
+					runnable = new Runnable() {
+						@Override
+						public void run() {
+							for (final SvnRepository r : list) {
+								doLogImportMain(r.getId(), auth);
+							}
+						}
+					};
+				}
+				return executorService.wrapRunnableWithLock(OnlineBatchProgram.LOG_IMPORTER,
+						runnable, auth);
+			}
+		};
+		factory.setProgram(OnlineBatchProgram.LOG_IMPORTER);
+		return factory;
+	}
+	
+	public void doLogImportAsynchronously(final MVUserDetails auth) {
+		final OnlineBatchLock lock = executorService.getLastExecutionLock(OnlineBatchProgram.LOG_IMPORTER);
+		final Date nowBootDate = bootLogService.getSystemBootDate();
+		
+		logger.info("SVNログインポート（非同期）を開始");
+		logger.info("ロック状態： {}", lock.isLocked());
+		logger.info("ロック時システムブート日時： {}", lock.getSystemBootDate());
+		logger.info("現在時点システムブート日時： {}", nowBootDate);
+		
+		if (lock.isLocked() && lock.getSystemBootDate().compareTo(nowBootDate) >= 0) {
+			logger.info("SVNログインポート（非同期）を中止");
+			return;
+		}
+		final Date lastExecDate = lock.getLastUnlockDate();
+		final Calendar cal = Calendar.getInstance();
+		cal.setTime(new Date());
+		cal.add(Calendar.MINUTE, -60);
+		final Date xMinutesBefore = cal.getTime();
+
+		logger.info("最終バッチ実行日時： {}", lastExecDate);
+		logger.info("バッチ起動閾値日時： {}", xMinutesBefore);
+
+		if (lastExecDate.compareTo(xMinutesBefore) > 0) {
+			logger.info("SVNログインポート（非同期）を中止");
+			return;
+		}
+		
+		final OrderByClause orderBy = OrderByClause.noParticularOrder();
+		final LimitOffsetClause limitOffset = LimitOffsetClause.ALL;
+		final List<SvnRepository> list = svnRepositoryMapper.selectAll(orderBy, limitOffset);
+		final Runnable runnable = new Runnable() {
+			@Override
+			public void run() {
+				logger.info("対象リポジトリ数： {}", list.size());
+				for (final SvnRepository r : list) {
+					logger.info("対象リポジトリ： {}({})", r.getName(), r.getId());
+					try {
+						doLogImportMain(r.getId(), auth);
+					} catch (final Exception e) {
+						logger.info("処理中の例外スロー： {}", r.getName(), r.getId(), e);
+					}
+				}
+				logger.info("SVNログインポート（非同期）を終了");
+			}
+		};
+		new Thread(executorService.
+				wrapRunnableWithLock(OnlineBatchProgram.LOG_IMPORTER,
+				runnable, auth))
+		.start();
 	}
 	
 	public void doLogImportMain(int repositoryId, final MVUserDetails auth) {

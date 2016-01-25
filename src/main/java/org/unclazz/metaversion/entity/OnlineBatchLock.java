@@ -8,6 +8,7 @@ public class OnlineBatchLock {
 	private boolean locked;
 	private Date lastLockDate;
 	private Date lastUnlockDate;
+	private Date systemBootDate;
 	public final int getId() {
 		return id;
 	}
@@ -37,5 +38,11 @@ public class OnlineBatchLock {
 	}
 	public final void setLastUnlockDate(Date lastUnlockDate) {
 		this.lastUnlockDate = lastUnlockDate;
+	}
+	public Date getSystemBootDate() {
+		return systemBootDate;
+	}
+	public void setSystemBootDate(Date systemBootDate) {
+		this.systemBootDate = systemBootDate;
 	}
 }

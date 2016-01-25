@@ -1,6 +1,10 @@
 package org.unclazz.metaversion.service;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,11 +21,52 @@ import org.unclazz.metaversion.entity.OnlineBatchStatus;
 import org.unclazz.metaversion.mapper.OnlineBatchErrorMapper;
 import org.unclazz.metaversion.mapper.OnlineBatchLockMapper;
 import org.unclazz.metaversion.mapper.OnlineBatchLogMapper;
+import org.unclazz.metaversion.vo.BatchResult;
 
 @Service
 public class BatchExecutorService {
-	public static interface Executable {
-		void execute();
+	public static interface OnlineBatchRunnable extends Runnable {
+		void run();
+		OnlineBatchProgram getProgram();
+	}
+	public static interface OnlineBatchRunnableFactory {
+		void setProgram(OnlineBatchProgram program);
+		void setArguments(Object... args);
+		void setArguments(Collection<Object> args);
+		void setUserDetails(MVUserDetails auth);
+		OnlineBatchRunnable create();
+	}
+	public static abstract class OnlineBatchRunnableFactorySupport 
+	implements OnlineBatchRunnableFactory {
+		private OnlineBatchProgram program;
+		private final List<Object> args = new ArrayList<Object>();
+		private MVUserDetails auth;
+		@Override
+		public void setProgram(final OnlineBatchProgram program) {
+			this.program = program;
+		}
+		protected OnlineBatchProgram getProgram() {
+			return program;
+		}
+		@Override
+		public void setArguments(final Object... args) {
+			setArguments(Arrays.asList(args));
+		}
+		@Override
+		public void setArguments(final Collection<Object> args) {
+			this.args.clear();
+			this.args.addAll(args);
+		}
+		protected List<Object> getArguments() {
+			return args;
+		}
+		@Override
+		public void setUserDetails(final MVUserDetails auth) {
+			this.auth = auth;
+		}
+		protected MVUserDetails getUserDetails() {
+			return auth;
+		}
 	}
 	
 	public static final class ProccessIsAlreadyRunning extends RuntimeException {
@@ -56,8 +101,33 @@ public class BatchExecutorService {
 	private OnlineBatchLogMapper onlineBatchLogMapper;
 	@Autowired
 	private OnlineBatchErrorMapper onlineBatchErrorMapper;
+
+	public OnlineBatchLock getLastExecutionLock(final OnlineBatchProgram p) {
+		return onlineBatchLockMapper.selectOneByProgramId(p.getId());
+	}
 	
-	public void execute(final OnlineBatchProgram program, final Executable executable, final MVUserDetails auth) {
+	public BatchResult executeAsynchronously(final OnlineBatchRunnable runnable) {
+		new Thread(runnable).start();
+		return BatchResult.ofNowStarting(runnable.getProgram());
+	}
+	
+	public OnlineBatchRunnable wrapRunnableWithLock(final OnlineBatchProgram program, 
+			final Runnable runnable, final MVUserDetails auth) {
+		return new OnlineBatchRunnable() {
+			@Override
+			public void run() {
+				execute(program, runnable, auth);
+			}
+			@Override
+			public OnlineBatchProgram getProgram() {
+				return program;
+			}
+		};
+	}
+	
+	private void execute(final OnlineBatchProgram program, 
+			final Runnable runnable, final MVUserDetails auth) {
+		
 		logger.debug("起動対象バッチ： {}", program.getProgramName());
 		logger.debug("ロック取得を試行");
 		
@@ -70,7 +140,7 @@ public class BatchExecutorService {
 			logger.debug("指定されたロジックを起動");
 			
 			// メイン処理
-			executable.execute();
+			runnable.run();
 			
 			logger.debug("ロジックが正常終了");
 			logger.debug("ロックを解放");
@@ -113,7 +183,7 @@ public class BatchExecutorService {
 		try {
 			// SELECT FOR UPDATE NOWAITを実行
 			lock = onlineBatchLockMapper.
-					selectOneForUpdateNowaitByProgramId(program.getId(), false, auth);
+					selectOneForLockByProgramId(program.getId());
 			// 結果値がnull（＝レコード0件）なら他のプロセスが起動中
 			if (lock == null) {
 				// 例外スローで処理を終える

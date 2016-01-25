@@ -42,6 +42,8 @@ public class MasterService {
 	private MVProperties props;
 	@Autowired
 	private PasswordEncoder encorder;
+	@Autowired
+	private SystemBootLogService bootLogService;
 	
 	/**
 	 * マスタデータを初期化する.
@@ -74,6 +76,7 @@ public class MasterService {
 			lock.setLastUnlockDate(new Date());
 			lock.setLocked(false);
 			lock.setProgramId(value.getId());
+			lock.setSystemBootDate(bootLogService.getSystemBootDate());
 		}
 		for (final OnlineBatchStatus value : OnlineBatchStatus.values()) {
 			onlineBatchStatusMapper.insert(value);
