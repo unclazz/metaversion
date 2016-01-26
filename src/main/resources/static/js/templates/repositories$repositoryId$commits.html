@@ -74,6 +74,7 @@
 							<td>
 								<div class="btn-group btn-group-xs" role="group">
 									<a class="btn btn-default" href="#" ng-href="#/repositories/{{repository.id}}/commits/{{item.id}}" role="button">コミット詳細</a>
+									<a class="btn btn-default" href="#" ng-href="#/repositories/{{repository.id}}/commits/{{item.id}}/changedpaths" role="button" ng-disabled="item.pathCount == 0">変更パス一覧</a>
 								</div>
 							</td>
 						</tr>
