@@ -2,6 +2,9 @@
 body {
 	padding-top: 70px;
 }
+.navbar-brand-icon {
+	padding-top: 8px;
+}
 .pagination {
 	margin-top: 0px;
 	margin-bottom: 0px;
@@ -18,8 +21,10 @@ body {
 	width: 600px;
 	margin: 80px auto;
 }
-.panel-login .panel-heading h1 {
-	background: url(../img/logo_40x70.png) no-repeat;
+.panel-login .panel-heading {
+	background: url(../img/logo_48x48.png) 32px center no-repeat;
+}
+.panel-login .panel-heading {
 	text-indent: 80px;
 }
 .entity-attribute {
