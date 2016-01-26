@@ -20,20 +20,37 @@
 		</header>
 
 		<article>
-			<form method="post" ng-submit="submit()">
+			<form method="post" name="projectForm" ng-submit="submit()">
 				<div class="panel panel-default">
 					<div class="panel-heading">
 						プロジェクト情報
 					</div>
 					<table class="table">
-						<tr><th>名前</th>
-						<td><input type="text" class="form-control" required="required" ng-model="project.name" /></td></tr>
-						<tr><th>コード</th>
-						<td><input type="text" class="form-control" required="required" ng-model="project.code" /></td></tr>
-						<tr><th>担当者</th>
-						<td><input type="text" class="form-control" required="required" ng-model="project.responsiblePerson" /></td></tr>
-						<tr><th>コミット・サイン</th>
-						<td><input type="text" class="form-control" required="required" ng-model="project.commitSignPattern" /></td></tr>
+						<tr>
+							<th>名前</th>
+							<td style="width: 75%;"><input type="text" class="form-control" required="required" 
+							ng-model="project.name" /></td>
+						</tr>
+						<tr>
+							<th>コード</th>
+							<td><input type="text" class="form-control" required="required" 
+							ng-model="project.code" /></td>
+						</tr>
+						<tr>
+							<th>担当者</th>
+							<td><input type="text" class="form-control" required="required" 
+							ng-model="project.responsiblePerson" /></td>
+						</tr>
+						<tr>
+							<th>コミット・サイン</th>
+							<td><input type="text" name="commitSignPattern" class="form-control" required="required" 
+							ng-model="project.commitSignPattern" regex-validate="regex-validate" />
+							<span ng-show="projectForm.commitSignPattern.$error.regex">
+								<span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+								正規表現パターンに構文エラーがあります.
+							</span>
+							</td>
+						</tr>
 					</table>
 					<div class="panel-body">
 						<div class="row">
@@ -43,7 +60,7 @@
 							</div><!-- /.col-lg-N -->
 							<div class="col-lg-2" style="text-align: right;">
 								<a class="btn btn-default" role="button" href="#" ng-href="#/projects/{{project.id}}">キャンセル</a>
-								<button class="btn btn-primary" type="submit">OK</button>
+								<button class="btn btn-primary" type="submit" ng-disabled="projectForm.$invalid">OK</button>
 							</div><!-- /.col-lg-N -->
 						</div><!-- /.row -->
 					</div>

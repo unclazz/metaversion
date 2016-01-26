@@ -20,20 +20,34 @@
 		</header>
 
 		<article>
-			<form method="post" ng-submit="submit()">
+			<form method="post" name="repositoryForm" ng-submit="submit()">
 				<div class="panel panel-default">
 					<div class="panel-heading">
 						リポジトリ情報
 					</div>
 					<table class="table">
 						<tr><th>名前</th>
-						<td><input type="text" class="form-control" required="required" ng-model="repository.name" /></td></tr>
+						<td style="width: 75%;"><input type="text" class="form-control" required="required" ng-model="repository.name" /></td></tr>
 						<tr><th>ベースURL</th>
 						<td><input type="text" class="form-control" required="required" ng-model="repository.baseUrl" /></td></tr>
 						<tr><th>trunkパス・パターン</th>
-						<td><input type="text" class="form-control" required="required" ng-model="repository.trunkPathPattern" /></td></tr>
+						<td>
+							<input type="text" name="trunkPathPattern" class="form-control" required="required" 
+							ng-model="repository.trunkPathPattern"  regex-validate="regex-validate" />
+							<span ng-show="repositoryForm.trunkPathPattern.$error.regex">
+								<span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+								正規表現パターンに構文エラーがあります.
+							</span>
+						</td></tr>
 						<tr><th>branchパス・パターン</th>
-						<td><input type="text" class="form-control" required="required" ng-model="repository.branchPathPattern" /></td></tr>
+						<td>
+							<input type="text" name="branchPathPattern" class="form-control" required="required" 
+							ng-model="repository.branchPathPattern" regex-validate="regex-validate" />
+							<span ng-show="repositoryForm.branchPathPattern.$error.regex">
+								<span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+								正規表現パターンに構文エラーがあります.
+							</span>
+						</td></tr>
 						<tr><th>接続ユーザ名</th>
 						<td><input type="text" class="form-control" ng-model="repository.username" /></td></tr>
 						<tr><th>接続ユーザ・パスワード</th>
@@ -47,7 +61,7 @@
 							</div><!-- /.col-lg-N -->
 							<div class="col-lg-2" style="text-align: right;">
 								<a class="btn btn-default" role="button" href="#" ng-href="#/repositories/{{repository.id}}">キャンセル</a>
-								<button class="btn btn-primary" type="submit">OK</button>
+								<button class="btn btn-primary" type="submit" ng-disabled="repositoryForm.$invalid">OK</button>
 							</div><!-- /.col-lg-N -->
 						</div><!-- /.row -->
 					</div>

@@ -19,16 +19,22 @@
 		</header>
 
 		<article>
-			<form method="post" ng-submit="submit()">
+			<form method="post" name="userForm" ng-submit="submit()">
 				<div class="panel panel-default">
 					<div class="panel-heading">
 						ユーザ情報
 					</div>
 					<table class="table">
 						<tr><th>ユーザ名</th>
-						<td><input type="text" class="form-control" required="required" placeholder="ユーザ名" ng-model="user.name" /></td></tr>
+						<td style="width: 75%;"><input type="text" class="form-control" required="required" placeholder="ユーザ名" ng-model="user.name" /></td></tr>
 						<tr><th>パスワード</th>
-						<td><input type="password" class="form-control" required="required" placeholder="パスワード" ng-model="user.password" /></td></tr>
+						<td><input type="password" name="password" class="form-control" required="required"  ng-minlength="8"
+						placeholder="パスワード" ng-model="user.password" />
+							<span ng-show="userForm.password.$error.minlength">
+								<span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+								パスワードには8文字以上を指定してください.
+							</span>
+						</td></tr>
 						<tr><th>管理者権限</th>
 						<td><input type="checkbox" ng-model="user.admin" /></td></tr>
 					</table>
@@ -40,7 +46,7 @@
 							</div><!-- /.col-lg-N -->
 							<div class="col-lg-2" style="text-align: right;">
 								<a class="btn btn-default" role="button" href="#" ng-href="#/users">キャンセル</a>
-								<button class="btn btn-primary" type="submit">OK</button>
+								<button class="btn btn-primary" type="submit" ng-disabled="userForm.$invalid">OK</button>
 							</div><!-- /.col-lg-N -->
 						</div><!-- /.row -->
 					</div>

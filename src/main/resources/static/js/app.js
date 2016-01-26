@@ -17,6 +17,41 @@
 			}
 		};
 	})
+	.directive('regexValidate', function() {
+		return {
+			require: 'ngModel',
+			link: function(scope, elm, attrs, ctrl) {
+				ctrl.$parsers.push(function(viewValue) {
+					try {
+						var re = new RegExp(viewValue);
+						ctrl.$setValidity('regex', true);
+						return re.source;
+					} catch (e) {
+						ctrl.$setValidity('regex', false);
+						return undefined;
+					}
+				});
+			}
+		};
+	})
+	.directive('userPasswordValidate', function() {
+		return {
+			require: 'ngModel',
+			link: function(scope, elm, attrs, ctrl) {
+				ctrl.$parsers.push(function(viewValue) {
+					console.log("> " + viewValue);
+					var len = viewValue.length;
+					if (len == 0 || len >= 8) {
+						ctrl.$setValidity('userPassword', true);
+						return viewValue;
+					} else {
+						ctrl.$setValidity('userPassword', false);
+						return undefined;
+					}
+				});
+			}
+		};
+	})
 	.factory('modals', function($log, $uibModal, $location) {
 		var errorModal = function(error) {
 			var modalInstance = $uibModal.open({
