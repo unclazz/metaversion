@@ -28,8 +28,12 @@
 						<tr>
 							<th>ユーザ名</th>
 							<td style="width: 75%;">
-								<input type="text" class="form-control" required="required" 
-								placeholder="ユーザ名" ng-model="user.name" />
+								<input type="text" name="username" class="form-control" placeholder="ユーザ名" 
+								required="required" ng-minlength="8" ng-model="user.name" />
+								<span ng-show="userForm.username.$error.minlength">
+									<span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+									ユーザ名には8文字以上を指定してください.
+								</span>
 							</td>
 						</tr>
 						<tr>
