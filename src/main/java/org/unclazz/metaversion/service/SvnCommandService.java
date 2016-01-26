@@ -29,6 +29,9 @@ import org.unclazz.metaversion.entity.SvnRepository;
 import org.unclazz.metaversion.vo.RevisionRange;
 import org.unclazz.metaversion.vo.SvnRepositoryInfo;
 
+/**
+ * SVNコマンドを実行してリポジトリから各種情報を取得するサービス.
+ */
 @Service
 public class SvnCommandService {
 	private Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -91,6 +94,36 @@ public class SvnCommandService {
 		}
 	}
 	
+	/**
+	 * {@link #getRepositoryInfo(SvnRepository)}を実行する.
+	 * 失敗した場合も第2引数で指定された回数だけリトライを行ってリカバリを試みる。
+	 * 例えばリトライ回数に{@value 3}を指定した場合は初回の実行後、最大3回までリトライを行う。
+	 * それでも失敗となった場合は最後の処理でスローされた例外を再スローする。
+	 * 
+	 * @param repository リポジトリ情報
+	 * @param retry リトライ回数
+	 * @return {@code svn info <url>}コマンド実行結果
+	 * @throws SvnOperationFailed SVNリポジトリアクセス中に何らかのエラーが発生した場合
+	 */
+	public SvnRepositoryInfo getRepositoryInfo(final SvnRepository repository, final int retry) {
+		MVUtils.argsMustBeGreaterThanOrEqual0("Number of restry", retry);
+		try {
+			return getRepositoryInfo(repository);
+		} catch (final SvnOperationFailed e) {
+			if (retry > 0) {
+				return getRepositoryInfo(repository, retry - 1);
+			}
+			throw e;
+		}
+	}
+	
+	/**
+	 * 指定されたリポジトリの指定されたベースパスに対する初期コミットのリビジョン番号を返す.
+	 * 
+	 * @param repository リポジトリ情報
+	 * @return 初期コミットのリビジョン番号
+	 * @throws SvnOperationFailed SVNリポジトリアクセス中に何らかのエラーが発生した場合
+	 */
 	public int getFirstRevision(final SvnRepository repository) {
 		// svn logコマンド用のクライアントを初期化
 		final SVNClientManager manager = getSVNClientManager(repository);
@@ -126,13 +159,36 @@ public class SvnCommandService {
 	}
 	
 	/**
+	 * {@link #getFirstRevision(SvnRepository)}を実行する.
+	 * 失敗した場合も第2引数で指定された回数だけリトライを行ってリカバリを試みる。
+	 * 例えばリトライ回数に{@value 3}を指定した場合は初回の実行後、最大3回までリトライを行う。
+	 * それでも失敗となった場合は最後の処理でスローされた例外を再スローする。
+	 * 
+	 * @param repository リポジトリ情報
+	 * @param retry リトライ回数
+	 * @return 初期コミットのリビジョン番号
+	 * @throws SvnOperationFailed SVNリポジトリアクセス中に何らかのエラーが発生した場合
+	 */
+	public int getFirstRevision(final SvnRepository repository, final int retry) {
+		MVUtils.argsMustBeGreaterThanOrEqual0("Number of restry", retry);
+		try {
+			return getFirstRevision(repository);
+		} catch (final SvnOperationFailed e) {
+			if (retry > 0) {
+				return getFirstRevision(repository, retry - 1);
+			}
+			throw e;
+		}
+	}
+	
+	/**
 	 * {@code svn log -r <start>:<end> -v <url>}コマンドを実行して得られたコミット情報を返す.
 	 * メソッドの処理時間は、接続先のSVNサーバの応答時間とSVNKitのAPIの処理時間の合算値となり、
 	 * 500リビジョン分の処理に10秒前後かかることがある。
 	 * @param repository リポジトリ情報
-	 * @param startRevision 開始リビジョン
-	 * @param endRevision 終了リビジョン
+	 * @param range 開始終了リビジョン
 	 * @return コミットとコミットで変更されたリソースの情報
+	 * @throws SvnOperationFailed SVNリポジトリアクセス中に何らかのエラーが発生した場合
 	 */
 	public List<SvnCommitAndItsPathList> getCommitAndItsPathList(final SvnRepository repository,
 			final RevisionRange range) {
@@ -199,6 +255,31 @@ public class SvnCommandService {
 			}
 			// SVNKitのAPIから例外がスローされた場合はラップして再スローする
 			throw new SvnOperationFailed("'svn log' command failed.", e);
+		}
+	}
+	
+	/**
+	 * {@link #getCommitAndItsPathList(SvnRepository, RevisionRange)}を実行する.
+	 * 失敗した場合も第3引数で指定された回数だけリトライを行ってリカバリを試みる。
+	 * 例えばリトライ回数に{@value 3}を指定した場合は初回の実行後、最大3回までリトライを行う。
+	 * それでも失敗となった場合は最後の処理でスローされた例外を再スローする。
+	 * 
+	 * @param repository リポジトリ情報
+	 * @param range 開始終了リビジョン
+	 * @param retry リトライ回数
+	 * @return コミットとコミットで変更されたリソースの情報
+	 * @throws SvnOperationFailed SVNリポジトリアクセス中に何らかのエラーが発生した場合
+	 */
+	public List<SvnCommitAndItsPathList> getCommitAndItsPathList(final SvnRepository repository,
+			final RevisionRange range, final int retry) {
+		MVUtils.argsMustBeGreaterThanOrEqual0("Number of restry", retry);
+		try {
+			return getCommitAndItsPathList(repository, range);
+		} catch (final SvnOperationFailed e) {
+			if (retry > 0) {
+				return getCommitAndItsPathList(repository, range, retry - 1);
+			}
+			throw e;
 		}
 	}
 }

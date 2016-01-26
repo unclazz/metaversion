@@ -107,7 +107,7 @@ public class LogImporterService {
 		
 		// SVNリポジトリ側のルートURLと最新リビジョンを取得
 		// ＊数秒を要する可能性あり
-		final SvnRepositoryInfo svnInfo = svnService.getRepositoryInfo(repository);
+		final SvnRepositoryInfo svnInfo = svnService.getRepositoryInfo(repository, 2);
 		final SvnRepositoryPathInfo svnRepositoryPathInfo = SvnRepositoryPathInfo.composedOf(svnInfo, repository);
 		
 		// インポート済みのリビジョン番号とSVNリポジトリ本体の最新リビジョン番号を比較
@@ -117,7 +117,7 @@ public class LogImporterService {
 		}
 		
 		// ベースパス配下のSVNにおける最初（最古）のリビジョンを取得
-		final int firstRevision = svnService.getFirstRevision(repository);
+		final int firstRevision = svnService.getFirstRevision(repository, 2);
 		// 開始リビジョンの決定
 		// ＊無駄を避けるためインポート済み番号よりも最初（最古）のリビジョンが大きい場合は後者を採用する
 		final int startRevision = (firstRevision > maxRevision ? firstRevision : maxRevision) + 1;
@@ -146,7 +146,7 @@ public class LogImporterService {
 		
 		// SVNKitを通じsvn log -r <start>:<end> -v <url>コマンド実行
 		final List<SvnCommitAndItsPathList> commitAndPathListList = svnService.
-				getCommitAndItsPathList(repository, range);
+				getCommitAndItsPathList(repository, range, 2);
 		
 		// svn logエントリ中の最大リビジョン
 		final MaxRevision maxRevision = MaxRevision.startsWith(range.getStart());

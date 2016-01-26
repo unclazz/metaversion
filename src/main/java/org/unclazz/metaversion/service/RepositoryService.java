@@ -45,7 +45,7 @@ public class RepositoryService {
 	}
 	
 	public void registerRepository(final SvnRepository repository, final MVUserDetails auth) {
-		final int firstRevision = svnService.getFirstRevision(repository);
+		final int firstRevision = svnService.getFirstRevision(repository, 2);
 		if (repository.getMaxRevision() < firstRevision) {
 			repository.setMaxRevision(firstRevision);
 		}

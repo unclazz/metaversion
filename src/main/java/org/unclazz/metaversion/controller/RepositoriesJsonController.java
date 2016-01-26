@@ -203,7 +203,7 @@ public class RepositoriesJsonController {
 	private void checkConnectivity(final SvnRepository r) {
 		try {
 			logger.debug("リポジトリ接続を試行");
-			final SvnRepositoryInfo info = svnCommandService.getRepositoryInfo(r);
+			final SvnRepositoryInfo info = svnCommandService.getRepositoryInfo(r, 2);
 			logger.debug("リポジトリ接続 結果OK");
 			logger.debug("ルートURL： {}", info.getRootUrl());
 			logger.debug("UUID： {}", info.getUuid());
