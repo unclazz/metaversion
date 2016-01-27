@@ -77,6 +77,7 @@ public class MasterService {
 			lock.setLocked(false);
 			lock.setProgramId(value.getId());
 			lock.setSystemBootDate(bootLogService.getSystemBootDate());
+			onlineBatchLockMapper.insert(lock);
 		}
 		for (final OnlineBatchStatus value : OnlineBatchStatus.values()) {
 			onlineBatchStatusMapper.insert(value);
