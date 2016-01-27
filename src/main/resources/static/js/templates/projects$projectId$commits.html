@@ -20,6 +20,21 @@
 		</header>
 
 		<article>
+			<div class="panel panel-warning" ng-show="list.length === 0">
+				<div class="panel-heading">
+					コミット一覧
+				</div>
+				<div class="panel-body">
+					<div class="row">
+						<div class="col-lg-6">
+							コミットが1件も見つかりませんでした。
+						</div>
+						<div class="col-lg-6">
+							<!-- empty -->
+						</div>
+					</div>
+				</div>
+			</div>
 			<div class="panel panel-default" ng-show="list.length > 0">
 				<div class="panel-heading">
 					コミット一覧
