@@ -121,6 +121,20 @@ CREATE TABLE online_batch_lock (
 ALTER TABLE online_batch_lock OWNER TO postgres;
 
 --
+-- Name: online_batch_lock_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE online_batch_lock_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE online_batch_lock_seq OWNER TO postgres;
+
+--
 -- Name: online_batch_log; Type: TABLE; Schema: public; Owner: postgres
 --
 
