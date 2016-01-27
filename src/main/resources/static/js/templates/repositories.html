@@ -17,8 +17,32 @@
 			<h1>リポジトリ一覧</h1>
 		</header>
 
-		<article ng-show="list.length > 0">
-			<div class="panel panel-default">
+		<article>
+			<div class="panel panel-warning" ng-show="list.length === 0">
+				<div class="panel-heading">
+					リポジトリ一覧
+				</div>
+				<div class="panel-body">
+					<div class="row">
+						<div class="col-lg-6">
+							リポジトリが1件も見つかりませんでした。
+						</div>
+						<div class="col-lg-3">
+							<!-- empty -->
+						</div>
+						<div class="col-lg-2">
+							<!-- empty -->
+						</div>
+						<div class="col-lg-1">
+							<a class="btn btn-default" href="#/repositories/new">追加</a>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="panel panel-default" ng-show="list.length > 0">
+				<div class="panel-heading">
+					リポジトリ一覧
+				</div>
 				<div class="panel-body">
 					<div class="row">
 						<div class="col-lg-3">

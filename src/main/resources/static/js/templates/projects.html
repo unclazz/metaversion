@@ -61,8 +61,29 @@
 			</form>
 		</article>
 
-		<article ng-show="list.length > 0">
-			<div class="panel panel-default">
+		<article>
+			<div class="panel panel-warning" ng-show="list.length === 0">
+				<div class="panel-heading">
+					検索結果一覧
+				</div>
+				<div class="panel-body">
+					<div class="row">
+						<div class="col-lg-6">
+							プロジェクトが1件も見つかりませんでした。
+						</div>
+						<div class="col-lg-3">
+							<!-- empty -->
+						</div>
+						<div class="col-lg-2">
+							<!-- empty -->
+						</div>
+						<div class="col-lg-1">
+							<a class="btn btn-default" href="#" ng-href="#/projects/new">追加</a>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="panel panel-default" ng-show="list.length > 0">
 				<div class="panel-heading">
 					検索結果一覧
 				</div>
