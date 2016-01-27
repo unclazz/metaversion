@@ -82,6 +82,8 @@ public final class RevisionRange implements Iterable<Integer> {
 					throw new NoSuchElementException();
 				}
 			}
+			@Override
+			public void remove() {}
 		};
 	}
 }
