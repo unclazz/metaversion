@@ -48,6 +48,9 @@ public final class MVUtils {
 	public static IllegalArgumentException illegalArgument(String format, Object... args) {
 		return new IllegalArgumentException(String.format(format, args));
 	}
+	public static RuntimeException unexpectedResult(Throwable cause, String format, Object... args) {
+		return new RuntimeException(String.format(format, args), cause);
+	}
 	public static RuntimeException unexpectedResult(String format, Object... args) {
 		return new RuntimeException(String.format(format, args));
 	}

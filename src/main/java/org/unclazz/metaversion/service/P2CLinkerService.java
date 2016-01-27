@@ -9,6 +9,7 @@ import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.unclazz.metaversion.MVUserDetails;
@@ -131,13 +132,15 @@ public class P2CLinkerService {
 	}
 	
 	public void registerCommitLink(final ProjectSvnCommit projectSvnCommit, final MVUserDetails auth) {
-		if (projectSvnCommitMapper.selectCountByProjectIdAndCommitId
-			(projectSvnCommit.getProjectId(), projectSvnCommit.getCommitId()) > 0) {
+		try {
+			projectSvnCommitMapper.insert(projectSvnCommit, auth);
+		} catch (final DuplicateKeyException e) {
+			logger.info("プロジェクト（ID={}）とコミット（ID={}）は紐付け済み", 
+					projectSvnCommit.getProjectId(), projectSvnCommit.getCommitId());
 			return;
 		}
-		if (projectSvnCommitMapper.insert(projectSvnCommit, auth) != 1) {
-			
-			throw MVUtils.unexpectedResult("Unexpected error has occurred while "
+		catch (final RuntimeException e) {
+			throw MVUtils.unexpectedResult(e, "Unexpected error has occurred while "
 					+ "linking between a project(id=%s) and a commit(id=%s). ",
 					projectSvnCommit.getProjectId(), projectSvnCommit.getCommitId());
 		}
@@ -145,7 +148,6 @@ public class P2CLinkerService {
 	
 	public void removeCommitLink(final ProjectSvnCommit projectSvnCommit, final MVUserDetails auth) {
 		if (projectSvnCommitMapper.delete(projectSvnCommit) != 1) {
-			
 			throw MVUtils.unexpectedResult("Unexpected error has occurred while "
 					+ "unlinking between a project(id=%s) and a commit(id=%s). ",
 					projectSvnCommit.getProjectId(), projectSvnCommit.getCommitId());
