@@ -7,7 +7,7 @@
 			if (len === undefined) {
 				len = 100;
 			}
-			if(text !== undefined) {
+			if(text !== null && text !== undefined) {
 				if(text.length > len) {
 				return text.substring(0, len - 3) + '...';
 				}
