@@ -97,7 +97,7 @@
 		FROM project p
 		WHERE 0 = 0
 		<if test="like.length() &gt; 0">
-		AND p.id IN ("
+		AND p.id IN (
 				SELECT pc.project_id
 				FROM project_svn_commit pc
 				INNER JOIN svn_commit_path cp
@@ -120,7 +120,7 @@
 			FROM project p
 			WHERE 0 = 0
 			<if test="like.length() &gt; 0">
-			AND p.id IN ("
+			AND p.id IN (
 					SELECT pc.project_id
 					FROM project_svn_commit pc
 					INNER JOIN svn_commit_path cp
