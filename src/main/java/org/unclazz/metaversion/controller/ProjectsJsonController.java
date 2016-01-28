@@ -28,6 +28,7 @@ import org.unclazz.metaversion.service.ProjectParallelsService;
 import org.unclazz.metaversion.service.ProjectService;
 import org.unclazz.metaversion.vo.Paginated;
 import org.unclazz.metaversion.vo.Paging;
+import org.unclazz.metaversion.vo.ProjectCommitSearchCondition;
 import org.unclazz.metaversion.vo.ProjectSearchCondition;
 
 import static org.unclazz.metaversion.MVUtils.*;
@@ -161,17 +162,21 @@ public class ProjectsJsonController {
 	}
 	
 	/**
-	 * IDで指定されたプロジェクトに紐付けられたコミット情報の一覧を返す.
+	 * IDで指定されたプロジェクトに紐付けられたコミット情報もしくは紐付けられていないコミット情報の一覧を返す.
+	 * 紐付け有無やページングの条件は第2引数の{@link ProjectCommitSearchCondition}を通じて設定する。
 	 * 
 	 * @param principal 認証情報
 	 * @param projectId ID
-	 * @param paging リクエストパラメータ{@code page}と{@code size}の情報を格納したオブジェクト
+	 * @param cond 検索条件
 	 * @return コミット情報の一覧
 	 */
 	@RequestMapping(value="/projects/{projectId}/commits", method=RequestMethod.GET)
 	public Paginated<SvnCommitWithRepositoryInfo> getProjectsCommits(final Principal principal,
-			@PathVariable("projectId") final int projectId, @ModelAttribute final Paging paging) {
-		return commitService.getCommitListByProjectId(projectId, paging);
+			@PathVariable("projectId") final int projectId,
+			@ModelAttribute final ProjectCommitSearchCondition cond) {
+		
+		cond.setProjectId(projectId);
+		return commitService.getCommitListByCondition(cond);
 	}
 
 	@RequestMapping(value="/projects/{projectId}/commits/{commitId}", method=RequestMethod.GET)

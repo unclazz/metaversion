@@ -4,19 +4,19 @@
 	<meta charset="utf-8" />
 </head>
 <body>
-	<div class="container" ng-controller="prjects$projectId$commits">
+	<div class="container" ng-controller="prjects$projectId$commits$link">
 		<nav>
 			<ol class="breadcrumb">
 				  <li><a href="#" ng-href="#/">
 				  <span class="glyphicon glyphicon-home" aria-hidden="true"></span> トップ</a></li>
 				  <li><a href="#" ng-href="#/projects">プロジェクト一覧</a></li>
 				  <li><a href="#" ng-href="#/projects/{{project.id}}">プロジェクト詳細</a></li>
-				  <li class="active">{{makeTitle('プロジェクト・コミット一覧')}}</li>
+				  <li class="active">{{makeTitle('コミット紐付け')}}</li>
 			</ol>
 		</nav>
 
 		<header class="page-header">
-			<h1><span class="entity-attribute">{{project.name}}</span> のコミット一覧</h1>
+			<h1><span class="entity-attribute">{{project.name}}</span> のコミット紐付け</h1>
 		</header>
 
 		<article>
@@ -38,7 +38,7 @@
 								</td>
 							</tr>
 							<tr>
-								<th>プロジェクト名</th>
+								<th>キーワード</th>
 								<td>
 									<input type="text"
 										class="form-control"
@@ -46,7 +46,7 @@
 										autocomplete="off"
 										placeholder="キーワードを入力してください"
 										ng-model="cond.like"
-										uib-typeahead="name for name in pathNames($viewValue)"
+										uib-typeahead="name for name in projectOrPathNames($viewValue)"
 										typeahead-min-length="3"
 										typeahead-focus-first="false" />
 								</td>
@@ -54,6 +54,7 @@
 							<tr>
 								<td></td>
 								<td>
+									<input type="hidden" name="unlinked" value="true" />
 									<button class="btn btn-primary" type="submit" ng-disabled="thisForm.$invalid">検索</button>
 								</td>
 							</tr>
@@ -124,9 +125,9 @@
 							<td>{{item.commitMessage | excerpt:50}}</td>
 							<td>
 								<div class="btn-group btn-group-xs" role="group">
-									<a class="btn btn-default" href="#" ng-href="#/repositories/{{item.repositoryId}}" role="button">リポジトリ詳細</a>
-									<a class="btn btn-default" href="#" ng-href="#/repositories/{{item.repositoryId}}/commits/{{item.id}}" role="button">コミット詳細</a>
-									<a class="btn btn-danger" href="#" ng-href="#/projects/{{project.id}}/commits/{{item.id}}/delete" role="button">紐付け解除</a>
+									<a class="btn btn-default" role="button" href="#" ng-href="#/repositories/{{item.repositoryId}}">リポジトリ詳細</a>
+									<a class="btn btn-default" role="button" href="#" ng-href="#/repositories/{{item.repositoryId}}/commits/{{item.id}}">コミット詳細</a>
+									<button type="button" class="btn btn-primary" ng-click="click($event)" data-commit-id="{{item.id}}">紐付け</button>
 								</div>
 							</td>
 						</tr>

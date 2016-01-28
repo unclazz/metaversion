@@ -140,6 +140,88 @@
 		ON c.id = pc.commit_id
 		WHERE pc.project_id = #{projectId} 
 	</select>
+	<select id="selectByProjectIdAndPartialMessage" resultType="SvnCommitWithRepositoryInfo">
+		SELECT c.id, 
+			c.repository_id repositoryId, 
+			c.commit_message commitMessage,
+			c.commit_date commitDate, 
+			c.committer_name committerName, 
+			c.revision,
+			r.name repositoryName, 
+			r.base_url repositoryBaseUrl
+		FROM svn_commit c
+		INNER JOIN svn_repository r
+		ON r.id = c.repository_id
+		WHERE 0 = 0
+		AND <if test="cond.unlinked">NOT</if> EXISTS (SELECT 1 
+			FROM project_svn_commit pc
+			WHERE c.id = pc.commit_id
+			AND pc.project_id = #{cond.projectId}
+		)
+		<if test="cond.like.length() &gt; 0">
+		AND c.commit_message like ('%' || #{cond.like} || '%')
+		</if>
+		${orderBy} ${limitOffset} 
+	</select>
+	<select id="selectCountByProjectIdAndPartialMessage" resultType="int">
+		SELECT count(1)
+		FROM svn_commit c
+		INNER JOIN project_svn_commit pc
+		ON c.id = pc.commit_id
+		WHERE 0 = 0
+		AND <if test="cond.unlinked">NOT</if> EXISTS (SELECT 1 
+			FROM project_svn_commit pc
+			WHERE c.id = pc.commit_id
+			AND pc.project_id = #{cond.projectId}
+		)
+		<if test="cond.like.length() &gt; 0">
+		AND c.commit_message like ('%' || #{cond.like} || '%')
+		</if>
+	</select>
+	<select id="selectByProjectIdAndPartialPath" resultType="SvnCommitWithRepositoryInfo">
+		SELECT c.id, 
+			c.repository_id repositoryId, 
+			c.commit_message commitMessage,
+			c.commit_date commitDate, 
+			c.committer_name committerName, 
+			c.revision,
+			r.name repositoryName, 
+			r.base_url repositoryBaseUrl
+		FROM svn_commit c
+		INNER JOIN svn_repository r
+		ON r.id = c.repository_id
+		WHERE 0 = 0
+		AND <if test="cond.unlinked">NOT</if> EXISTS (SELECT 1 
+			FROM project_svn_commit pc
+			<if test="cond.like.length() &gt; 0">
+			INNER JOIN svn_commit_path cp
+			ON pc.commit_id = cp.commit_id
+			</if>
+			WHERE c.id = pc.commit_id
+			AND pc.project_id = #{cond.projectId}
+			<if test="cond.like.length() &gt; 0">
+			AND cp.path like ('%' || #{cond.like} || '%')
+			</if>
+		)
+		${orderBy} ${limitOffset} 
+	</select>
+	<select id="selectCountByProjectIdAndPartialPath" resultType="int">
+		SELECT count(1)
+		FROM svn_commit c
+		WHERE 0 = 0
+		AND <if test="cond.unlinked">NOT</if> EXISTS (SELECT 1 
+			FROM project_svn_commit pc
+			<if test="cond.like.length() &gt; 0">
+			INNER JOIN svn_commit_path cp
+			ON pc.commit_id = cp.commit_id
+			</if>
+			WHERE c.id = pc.commit_id
+			AND pc.project_id = #{cond.projectId}
+			<if test="cond.like.length() &gt; 0">
+			AND cp.path like ('%' || #{cond.like} || '%')
+			</if>
+		)
+	</select>
 	<insert id="insert">
 		INSERT INTO svn_commit (id, 
 			repository_id, 

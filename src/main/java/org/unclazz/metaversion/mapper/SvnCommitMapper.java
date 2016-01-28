@@ -9,6 +9,7 @@ import org.unclazz.metaversion.entity.SvnCommitStats;
 import org.unclazz.metaversion.entity.SvnCommitWithRepositoryInfo;
 import org.unclazz.metaversion.vo.LimitOffsetClause;
 import org.unclazz.metaversion.vo.OrderByClause;
+import org.unclazz.metaversion.vo.ProjectCommitSearchCondition;
 
 public interface SvnCommitMapper {
 	/**
@@ -111,6 +112,20 @@ public interface SvnCommitMapper {
 	 * @return コミット情報の件数
 	 */
 	int selectCountByProjectId(@Param("projectId") int projectId);
+	
+	List<SvnCommitWithRepositoryInfo> selectByProjectIdAndPartialMessage(
+			@Param("cond") ProjectCommitSearchCondition cond,
+			@Param("orderBy") OrderByClause orderBy,
+			@Param("limitOffset") LimitOffsetClause limitOffset);
+	
+	int selectCountByProjectIdAndPartialMessage(@Param("cond") ProjectCommitSearchCondition cond);
+	
+	List<SvnCommitWithRepositoryInfo> selectByProjectIdAndPartialPath(
+			@Param("cond") ProjectCommitSearchCondition cond,
+			@Param("orderBy") OrderByClause orderBy,
+			@Param("limitOffset") LimitOffsetClause limitOffset);
+	
+	int selectCountByProjectIdAndPartialPath(@Param("cond") ProjectCommitSearchCondition cond);
 	/**
 	 * コミット情報をINSERTする.
 	 * IDはあらかじめシーケンスから採番した値で初期化されていることを前提とする。

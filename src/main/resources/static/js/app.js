@@ -246,6 +246,8 @@
 			templateUrl: 'js/templates/projects$projectId$edit.html'
 		}).when('/projects/:projectId', {
 			templateUrl: 'js/templates/projects$projectId.html'
+		}).when('/projects/:projectId/link', {
+			templateUrl: 'js/templates/projects$projectId$link.html'
 		}).when('/projects/:projectId/edit', {
 			templateUrl: 'js/templates/projects$projectId$edit.html'
 		}).when('/projects/:projectId/delete', {
@@ -372,8 +374,7 @@
 	.controller('projects', function($log, $scope, $location, entities, paths, modals) {
 		$scope.open = true;
 		// クエリ文字列をもとに検索条件を初期化
-		$scope.cond = paths.queryToObject({page: 1, pathbase: false, like: ''},
-				angular.noop, modals.errorModal);
+		$scope.cond = paths.queryToObject({page: 1, pathbase: false, like: ''});
 		// サジェスト用の関数を作成・設定
 		$scope.projectOrPathNames = function (partialName) {
 			if (partialName.length < 3) return;
@@ -455,12 +456,35 @@
 	})
 	// プロジェクトコミット一覧画面のためのコントローラ
 	.controller('prjects$projectId$commits', function($log, $scope, entities, paths, modals) {
+		// パスからID情報を取得
 		var ids = paths.pathToIds();
+		// プロジェクト情報を取得
 		$scope.project = entities.ProjectStats.get({id: ids.projectId},
 				angular.noop, modals.errorModal);
+		// 検索条件欄はデフォルトでは閉じておく
+		$scope.open = false;
 
 		// クエリ文字列をもとに検索条件を初期化
-		$scope.cond = angular.extend(paths.queryToObject({page: 1}), ids);
+		$scope.cond = angular.extend(paths.queryToObject({page: 1, pathbase: false, like: ''}), ids);
+		// サジェスト用の関数を作成・設定
+		$scope.pathNames = function (partialName) {
+			if (partialName.length < 3) return;
+			// 変更パス・ベースの検索かどうかをチェック
+			if ($scope.cond.pathbase) {
+				// 変更パス・ベースの検索の場合
+				// APIを通じて変更パス名を取得して返す
+				return entities.PathName.query({like: partialName},
+						angular.noop, modals.errorModal).$promise;
+			} else {
+				// そうでない場合
+				return [];
+			}
+		};
+		// 検索ボタンがクリックされたときにコールされる関数を作成・設定
+		$scope.submit = function() {
+			// プロジェクト一覧画面に遷移させる
+			paths.objectToQuery($scope.cond);
+		};
 		// ページ変更時にコールされる関数を作成・設定
 		$scope.pageChange = function() {
 			entities.ProjectCommit.query($scope.cond).$promise.then(function(paginated) {
@@ -468,6 +492,56 @@
 				$scope.size = paginated.size;
 				$scope.list = paginated.list;
 				if (paginated.page > 1) paths.entryToQuery('page', paginated.page);
+			}, modals.errorModal);
+		};
+		// 初期表示
+		$scope.pageChange();
+	})
+	// プロジェクトコミット一覧画面のためのコントローラ
+	.controller('prjects$projectId$commits$link', function($log, $scope, entities, paths, modals) {
+		// パスからID情報を取得
+		var ids = paths.pathToIds();
+		// プロジェクト情報を取得
+		$scope.project = entities.ProjectStats.get({id: ids.projectId}, angular.noop, modals.errorModal);
+		// 検索条件欄はデフォルトでは閉じておく
+		$scope.open = false;
+
+		// クエリ文字列をもとに検索条件を初期化
+		$scope.cond = angular.extend(paths.queryToObject({page: 1, pathbase: false, like: ''}), ids);
+		$scope.cond.unlinked = true;
+		// サジェスト用の関数を作成・設定
+		$scope.projectOrPathNames = function (partialName) {
+			if (partialName.length < 3) return;
+			// 変更パス・ベースの検索かどうかをチェック
+			if ($scope.cond.pathbase) {
+				// 変更パス・ベースの検索の場合
+				// APIを通じて変更パス名を取得して返す
+				return entities.PathName.query({like: partialName},
+						angular.noop, modals.errorModal).$promise;
+			} else {
+				// そうでない場合
+				return [];
+			}
+		};
+		// 検索ボタンがクリックされたときにコールされる関数を作成・設定
+		$scope.submit = function() {
+			// プロジェクト一覧画面に遷移させる
+			paths.objectToQuery($scope.cond);
+		};
+		// ページ変更時にコールされる関数を作成・設定
+		$scope.pageChange = function() {
+			entities.ProjectCommit.query($scope.cond).$promise.then(function(paginated) {
+				$scope.totalSize = paginated.totalSize;
+				$scope.size = paginated.size;
+				$scope.list = paginated.list;
+				if (paginated.page > 1) paths.entryToQuery('page', paginated.page);
+			}, modals.errorModal);
+		};
+		$scope.click = function($event) {
+			var commitId = angular.element($event.target).attr('data-commit-id');
+			var link = new entities.ProjectCommit({commitId: commitId, projectId: ids.projectId});
+			link.$save().then(function(data) {
+				$scope.pageChange();
 			}, modals.errorModal);
 		};
 		// 初期表示

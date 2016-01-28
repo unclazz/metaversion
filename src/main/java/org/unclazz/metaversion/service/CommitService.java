@@ -24,6 +24,7 @@ import org.unclazz.metaversion.vo.OrderByClause;
 import org.unclazz.metaversion.vo.OrderByClause.Order;
 import org.unclazz.metaversion.vo.Paginated;
 import org.unclazz.metaversion.vo.Paging;
+import org.unclazz.metaversion.vo.ProjectCommitSearchCondition;
 
 @Service
 public class CommitService {
@@ -77,7 +78,23 @@ public class CommitService {
 		return Paginated.of(paging, 
 				svnCommitMapper.selectByProjectId(projectId, orderBy, limitOffset),
 				svnCommitMapper.selectCountByProjectId(projectId));
-		
+	}
+	
+	public Paginated<SvnCommitWithRepositoryInfo> getCommitListByCondition(final ProjectCommitSearchCondition cond) {
+		final OrderByClause orderBy = OrderByClause.of("revision", Order.DESC);
+		final LimitOffsetClause limitOffset = LimitOffsetClause.of(cond.getPaging());
+
+		if (cond.isPathbase()) {
+			// コミット情報を検索する
+			return Paginated.of(cond.getPaging(), 
+					svnCommitMapper.selectByProjectIdAndPartialPath(cond, orderBy, limitOffset),
+					svnCommitMapper.selectCountByProjectIdAndPartialPath(cond));
+		} else {
+			// コミット情報を検索する
+			return Paginated.of(cond.getPaging(), 
+					svnCommitMapper.selectByProjectIdAndPartialMessage(cond, orderBy, limitOffset),
+					svnCommitMapper.selectCountByProjectIdAndPartialMessage(cond));
+		}
 	}
 	
 	public SvnCommitWithRepositoryInfo getCommitWithRepositoryInfoByCommitId(final int commitId) {
