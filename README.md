@@ -36,6 +36,39 @@ MetaVersionはJava EE環境で稼働するアプリケーションです。タ�
 JSONとJavaオブジェクトを相互変換するためのライブラリ`Jackson`、
 ORマッピングのためのフレームワーク`MyBatis`や SVNリポジトリ・アクセスのためのライブラリ`SVNKit`、
 HTMLテンプレート処理ライブラリ`Thymeleaf`やCSV加工処理ライブラリ`Apache Commons CSV`などを使用して構築されています。
+データベースにはPostgreSQLの`9.4`を利用しています。
 
 クライアントサイドは`AngularJS`の主要モジュールと`Bootstrap`のCSSを使用して構築されています。
+
+## どのようにしてセットアップするの？
+
+MetaVersionのセットアップにはJDKのバージョン`7`以上が必要になります。またコマンドラインで`mvn`が利用できること、PostgreSQLのバージョン`9.4`以上のDBクラスタ（DBインスタンス）に接続できる状態になっていることも前提になります。
+
+Githubからプロジェクトのリソース一式をダウンロードしたら、プロジェクトのルート・ディレクトリに移動します。
+`ext/ddl`ディレクトリ配下にアプリケーションが必要とするDBオブジェクトを作成するためのDDLが格納されています。
+これをPostgreSQL上のDBクラスタで実行して必要なテーブル、ビュー、シーケンス、索引を作成します。
+
+次に`src/resources/application.properties`に記載されたPostgreSQLの接続情報を適宜編集します：
+
+```
+spring.datasource.url=jdbc:postgresql://localhost:5432/metaversion
+spring.datasource.username=postgres
+spring.datasource.password=********
+```
+
+`mvn spring-boot:run`コマンドを実行します。これにより必要なライブラリのダウンロードが行われたあとでビルドが行われ、それが終わると組込み型の`Tomcat`が起動してアプリケーションがデプロイされます。
+
+独立して稼働しているTomcatにデプロイを行う場合は、`mvn package`コマンドを実行してください。同様にビルドが行われて、`target`ディレクトリ配下に`*.war`ファイルが作成されますので、これをTomcatの`webapps`ディレクトリにコピーします。
+
+ビルドとデプロイが終わったらWebブラウザから`http://localhost:8080/init`にアクセスしてください。独立型のTomcatにデプロイした場合は`http://localhost:8080/(*.warファイル名)/init`になります。このページを表示することでアプリケーションの動作に必要なマスタデータと`administrator`ユーザの登録が行われます。
+
+初期化が成功した旨のページが表示されたら`http://localhost:8080/`にアクセスしてください。独立型のTomcatにデプロイした場合は`http://localhost:8080/(*.warファイル名)/`になります。自動的にログイン・ページにリダイレクトされるので、最前の初期化処理で作成された`administrator`ユーザでログインを行います。初期ログイン情報は`src/resources/application.properties`に記載されています。
+
+ログインに成功したら必要なユーザ、リポジトリ、プロジェクトの情報を登録していきます。リポジトリからのコミット情報のインポートやコミット情報とプロジェクトとの紐付けの処理は、アプリケーションへのユーザ・アクセスをトリガーにして、直近1時間に処理が行われていない場合に自動で起動します（近いうちに任意のタイミングで処理を起動するための機能を追加する予定です）。
+
+
+
+
+
+
 
