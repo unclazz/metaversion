@@ -503,7 +503,7 @@
 		// 初期表示
 		$scope.pageChange();
 	})
-	// プロジェクトコミット一覧画面のためのコントローラ
+	// プロジェクトコミット紐付け画面のためのコントローラ
 	.controller('prjects$projectId$commits$link', function($log, $scope, entities, paths, modals) {
 		// パスからID情報を取得
 		var ids = paths.pathToIds();
@@ -512,7 +512,7 @@
 		// クエリ文字列をもとに検索条件を初期化
 		$scope.cond = angular.extend(paths.queryToObject({page: 1, pathbase: 0, like: ''}), ids);
 		$scope.cond.unlinked = true;
-		// 検索条件欄はデフォルトでは閉じておく
+		// 検索条件欄はデフォルトでは閉じておくがキーワード条件が存在する場合は開いておく
 		$scope.open = $scope.cond.like !== undefined && $scope.cond.like.length > 0;
 		// サジェスト用の関数を作成・設定
 		$scope.projectOrPathNames = function (partialName) {
@@ -754,10 +754,12 @@
 		// クエリ文字列をもとに検索条件を初期化
 		$scope.cond = paths.queryToObject({
 			page: 1,
-			pathbase: false,
+			pathbase: 0,
 			like: '',
 			unlinkedCommitId: ids.commitId
 		});
+		// 検索条件欄はデフォルトでは閉じておくがキーワード条件が存在する場合は開いておく
+		$scope.open = $scope.cond.like !== undefined && $scope.cond.like.length > 0;
 		// サジェスト用の関数を作成・設定
 		$scope.projectOrPathNames = function (partialName) {
 			if (partialName.length < 3) return;
