@@ -99,7 +99,13 @@
 				if (k in params) {
 					var v = params[k];
 					if (angular.isNumber(v)) {
-						params[k] = search[k] - 0;
+						if (search[k] === 'true') {
+							params[k] = 1;
+						} else if (search[k] === 'false') {
+							params[k] = 0;
+						} else {
+							params[k] = search[k] - 0;
+						}
 					} else if (angular.isString(v)) {
 						params[k] = search[k] + '';
 					} else if (v === true || v === false) {
@@ -374,7 +380,7 @@
 	.controller('projects', function($log, $scope, $location, entities, paths, modals) {
 		$scope.open = true;
 		// クエリ文字列をもとに検索条件を初期化
-		$scope.cond = paths.queryToObject({page: 1, pathbase: false, like: ''});
+		$scope.cond = paths.queryToObject({page: 1, pathbase: 0, like: ''});
 		// サジェスト用の関数を作成・設定
 		$scope.projectOrPathNames = function (partialName) {
 			if (partialName.length < 3) return;
@@ -503,12 +509,11 @@
 		var ids = paths.pathToIds();
 		// プロジェクト情報を取得
 		$scope.project = entities.ProjectStats.get({id: ids.projectId}, angular.noop, modals.errorModal);
-		// 検索条件欄はデフォルトでは閉じておく
-		$scope.open = false;
-
 		// クエリ文字列をもとに検索条件を初期化
-		$scope.cond = angular.extend(paths.queryToObject({page: 1, pathbase: false, like: ''}), ids);
+		$scope.cond = angular.extend(paths.queryToObject({page: 1, pathbase: 0, like: ''}), ids);
 		$scope.cond.unlinked = true;
+		// 検索条件欄はデフォルトでは閉じておく
+		$scope.open = $scope.cond.like !== undefined && $scope.cond.like.length > 0;
 		// サジェスト用の関数を作成・設定
 		$scope.projectOrPathNames = function (partialName) {
 			if (partialName.length < 3) return;
