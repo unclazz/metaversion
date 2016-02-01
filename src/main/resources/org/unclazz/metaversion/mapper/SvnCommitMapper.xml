@@ -41,6 +41,10 @@
 		WHERE c.revision > pr.last_revision
 		AND pr.project_id = #{projectId} 
 		AND pr.repository_id = #{repositoryId} 
+		AND NOT EXISTS (SELECT 1 
+			FROM project_svn_commit pc
+			WHERE pc.project_id = #{projectId}
+			AND pc.commit_id = c.id)
 	</select>
 	<select id="selectUnlinkedByRepositoryId" resultType="SvnCommit">
 		SELECT c.id, 
