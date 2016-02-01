@@ -217,6 +217,7 @@ ALTER TABLE project OWNER TO postgres;
 CREATE TABLE project_svn_commit (
     project_id integer NOT NULL,
     commit_id integer NOT NULL,
+    auto_linked boolean NOT NULL DEFAULT true,
     create_date timestamp without time zone DEFAULT now() NOT NULL,
     create_user_id integer NOT NULL
 );

@@ -12,8 +12,8 @@ public interface ProjectSvnCommitMapper {
 	int selectCountByProjectIdAndCommitId(@Param("projectId") int projectId, @Param("commitId") int commitId);
 	
 	@Insert("INSERT INTO project_svn_commit "
-			+ "(project_id, commit_id, create_user_id) "
-			+ "VALUES (#{vo.projectId}, #{vo.commitId}, #{auth.id}) ")
+			+ "(project_id, commit_id, auto_linked, create_user_id) "
+			+ "VALUES (#{vo.projectId}, #{vo.commitId}, #{vo.autoLinked}, #{auth.id}) ")
 	int insert(@Param("vo") ProjectSvnCommit vo, @Param("auth") MVUserDetails auth);
 	
 	@Delete("DELETE FROM project_svn_commit "
@@ -22,6 +22,10 @@ public interface ProjectSvnCommitMapper {
 	
 	@Delete("DELETE FROM project_svn_commit WHERE project_id = #{projectId} ")
 	int deleteByProjectId(@Param("projectId") int projectId);
+	
+	@Delete("DELETE FROM project_svn_commit "
+			+ "WHERE project_id = #{projectId} AND auto_linked = #{autoLinked} ")
+	int deleteByProjectId(@Param("projectId") int projectId, @Param("autoLinked") boolean autoLinked);
 	
 	@Delete("DELETE FROM project_svn_commit "
 			+ "WHERE commit_id IN ( "
