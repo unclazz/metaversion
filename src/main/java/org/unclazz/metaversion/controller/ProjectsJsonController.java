@@ -120,8 +120,12 @@ public class ProjectsJsonController {
 			@RequestBody final Project project) {
 		
 		try {
+			final MVUserDetails auth = MVUserDetails.of(principal);
 			project.setId(id);
-			projectService.modifyProject(project, MVUserDetails.of(principal));
+			projectService.modifyProject(project, auth);
+			if (project.getRedoCommitLink()) {
+				commitLinkService.doP2CLinkSynchronously(project, auth);
+			}
 			return httpResponseOfOk(project);
 		} catch (final RuntimeException e) {
 			return httpResponseOfInternalServerError(e.getMessage());

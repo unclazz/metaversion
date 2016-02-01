@@ -24,6 +24,7 @@ import org.unclazz.metaversion.mapper.ProjectMapper;
 import org.unclazz.metaversion.mapper.ProjectSvnCommitMapper;
 import org.unclazz.metaversion.mapper.ProjectSvnRepositoryMapper;
 import org.unclazz.metaversion.mapper.SvnCommitMapper;
+import org.unclazz.metaversion.service.BatchExecutorService.ProccessIsAlreadyRunning;
 import org.unclazz.metaversion.vo.LimitOffsetClause;
 import org.unclazz.metaversion.vo.MaxRevision;
 import org.unclazz.metaversion.vo.OrderByClause;
@@ -74,27 +75,28 @@ public class P2CLinkerService {
 		final OrderByClause orderBy = OrderByClause.noParticularOrder();
 		final LimitOffsetClause limitOffset = LimitOffsetClause.ALL;
 		final List<Project> list = projectMapper.selectAll(orderBy, limitOffset);
-		final Runnable runnable = new Runnable() {
-			@Override
-			public void run() {
-				logger.info("対象プロジェクト数： {}", list.size());
-				for (final Project r : list) {
-					logger.info("対象プロジェクト： {}({})", r.getName(), r.getId());
-					try {
-						doCommitLinkMain(r, auth);
-					} catch (final Exception e) {
-						logger.info("処理中の例外スロー： {}", r.getName(), r.getId(), e);
+		new Thread(executorService.wrapRunnableWithLock(
+			OnlineBatchProgram.P2C_LINKER,
+			new Runnable() {
+				@Override
+				public void run() {
+					logger.info("対象プロジェクト数： {}", list.size());
+					for (final Project r : list) {
+						logger.info("対象プロジェクト： {}({})", r.getName(), r.getId());
+						try {
+							doP2CLinkMain(r, auth);
+						} catch (final Exception e) {
+							logger.info("処理中の例外スロー： {}", r.getName(), r.getId(), e);
+						}
 					}
+					logger.info("プロジェクト・コミット紐付け（非同期）を終了");
 				}
-				logger.info("プロジェクト・コミット紐付け（非同期）を終了");
-			}
-		};
-		new Thread(executorService.wrapRunnableWithLock(OnlineBatchProgram.P2C_LINKER,
-				runnable, auth)).start();
+			}, 
+			auth)).start();
 	}
 	
 	@Transactional
-	public void doCommitLinkMain(final Project project, final MVUserDetails auth) {
+	public void doP2CLinkMain(final Project project, final MVUserDetails auth) {
 		final int projectId = project.getId();
 		final Pattern compiledPattern = Pattern.compile(project.getCommitSignPattern());
 		projectSvnRepositoryMapper.insertMissingLink(auth);
@@ -121,6 +123,7 @@ public class P2CLinkerService {
 				final ProjectSvnCommit vo = new ProjectSvnCommit();
 				vo.setCommitId(commit.getId());
 				vo.setProjectId(projectId);
+				vo.setAutoLinked(true);
 				projectSvnCommitMapper.insert(vo, auth);
 			}
 			
@@ -128,6 +131,37 @@ public class P2CLinkerService {
 			
 			obsoleted.setLastRevision(maxRevision.getValue());
 			projectSvnRepositoryMapper.update(obsoleted, auth);
+		}
+	}
+	
+	@Transactional
+	public void doP2CLinkSynchronously(final Project project, final MVUserDetails auth) {
+		logger.info("プロジェクト・コミット紐付け（自動のみ）を解除");
+		projectSvnCommitMapper.deleteByProjectId(project.getId(), true);
+		projectSvnRepositoryMapper.deleteByProjectId(project.getId());
+		
+		try {
+			executorService.wrapRunnableWithLock(
+				OnlineBatchProgram.P2C_LINKER,
+				new Runnable() {
+					@Override
+					public void run() {
+						logger.info("プロジェクト・コミット紐付け（同期）を開始");
+						logger.info("対象プロジェクト： {}({})", project.getName(), project.getId());
+						try {
+							doP2CLinkMain(project, auth);
+						} catch (final Exception e) {
+							logger.info("処理中の例外スロー： {}", project.getName(), project.getId(), e);
+						}
+						logger.info("プロジェクト・コミット紐付け（同期）を終了");
+					}
+				}, 
+				auth).run();
+		
+		} catch (final ProccessIsAlreadyRunning e) {
+			logger.info("別プロセスで紐付けを実行中");
+			logger.info("プロジェクト・コミット紐付け（同期）を中止");
+			throw e;
 		}
 	}
 	

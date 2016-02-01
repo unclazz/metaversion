@@ -13,6 +13,7 @@ public class Project {
 	private String responsiblePerson;
 	@JsonProperty(required=true)
 	private String commitSignPattern;
+	private boolean redoCommitLink;
 	public final int getId() {
 		return id;
 	}
@@ -42,5 +43,11 @@ public class Project {
 	}
 	public final void setCommitSignPattern(String commitSignPattern) {
 		this.commitSignPattern = commitSignPattern;
+	}
+	public boolean getRedoCommitLink() {
+		return redoCommitLink;
+	}
+	public void setRedoCommitLink(boolean redoCommitLink) {
+		this.redoCommitLink = redoCommitLink;
 	}
 }
