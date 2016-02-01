@@ -20,6 +20,14 @@
 		</header>
 
 		<article>
+			<div class="panel panel-warning" ng-show="list.length === 0">
+				<div class="panel-heading">
+					並行開発プロジェクト一覧
+				</div>
+				<div class="panel-body">
+					並行開発の状態にあるプロジェクトは見つかりませんでした。
+				</div>
+			</div>
 			<div class="panel panel-default" ng-show="list.length > 0">
 				<div class="panel-heading">
 					並行開発プロジェクト一覧

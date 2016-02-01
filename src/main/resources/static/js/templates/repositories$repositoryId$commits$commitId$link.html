@@ -66,6 +66,14 @@
 		</article>
 		
 		<article>
+			<div class="panel panel-warning" ng-show="list.length === 0">
+				<div class="panel-heading">
+					プロジェクト一覧
+				</div>
+				<div class="panel-body">
+					紐付け可能なプロジェクトが1件も見つかりませんでした。
+				</div>
+			</div>
 			<div class="panel panel-default" ng-show="list.length > 0">
 				<div class="panel-heading">
 					プロジェクト一覧

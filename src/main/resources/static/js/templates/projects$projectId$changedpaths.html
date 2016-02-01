@@ -20,6 +20,14 @@
 		</header>
 
 		<article>
+			<div class="panel panel-warning" ng-show="list.length === 0">
+				<div class="panel-heading">
+					変更パス一覧
+				</div>
+				<div class="panel-body">
+					変更パス情報が1件も存在しません。
+				</div>
+			</div>
 			<div class="panel panel-default" ng-show="list.length > 0">
 				<div class="panel-heading">
 					変更パス一覧
