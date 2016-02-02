@@ -5,10 +5,14 @@
     <groupId>org.unclazz</groupId>
 	<artifactId>metaversion</artifactId>
 	<name>MetaVersion</name>
-	<version>1.0.0-RELEASE</version>
+	<version>1.0.1-RELEASE</version>
 	<description></description>
 	<packaging>war</packaging>
 	
+	<properties>
+	    <tomcat.version>7.0.52</tomcat.version>
+	</properties>
+
 	<!-- Inherit defaults from Spring Boot -->
 	<parent>
 		<groupId>org.springframework.boot</groupId>
