@@ -21,6 +21,7 @@ public class CsvController {
 	private CommitService commitService;
 	
 	@RequestMapping(value = "/csv/projects/{projectId}/parallels",
+			consumes = MediaType.ALL_VALUE,
 			produces = MediaType.APPLICATION_OCTET_STREAM_VALUE,
 			method = RequestMethod.GET)
  	@ResponseBody
@@ -30,6 +31,7 @@ public class CsvController {
 	}
 	
 	@RequestMapping(value = "/csv/projects/{projectId}/changedpaths",
+			consumes = MediaType.ALL_VALUE,
 			produces = MediaType.APPLICATION_OCTET_STREAM_VALUE,
 			method = RequestMethod.GET)
  	@ResponseBody
