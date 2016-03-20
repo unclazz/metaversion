@@ -1,4 +1,4 @@
-package test.org.unclazz.metaversion;
+package org.unclazz.metaversion;
 
 import static org.junit.Assert.*;
 
