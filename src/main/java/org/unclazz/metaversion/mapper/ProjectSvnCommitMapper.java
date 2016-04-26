@@ -25,7 +25,7 @@ public interface ProjectSvnCommitMapper {
 	
 	@Delete("DELETE FROM project_svn_commit "
 			+ "WHERE project_id = #{projectId} AND auto_linked = #{autoLinked} ")
-	int deleteByProjectId(@Param("projectId") int projectId, @Param("autoLinked") boolean autoLinked);
+	int deleteByProjectIdAndAutoLinked(@Param("projectId") int projectId, @Param("autoLinked") boolean autoLinked);
 	
 	@Delete("DELETE FROM project_svn_commit "
 			+ "WHERE commit_id IN ( "

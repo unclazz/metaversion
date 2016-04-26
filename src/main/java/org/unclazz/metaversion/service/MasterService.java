@@ -73,6 +73,9 @@ public class MasterService {
 		for (final ChangeType value : ChangeType.values()) {
 			chageTypeMapper.insert(value);
 		}
+		for (final OnlineBatchStatus value : OnlineBatchStatus.values()) {
+			onlineBatchStatusMapper.insert(value);
+		}
 		for (final OnlineBatchProgram value : OnlineBatchProgram.values()) {
 			onlineBatchProgramMapper.insert(value);
 			
@@ -92,9 +95,6 @@ public class MasterService {
 			log.setEndDate(now);
 			log.setStatusId(OnlineBatchStatus.ENDED.getId());
 			onlineBatchLogMapper.insert(log, auth);
-		}
-		for (final OnlineBatchStatus value : OnlineBatchStatus.values()) {
-			onlineBatchStatusMapper.insert(value);
 		}
 	}
 }
