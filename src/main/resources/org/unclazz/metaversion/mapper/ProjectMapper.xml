@@ -8,7 +8,7 @@
 	<select id="selectNameByPartialName" resultType="String">
 		SELECT name 
 		FROM project 
-		WHERE name like ('%' || #{partialName} || '%')
+		WHERE lower(name) like lower('%' || #{partialName} || '%')
 		ORDER BY name ${limitOffset} 
 	</select>
 	
@@ -59,7 +59,8 @@
 		FROM project p
 		WHERE 0 = 0
 		<if test="like.length() &gt; 0">
-		AND name like ('%' || #{like} || '%')
+		AND (lower(name) like lower('%' || #{like} || '%')
+			OR lower(code) like lower('%' || #{like} || '%'))
 		</if>
 		<if test="unlinkedCommitId &gt; 0">
 		AND NOT EXISTS (SELECT 1 
@@ -77,7 +78,8 @@
 			FROM project p
 			WHERE 0 = 0
 			<if test="like.length() &gt; 0">
-			AND name like ('%' || #{like} || '%')
+			AND (lower(name) like lower('%' || #{like} || '%')
+				OR lower(code) like lower('%' || #{like} || '%'))
 			</if>
 			<if test="unlinkedCommitId &gt; 0">
 			AND NOT EXISTS (SELECT 1 
@@ -102,7 +104,7 @@
 				FROM project_svn_commit pc
 				INNER JOIN svn_commit_path cp
 				ON pc.commit_id = cp.commit_id
-				WHERE path like ('%' || #{like} || '%'))
+				WHERE lower(path) like lower('%' || #{like} || '%'))
 		</if>
 		<if test="unlinkedCommitId &gt; 0">
 		AND NOT EXISTS (SELECT 1 
@@ -125,7 +127,7 @@
 					FROM project_svn_commit pc
 					INNER JOIN svn_commit_path cp
 					ON pc.commit_id = cp.commit_id
-					WHERE path like ('%' || #{like} || '%'))
+					WHERE lower(path) like lower('%' || #{like} || '%'))
 			</if>
 			<if test="unlinkedCommitId &gt; 0">
 			AND NOT EXISTS (SELECT 1 
