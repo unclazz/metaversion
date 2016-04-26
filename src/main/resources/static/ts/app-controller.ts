@@ -413,7 +413,7 @@ module MetaVersion {
 		$scope.csvDowloadUrl = function () {
 			var nativePath = window.location.pathname.replace(/index$/, '');
 			var ngPath = $location.path();
-			return nativePath + 'csv' + ngPath + '.csv';
+			return nativePath + 'csv' + ngPath;
 		};
 	}
 	
@@ -450,7 +450,7 @@ module MetaVersion {
 		$scope.csvDowloadUrl = function () {
 			var nativePath = window.location.pathname.replace(/index$/, '');
 			var ngPath = $location.path();
-			return nativePath + 'csv' + ngPath + '.csv';
+			return nativePath + 'csv' + ngPath;
 		};
 		var markRepeatedItems = function name(list :IProjectParallel[]) {
 			var previous :any = {}

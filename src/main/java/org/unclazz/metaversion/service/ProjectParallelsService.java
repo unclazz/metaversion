@@ -9,8 +9,6 @@ import java.text.SimpleDateFormat;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ByteArrayResource;
-import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.unclazz.metaversion.entity.ProjectParallels;
 import org.unclazz.metaversion.mapper.ProjectParallelsMapper;
@@ -21,7 +19,7 @@ import org.unclazz.metaversion.vo.Paging;
 
 @Service
 public class ProjectParallelsService {
-	private static final Charset csvCharset = Charset.forName("Windows-31j");
+	private static final Charset csvCharset = Charset.forName("Shift_JIS");
 	
 	@Autowired
 	private ProjectParallelsMapper projectParallelsMapper;
@@ -37,7 +35,7 @@ public class ProjectParallelsService {
 		
 	}
 	
-	public Resource getProjectParallelsCsvByProjectId(final int id) throws IOException {
+	public byte[] getProjectParallelsCsvByProjectId(final int id) throws IOException {
 		final OrderByClause orderBy = OrderByClause.of("repositoryName").and("path");
 		final LimitOffsetClause limitOffset = LimitOffsetClause.ALL;
 		
@@ -95,7 +93,6 @@ public class ProjectParallelsService {
 		printer.close();
 		
 		// ストリームに書き込まれた情報を再度バイト配列に変換
-		// Resourceインスタンスを初期化して返す
-		return new ByteArrayResource(os.toByteArray());
+		return os.toByteArray();
 	}
 }

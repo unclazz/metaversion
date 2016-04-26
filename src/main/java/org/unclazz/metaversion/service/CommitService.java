@@ -11,8 +11,6 @@ import java.util.List;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ByteArrayResource;
-import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.unclazz.metaversion.entity.ProjectChangedPath;
 import org.unclazz.metaversion.entity.SvnCommit;
@@ -30,7 +28,7 @@ import org.unclazz.metaversion.vo.ProjectCommitSearchCondition;
 
 @Service
 public class CommitService {
-	private static final Charset csvCharset = Charset.forName("Windows-31j");
+	private static final Charset csvCharset = Charset.forName("Shift_JIS");
 	
 	@Autowired
 	private SvnCommitMapper svnCommitMapper;
@@ -161,7 +159,7 @@ public class CommitService {
 		
 	}
 
-	public Resource getProjectChangedPathCsvByProjectId(final int id) throws IOException {
+	public byte[] getProjectChangedPathCsvByProjectId(final int id) throws IOException {
 		final OrderByClause orderBy = OrderByClause.of("repositoryName").and("path");
 		final LimitOffsetClause limitOffset = LimitOffsetClause.ALL;
 		
@@ -201,8 +199,7 @@ public class CommitService {
 		printer.close();
 		
 		// ストリームに書き込まれた情報を再度バイト配列に変換
-		// Resourceインスタンスを初期化して返す
-		return new ByteArrayResource(os.toByteArray());
+		return os.toByteArray();
 	}
 	public Paginated<SvnCommitPathWithBranchName> getChangedPathListByRepositoryIdAndCommitId(
 			final int repositoryId, final int commitId, final Paging paging) {
