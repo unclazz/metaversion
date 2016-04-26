@@ -171,8 +171,6 @@
 	<select id="selectCountByProjectIdAndPartialMessage" resultType="int">
 		SELECT count(1)
 		FROM svn_commit c
-		INNER JOIN project_svn_commit pc
-		ON c.id = pc.commit_id
 		WHERE 0 = 0
 		AND <if test="cond.unlinked">NOT</if> EXISTS (SELECT 1 
 			FROM project_svn_commit pc
