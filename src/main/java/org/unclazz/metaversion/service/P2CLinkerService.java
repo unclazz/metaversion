@@ -137,7 +137,7 @@ public class P2CLinkerService {
 	@Transactional
 	public void doP2CLinkSynchronously(final Project project, final MVUserDetails auth) {
 		logger.info("プロジェクト・コミット紐付け（自動のみ）を解除");
-		projectSvnCommitMapper.deleteByProjectId(project.getId(), true);
+		projectSvnCommitMapper.deleteByProjectIdAndAutoLinked(project.getId(), true);
 		projectSvnRepositoryMapper.deleteByProjectId(project.getId());
 		
 		try {
