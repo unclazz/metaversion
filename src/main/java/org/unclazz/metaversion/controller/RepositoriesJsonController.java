@@ -19,7 +19,7 @@ import org.unclazz.metaversion.MVApplication;
 import org.unclazz.metaversion.MVUserDetails;
 import org.unclazz.metaversion.entity.Project;
 import org.unclazz.metaversion.entity.SvnCommit;
-import org.unclazz.metaversion.entity.SvnCommitPath;
+import org.unclazz.metaversion.entity.SvnCommitPathWithBranchName;
 import org.unclazz.metaversion.entity.SvnCommitStats;
 import org.unclazz.metaversion.entity.SvnRepository;
 import org.unclazz.metaversion.entity.SvnRepositoryStats;
@@ -287,7 +287,7 @@ public class RepositoriesJsonController {
 	 * @return コミットにより変更されたパスの一覧
 	 */
 	@RequestMapping(value="/repositories/{repositoryId}/commits/{commitId}/changedpaths", method=RequestMethod.GET)
-	public Paginated<SvnCommitPath> getRepositorysCommitsChangedPaths(final Principal principal,
+	public Paginated<SvnCommitPathWithBranchName> getRepositorysCommitsChangedPaths(final Principal principal,
 			@PathVariable("repositoryId") final int repositoryId,
 			@PathVariable("commitId") final int commitId,
 			@ModelAttribute final Paging paging) {

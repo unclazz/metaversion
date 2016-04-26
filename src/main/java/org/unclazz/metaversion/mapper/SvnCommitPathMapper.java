@@ -8,7 +8,7 @@ import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 import org.unclazz.metaversion.MVUserDetails;
 import org.unclazz.metaversion.entity.ProjectChangedPath;
-import org.unclazz.metaversion.entity.SvnCommitPath;
+import org.unclazz.metaversion.entity.SvnCommitPathWithBranchName;
 import org.unclazz.metaversion.entity.SvnCommitPathWithRawInfo;
 import org.unclazz.metaversion.vo.LimitOffsetClause;
 import org.unclazz.metaversion.vo.OrderByClause;
@@ -27,11 +27,12 @@ public interface SvnCommitPathMapper {
 	List<String> selectPathByPartialPath(@Param("partialPath") String partialPath, 
 			@Param("limitOffset") LimitOffsetClause limitOffset);
 	
-	@Select("SELECT id, commit_id commitId, change_type_id changeTypeId, path "
+	@Select("SELECT id, commit_id commitId, change_type_id changeTypeId, "
+			+ "path, branch_path_segment branchName "
 			+ "FROM svn_commit_path "
 			+ "WHERE commit_id = #{commitId} "
 			+ "${orderBy} ${limitOffset} ")
-	List<SvnCommitPath> selectBySvnCommitId(
+	List<SvnCommitPathWithBranchName> selectBySvnCommitId(
 			@Param("commitId") int commitId,
 			@Param("orderBy") OrderByClause orderBy,
 			@Param("limitOffset") LimitOffsetClause limitOffset);
@@ -68,4 +69,10 @@ public interface SvnCommitPathMapper {
 			+ "	FROM svn_commit "
 			+ "	WHERE repository_id = #{repositoryId}) ")
 	int deleteBySvnRepositoryId(@Param("repositoryId") int repositoryId);
+
+	@Select("SELECT branch_path_segment "
+			+ "FROM svn_commit_path "
+			+ "WHERE commit_id = #{commitId} "
+			+ "GROUP BY branch_path_segment ")
+	List<String> selecBranchNameByCommitId(@Param("commitId") int commitId);
 }
