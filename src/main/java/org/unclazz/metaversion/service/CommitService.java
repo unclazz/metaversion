@@ -81,7 +81,7 @@ public class CommitService {
 		return c;
 	}
 	
-	public List<String> getBranchNameListByCommitId(final int commitId) {
+	private List<String> getBranchNameListByCommitId(final int commitId) {
 		final LinkedList<String> ns = new LinkedList<String>();
 		for (final String bn : svnCommitPathMapper.selecBranchNameByCommitId(commitId)) {
 			if (bn.startsWith("/")) {
@@ -97,9 +97,12 @@ public class CommitService {
 		final OrderByClause orderBy = OrderByClause.of("revision", Order.DESC);
 		final LimitOffsetClause limitOffset = LimitOffsetClause.of(paging);
 
+		final List<SvnCommitWithRepositoryInfo> cs = svnCommitMapper
+				.selectByProjectId(projectId, orderBy, limitOffset);
+		populateBranchNameList(cs);
+		
 		// コミット情報を検索する
-		return Paginated.of(paging, 
-				svnCommitMapper.selectByProjectId(projectId, orderBy, limitOffset),
+		return Paginated.of(paging, cs,
 				svnCommitMapper.selectCountByProjectId(projectId));
 	}
 	
@@ -108,20 +111,39 @@ public class CommitService {
 		final LimitOffsetClause limitOffset = LimitOffsetClause.of(cond.getPaging());
 
 		if (cond.isPathbase()) {
+			final List<SvnCommitWithRepositoryInfo> cs = svnCommitMapper
+					.selectByProjectIdAndPartialPath(cond, orderBy, limitOffset);
+			populateBranchNameList(cs);
+			
 			// コミット情報を検索する
-			return Paginated.of(cond.getPaging(), 
-					svnCommitMapper.selectByProjectIdAndPartialPath(cond, orderBy, limitOffset),
+			return Paginated.of(cond.getPaging(), cs,
 					svnCommitMapper.selectCountByProjectIdAndPartialPath(cond));
 		} else {
+			final List<SvnCommitWithRepositoryInfo> cs = svnCommitMapper
+					.selectByProjectIdAndPartialMessage(cond, orderBy, limitOffset);
+			populateBranchNameList(cs);
+			
 			// コミット情報を検索する
-			return Paginated.of(cond.getPaging(), 
-					svnCommitMapper.selectByProjectIdAndPartialMessage(cond, orderBy, limitOffset),
+			return Paginated.of(cond.getPaging(), cs,
 					svnCommitMapper.selectCountByProjectIdAndPartialMessage(cond));
 		}
 	}
 	
+	private void populateBranchNameList(List<SvnCommitWithRepositoryInfo> cs) {
+		for (final SvnCommitWithRepositoryInfo c : cs) {
+			final List<String> bns = getBranchNameListByCommitId(c.getId());
+			c.setBranchCount(bns.size());
+			c.setBranchNames(bns);
+		}
+	}
+	
 	public SvnCommitWithRepositoryInfo getCommitWithRepositoryInfoByCommitId(final int commitId) {
-		return svnCommitMapper.selectWithRepositoryInfoById(commitId);
+		final SvnCommitWithRepositoryInfo c = svnCommitMapper
+				.selectWithRepositoryInfoById(commitId);
+		final List<String> bns = getBranchNameListByCommitId(commitId);
+		c.setBranchCount(bns.size());
+		c.setBranchNames(bns);
+		return c;
 	}
 	
 	public SvnCommit getCommitById(final int commitId) {
