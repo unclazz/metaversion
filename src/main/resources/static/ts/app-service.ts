@@ -18,8 +18,8 @@ module MetaVersion {
      * RESTful APIにアクセスするためのリソース・クラスのコレクション.
      */
     export interface IEntityService {
-        users :ng.resource.IResourceClass<IUser>;
-        repositories :ng.resource.IResourceClass<IRepository>;
+        users :IResourceClassResavable<IUser>;
+        repositories :IResourceClassResavable<IRepository>;
         repositoryCommits :ng.resource.IResourceClass<IRepositoryCommit>;
         repositoryCommitChangedPaths :ng.resource.IResourceClass<IRepositoryCommitChangedPath>;
         repositoryCommitProjects :ng.resource.IResourceClass<IRepositoryCommitProject>;
@@ -40,7 +40,7 @@ module MetaVersion {
     
     export interface IModalService {
         errorModal : (e :IErrorData) => ng.ui.bootstrap.IModalServiceInstance;
-        waitingModal : (ms :string[]) => ng.ui.bootstrap.IModalServiceInstance;
+        waitingModal : (...ms :string[]) => ng.ui.bootstrap.IModalServiceInstance;
     }
     
     export function pathsFactoryFn($log :ng.ILogService,

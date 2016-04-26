@@ -1,9 +1,21 @@
 module MetaVersion {
     export interface IUser {
-        
+        admin : boolean;
+        encodedPassword : string;
+        id : number;
+        name : string;
+        password : string;
     }
     export interface IRepository {
-        
+        baseUrl : string;
+        branchPathPattern : string;
+        encodedPassword : string;
+        id : number;
+        maxRevision :number;
+        name : string;
+        password : string;
+        trunkPathPattern : string;
+        username : string;
     }
     export interface IRepositoryCommit {
         
@@ -28,7 +40,23 @@ module MetaVersion {
         
     }
     export interface IProjectChangedPath {
-        
+        otherMaxCommitDate : string
+        otherMaxRevision : number
+        otherMinCommitDate : string
+        otherMinRevision : number
+        otherProjectCode : string
+        otherProjectId : number
+        otherProjectName : string
+        otherProjectResponsiblePerson : string
+        parallelType : string
+        path : string
+        repositoryId : number
+        repositoryName : string
+        selfMaxCommitDate : string
+        selfMaxRevision : number
+        selfMinCommitDate : string
+        selfMinRevision : number
+        selfProjectId : number
     }
     export interface IProjectParallel {
         
@@ -73,7 +101,7 @@ module MetaVersion {
             {id: "@id"}, pagingParams);
         entities.repositories = entityResource<IRepository>("Repository", 
             "api/repositories/:id", 
-            {id: "@id"}, pagingParams);
+            {id: "@id"}, pagingParams) as IResourceClassResavable<IRepository>;
         entities.repositoryCommitChangedPaths = entityResource<IRepositoryCommitChangedPath>("RepositoryCommitChangedPath",
             "api/repositories/:repositoryId/commits/:commitId/changedpaths", 
 			{repositoryId: "@repositoryId", commitId: "@commitId"}, pagingParams);
@@ -87,7 +115,8 @@ module MetaVersion {
         entities.repositoryCommitStats = entityResource<IRepositoryCommitStats>("RepositoryCommitStats", 
             "api/repositories/:repositoryId/commitstats/:commitId", 
 			{repositoryId: "@repositoryId", commitId: "@commitId"}, pagingParams);
-        entities.users = entityResource<IUser>("User", "api/users/:id", {id: "@id"}, pagingParams);
+        entities.users = entityResource<IUser>("User", "api/users/:id", {id: "@id"},
+            pagingParams) as IResourceClassResavable<IUser>;
         entities.pathNames = suggestResource("PathName", "api/pathnames", {}, suggestParams);
         entities.projectNames = suggestResource("ProjectName", "api/projectnames", {}, suggestParams);
         

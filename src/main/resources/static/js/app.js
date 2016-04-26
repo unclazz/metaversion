@@ -1,958 +1,800 @@
-(function(angular) {
-	var app = angular.module('app', ['ngResource', 'ui.bootstrap', 'ngRoute']);
-	
-	app
-	.filter('excerpt', function () {
-		return function (text, len) {
-			if (len === undefined) {
-				len = 100;
-			}
-			if(text !== null && text !== undefined) {
-				if(text.length > len) {
-				return text.substring(0, len - 3) + '...';
-				}
-				else {
-				return text;
-				}
-			}
-		};
-	})
-	.directive('regexValidate', function() {
-		return {
-			require: 'ngModel',
-			link: function(scope, elm, attrs, ctrl) {
-				ctrl.$parsers.push(function(viewValue) {
-					try {
-						var re = new RegExp(viewValue);
-						ctrl.$setValidity('regex', true);
-						return re.source;
-					} catch (e) {
-						ctrl.$setValidity('regex', false);
-						return undefined;
-					}
-				});
-			}
-		};
-	})
-	.directive('userPasswordValidate', function() {
-		return {
-			require: 'ngModel',
-			link: function(scope, elm, attrs, ctrl) {
-				ctrl.$parsers.push(function(viewValue) {
-					console.log("> " + viewValue);
-					var len = viewValue.length;
-					if (len == 0 || len >= 8) {
-						ctrl.$setValidity('userPassword', true);
-						return viewValue;
-					} else {
-						ctrl.$setValidity('userPassword', false);
-						return undefined;
-					}
-				});
-			}
-		};
-	})
-	.factory('modals', function($log, $uibModal, $location) {
-		var errorModal = function(error) {
-			var modalInstance = $uibModal.open({
-				templateUrl: 'js/templates/errorModal.html',
-				controller: 'errorModal',
-				size: 'lg',
-				backdrop: 'static',
-				resolve: {
-					error: function () {
-						return error;
-					}
-				}
-			});
-			return modalInstance;
-		};
-		
-		var waitingModal = function(messages) {
-			var modalInstance = $uibModal.open({
-				templateUrl: 'js/templates/waitingModal.html',
-				controller: 'waitingModal',
-				size: 'lg',
-				backdrop: 'static',
-				resolve: {
-					messages: function () {
-						return angular.isString(messages) ? [messages] : messages;
-					}
-				}
-			});
-			return modalInstance;
-		};
-		
-		return {
-			errorModal: errorModal,
-			waitingModal: waitingModal
-		};
-	})
-	.factory('paths', function($log, $location) {
-		var queryToObject = function(defaultParams) {
-			var params = defaultParams === undefined ? {} : angular.copy(defaultParams);
-			var search = $location.search();
-			if (search === undefined) {
-				return params;
-			}
-			for (var k in search) {
-				if (k in params) {
-					var v = params[k];
-					if (angular.isNumber(v)) {
-						if (search[k] === 'true') {
-							params[k] = 1;
-						} else if (search[k] === 'false') {
-							params[k] = 0;
-						} else {
-							params[k] = search[k] - 0;
-						}
-					} else if (angular.isString(v)) {
-						params[k] = search[k] + '';
-					} else if (v === true || v === false) {
-						params[k] = search[k] == 'false' ? false : true;
-					} else {
-						params[k] = search[k];
-					}
-				} else {
-					params[k] = search[k];
-				}
-			}
-			return params;
-		};
-		var stringToPath = function(path, data) {
-			$location.path(path);
-			if (data !== undefined) {
-				$location.search(data);
-			}
-		};
-		var objectToQuery = function(data) {
-			$location.search(data);
-		};
-		var entryToQuery = function(key, value) {
-			var q = $location.search();
-			q[key] = value;
-			$location.search(q);
-		};
-		var pathToIds = function() {
-			var vars = {};
-			var url = $location.absUrl();
-			var res = null;
-			if (res = /\/users\/(\d+)/.exec(url)) {
-				vars.userId = res[1] - 0;
-			}
-			if (res = /\/projects\/(\d+)/.exec(url)) {
-				vars.projectId = res[1] - 0;
-			}
-			if (res = /\/repositories\/(\d+)/.exec(url)) {
-				vars.repositoryId = res[1] - 0;
-			}
-			if (res = /\/commits\/(\d+)/.exec(url)) {
-				vars.commitId = res[1] - 0;
-			}
-			return vars;
-		};
-		
-		return {
-			queryToObject: queryToObject,
-			objectToQuery: objectToQuery,
-			entryToQuery: entryToQuery,
-			stringToPath: stringToPath,
-			pathToIds: pathToIds
-		};
-	})
-	.factory('entities', function($log, $resource) {
-		var entities = {};
-		var pagingParams = {page: 1, size: 25};
-		var suggestParams = {like: '', size: 25};
-		var entity = function(entityName, urlPattern, urlParams, queryParams) {
-			var xformResp = function(data) {
-				var paginated = angular.fromJson(data);
-				if (paginated.list === undefined) {
-					return data;
-				}
-				paginated.list = paginated.list.map(function (item) {
-					return new entities[entityName](item)
-				});
-				return paginated;
-			};
-			var paginatedQueryAction = {
-				method: 'GET',
-				params: queryParams,
-				isArray:false,
-				transformResponse : xformResp
-			};
-			var resaveAction = {
-					method: 'PUT',
-					isArray:false
-				};
-			var customActions = {
-				'query' : paginatedQueryAction,
-				'resave' : resaveAction
-			};
-			entities[entityName] = $resource(urlPattern,urlParams, customActions);
-		};
-		var suggest = function(entityName, urlPattern, urlParams, queryParams) {
-			var paginatedQueryAction = {
-				method: 'GET',
-				params: queryParams,
-				isArray: true
-			};
-			var customActions = {
-				'query' : paginatedQueryAction
-			};
-			entities[entityName] = $resource(urlPattern,urlParams, customActions);
-		};
-		
-		// UserエンティティのためのResourceオブジェクトを作成
-		entity("User", "api/users/:id", {id: "@id"}, pagingParams);
-
-		// SvnRepositoryエンティティのためのResourceオブジェクトを作成
-		entity("Repository", "api/repositories/:id", {id: "@id"}, pagingParams);
-		// SvnCommitエンティティのためのResourceオブジェクトを作成
-		// ＊クエリ用パラメータのデフォルトとしてunlinkedプロパティを追加している
-		entity("RepositoryCommit", "api/repositories/:repositoryId/commits/:commitId", 
-				{repositoryId: "@repositoryId", commitId: "@commitId"},
-				angular.extend({unlinked: false}, pagingParams));
-		entity("RepositoryCommitStats", "api/repositories/:repositoryId/commitstats/:commitId", 
-				{repositoryId: "@repositoryId", repositoryId: "@commitId"}, pagingParams);
-		entity("RepositoryCommitProject", "api/repositories/:repositoryId/commits/:commitId/projects", 
-				{repositoryId: "@repositoryId", commitId: "@commitId"}, pagingParams);
-		// SvnCommitPathエンティティのためのResourceオブジェクトを作成
-		entity("RepositoryCommitChangedPath", "api/repositories/:repositoryId/commits/:commitId/changedpaths", 
-				{repositoryId: "@repositoryId", commitId: "@commitId"}, pagingParams);
-		
-		// ProjectエンティティのためのResourceオブジェクトを作成
-		entity("Project", "api/projects/:id", {id: "@id"}, 
-				angular.extend({like: '', pathbase: false, unlinkedCommitId: 0}, pagingParams));
-		entity("ProjectStats", "api/projectstats/:id", {id: "@id"}, pagingParams);
-		// ProjectSvnCommitエンティティのためのResourceオブジェクトを作成
-		entity("ProjectCommit", "api/projects/:projectId/commits/:commitId",
-				{projectId: "@projectId", commitId: "@commitId"}, pagingParams);
-		// ProjectChagedPathエンティティのためのResourceオブジェクトを作成
-		entity("ProjectChangedPath", "api/projects/:projectId/changedpaths",
-				{projectId: "@projectId"}, pagingParams);
-		// ProjectChagedPathエンティティのためのResourceオブジェクトを作成
-		entity("ProjectParallels", "api/projects/:projectId/parallels",
-				{projectId: "@projectId"}, pagingParams);
-		entity("Batches", "api/batches/:programId",
-				{programId: "@programId"}, pagingParams);
-		
-		// サジェスト用のResourceオブジェクトを作成
-		suggest("PathName", "api/pathnames", {}, suggestParams);
-		suggest("ProjectName", "api/projectnames", {}, suggestParams);
-		
-		return entities;
-	})
-	.config(function($routeProvider){
-		$routeProvider.when('/', {
-			templateUrl: 'js/templates/index.html'
-		}).when('/projects', {
-			templateUrl: 'js/templates/projects.html'
-		}).when('/projects/new', {
-			templateUrl: 'js/templates/projects$projectId$edit.html'
-		}).when('/projects/:projectId', {
-			templateUrl: 'js/templates/projects$projectId.html'
-		}).when('/projects/:projectId/link', {
-			templateUrl: 'js/templates/projects$projectId$link.html'
-		}).when('/projects/:projectId/edit', {
-			templateUrl: 'js/templates/projects$projectId$edit.html'
-		}).when('/projects/:projectId/delete', {
-			templateUrl: 'js/templates/projects$projectId$delete.html'
-		}).when('/projects/:projectId/commits', {
-			templateUrl: 'js/templates/projects$projectId$commits.html'
-		}).when('/projects/:projectId/commits/:commitId/delete', {
-			templateUrl: 'js/templates/projects$projectId$commits$commitId$delete.html'
-		}).when('/projects/:projectId/changedpaths', {
-			templateUrl: 'js/templates/projects$projectId$changedpaths.html'
-		}).when('/projects/:projectId/parallels', {
-			templateUrl: 'js/templates/projects$projectId$parallels.html'
-		}).when('/repositories', {
-			templateUrl: 'js/templates/repositories.html'
-		}).when('/repositories/new', {
-			templateUrl: 'js/templates/repositories$repositoryId$edit.html'
-		}).when('/repositories/:repositoryId', {
-			templateUrl: 'js/templates/repositories$repositoryId.html'
-		}).when('/repositories/:repositoryId/commits', {
-			templateUrl: 'js/templates/repositories$repositoryId$commits.html'
-		}).when('/repositories/:repositoryId/edit', {
-			templateUrl: 'js/templates/repositories$repositoryId$edit.html'
-		}).when('/repositories/:repositoryId/delete', {
-			templateUrl: 'js/templates/repositories$repositoryId$delete.html'
-		}).when('/repositories/:repositoryId/commits/:commitId', {
-			templateUrl: 'js/templates/repositories$repositoryId$commits$commitId.html'
-		}).when('/repositories/:repositoryId/commits/:commitId/link', {
-			templateUrl: 'js/templates/repositories$repositoryId$commits$commitId$link.html'
-		}).when('/repositories/:repositoryId/commits/:commitId/changedpaths', {
-			templateUrl: 'js/templates/repositories$repositoryId$commits$commitId$changedpaths.html'
-		}).when('/users', {
-			templateUrl: 'js/templates/users.html'
-		}).when('/users/new', {
-			templateUrl: 'js/templates/users$new.html'
-		}).when('/users/:userId/edit', {
-			templateUrl: 'js/templates/users$userId$edit.html'
-		}).when('/users/:userId/delete', {
-			templateUrl: 'js/templates/users$userId$delete.html'
-		}).otherwise({
-			redirectTo: '/'
-		});
-	})
-	.config(function($logProvider) {
-		$logProvider.debugEnabled(true);
-	})
-	.controller('parent', function($scope, $location, $interval, $log, entities) {
-		// Paginationディレクティブのためのデフォルト値
-		// ＊外部スコープにてページネーションに関わる値─とくにtotalSizeを初期化することで、
-		// 画面初期表示時にページ番号が強制的にリセットされてしまう問題への対策としている。
-		$scope.size = 25;
-		$scope.totalSize = Number.MAX_VALUE;
-		
-		// ナビの項目のアクティブ/非アクティブを制御するためのマップ
-		$scope.navItems = {
-				projects: false,
-				repositories: false,
-				users: false
-		};
-		// パスの変化を監視するためのコールバックを作成・設定
-		$scope.$watch(function() {
-			return $location.path();
-		}, function(path) {
-			$scope.makeTitle(undefined);
-			for (var k in $scope.navItems) {
-				$scope.navItems[k] = path.endsWith(k);
-			}
-		});
-		
-		var updateLogImporter = function() {
-			entities.Batches.query({}, function(data) {
-				var list = data.list;
-				for (var i in list) {
-					var item = list[i];
-					if (item.program === 'LOG_IMPORTER') {
-						$scope.logImporter = item;
-						break;
-					}
-				}
-			}, function(error) {
-				$scope.logImporter = {};
-			});
-		};
-		updateLogImporter();
-		$interval(updateLogImporter, 60000);
-		$scope.appName = angular.element(document.getElementById('app-name')).text();
-		$scope.headTitle = $scope.appName;
-		$scope.title = '';
-		$scope.appVersion = angular.element(document.getElementById('app-version')).text();
-		$scope.appNameVersion = $scope.appName + ' ' + $scope.appVersion;
-		$scope.makeTitle = function(title) {
-			$scope.title = title;
-			$scope.headTitle = (title !== undefined ? (title + ' | ') : '') + $scope.appName;
-			return title;
-		}
-	})
-	.controller('errorModal', function ($scope, $uibModalInstance, $log, error) {
-		// オブジェクトの階層化された表示など便利な面が多々あるためコンソールにも出力する
-		$log.debug(error);
-		// スコープに登録する
-		$scope.error = error;
-		// 「閉じる」ボタンのコールバック関数を登録する
-		$scope.close = function () {
-			$uibModalInstance.dismiss('cancel');
-		};
-	})
-	.controller('waitingModal', function ($scope, $uibModalInstance, $log, modals, messages) {
-		$scope.messages = messages;
-	})
-	// トップ画面のためのコントローラ
-	.controller('index', function($log, $scope, entities, paths, modals) {
-		// サジェスト用の関数を作成・設定
-		$scope.projectNames = function (partialName) {
-			// APIを通じてプロジェクト名を取得して返す
-			return entities.ProjectName.query({like: partialName},
-					angular.noop, modals.errorModal).$promise;
-		};
-		// 検索ボタンがクリックされたときにコールされる関数を作成・設定
-		$scope.submit = function() {
-			// プロジェクト一覧画面に遷移させる
-			paths.stringToPath('projects', {like: $scope.like});
-		};
-	})
-	// プロジェクト一覧画面のためのコントローラ
-	.controller('projects', function($log, $scope, $location, entities, paths, modals) {
-		$scope.open = true;
-		// クエリ文字列をもとに検索条件を初期化
-		$scope.cond = paths.queryToObject({page: 1, pathbase: 0, like: ''});
-		// サジェスト用の関数を作成・設定
-		$scope.projectOrPathNames = function (partialName) {
-			if (partialName.length < 3) return;
-			// 変更パス・ベースの検索かどうかをチェック
-			if ($scope.cond.pathbase) {
-				// 変更パス・ベースの検索の場合
-				// APIを通じて変更パス名を取得して返す
-				return entities.PathName.query({like: partialName},
-						angular.noop, modals.errorModal).$promise;
-			} else {
-				// そうでない場合
-				// APIを通じてプロジェクト名を取得して返す
-				return entities.ProjectName.query({like: partialName},
-						angular.noop, modals.errorModal).$promise;
-			}
-		};
-		// 検索ボタンがクリックされたときにコールされる関数を作成・設定
-		$scope.submit = function() {
-			// プロジェクト一覧画面に遷移させる
-			paths.objectToQuery($scope.cond);
-		};
-		// ページ変更時にコールされる関数を作成・設定
-		$scope.pageChange = function() {
-			// APIを介してプロジェクト一覧を取得
-			entities.Project.query($scope.cond).$promise.then(function(paginated) {
-				// 取得に成功したら結果を画面に反映させる
-				$scope.totalSize = paginated.totalSize;
-				$scope.size = paginated.size;
-				$scope.list = paginated.list;
-				if (paginated.page > 1) paths.entryToQuery('page', paginated.page);
-			}, modals.errorModal);
-		};
-		// 初期表示
-		$scope.pageChange();
-	})
-	// プロジェクト詳細画面のためのコントローラ
-	.controller('projects$projectId', function($log, $scope, entities, paths, modals) {
-		$scope.project = entities.ProjectStats.get({id: paths.pathToIds().projectId},
-				angular.noop, modals.errorModal);
-	})
-	// プロジェクト編集画面のためのコントローラ
-	.controller('projects$projectId$edit', function($log, $scope, $location, entities, paths, modals) {
-		// パスからIDを読み取る
-		var ids = paths.pathToIds();
-		if (ids.projectId !== undefined) {
-			$scope.project = entities.Project.get({id: paths.pathToIds().projectId},
-					angular.noop, modals.errorModal);
-		} else {
-			$scope.project = new entities.Project({id: undefined});
-		}
-		
-		$scope.submit = function() {
-			var p;
-			if (ids.projectId !== undefined) {
-				p = $scope.project.$resave();
-			} else {
-				p = $scope.project.$save();
-			}
-			$log.debug(p);
-			p.then(function (data) {
-				paths.stringToPath('projects/' + data.id);
-			}, modals.errorModal);
-		};
-	})
-	// プロジェクト削除画面のためのコントローラ
-	.controller('projects$projectId$delete', function($log, $scope, entities, paths, modals) {
-		// パスからIDを読み取る
-		var ids = paths.pathToIds();
-		$scope.project = entities.Project.get({id: paths.pathToIds().projectId},
-				angular.noop, modals.errorModal);
-		
-		$scope.submit = function() {
-			var p = $scope.project.$remove();
-			$log.debug(p);
-			p.then(function (data) {
-				paths.stringToPath('projects');
-			}, modals.errorModal);
-		};
-	})
-	// プロジェクトコミット一覧画面のためのコントローラ
-	.controller('prjects$projectId$commits', function($log, $scope, entities, paths, modals) {
-		// パスからID情報を取得
-		var ids = paths.pathToIds();
-		// プロジェクト情報を取得
-		$scope.project = entities.ProjectStats.get({id: ids.projectId},
-				angular.noop, modals.errorModal);
-		// 検索条件欄はデフォルトでは閉じておく
-		$scope.open = false;
-
-		// クエリ文字列をもとに検索条件を初期化
-		$scope.cond = angular.extend(paths.queryToObject({page: 1, pathbase: false, like: ''}), ids);
-		// サジェスト用の関数を作成・設定
-		$scope.pathNames = function (partialName) {
-			if (partialName.length < 3) return;
-			// 変更パス・ベースの検索かどうかをチェック
-			if ($scope.cond.pathbase) {
-				// 変更パス・ベースの検索の場合
-				// APIを通じて変更パス名を取得して返す
-				return entities.PathName.query({like: partialName},
-						angular.noop, modals.errorModal).$promise;
-			} else {
-				// そうでない場合
-				return [];
-			}
-		};
-		// 検索ボタンがクリックされたときにコールされる関数を作成・設定
-		$scope.submit = function() {
-			// プロジェクト一覧画面に遷移させる
-			paths.objectToQuery($scope.cond);
-		};
-		// ページ変更時にコールされる関数を作成・設定
-		$scope.pageChange = function() {
-			entities.ProjectCommit.query($scope.cond).$promise.then(function(paginated) {
-				$scope.totalSize = paginated.totalSize;
-				$scope.size = paginated.size;
-				$scope.list = paginated.list;
-				if (paginated.page > 1) paths.entryToQuery('page', paginated.page);
-			}, modals.errorModal);
-		};
-		// 初期表示
-		$scope.pageChange();
-	})
-	// プロジェクトコミット紐付け画面のためのコントローラ
-	.controller('prjects$projectId$commits$link', function($log, $scope, entities, paths, modals) {
-		// パスからID情報を取得
-		var ids = paths.pathToIds();
-		// プロジェクト情報を取得
-		$scope.project = entities.ProjectStats.get({id: ids.projectId}, angular.noop, modals.errorModal);
-		// クエリ文字列をもとに検索条件を初期化
-		$scope.cond = angular.extend(paths.queryToObject({page: 1, pathbase: 0, like: ''}), ids);
-		$scope.cond.unlinked = true;
-		// 検索条件欄はデフォルトでは閉じておくがキーワード条件が存在する場合は開いておく
-		$scope.open = $scope.cond.like !== undefined && $scope.cond.like.length > 0;
-		// サジェスト用の関数を作成・設定
-		$scope.projectOrPathNames = function (partialName) {
-			if (partialName.length < 3) return;
-			// 変更パス・ベースの検索かどうかをチェック
-			if ($scope.cond.pathbase) {
-				// 変更パス・ベースの検索の場合
-				// APIを通じて変更パス名を取得して返す
-				return entities.PathName.query({like: partialName},
-						angular.noop, modals.errorModal).$promise;
-			} else {
-				// そうでない場合
-				return [];
-			}
-		};
-		// 検索ボタンがクリックされたときにコールされる関数を作成・設定
-		$scope.submit = function() {
-			// プロジェクト一覧画面に遷移させる
-			paths.objectToQuery($scope.cond);
-		};
-		// ページ変更時にコールされる関数を作成・設定
-		$scope.pageChange = function() {
-			entities.ProjectCommit.query($scope.cond).$promise.then(function(paginated) {
-				$scope.totalSize = paginated.totalSize;
-				$scope.size = paginated.size;
-				$scope.list = paginated.list;
-				if (paginated.page > 1) paths.entryToQuery('page', paginated.page);
-			}, modals.errorModal);
-		};
-		$scope.click = function($event) {
-			var commitId = angular.element($event.target).attr('data-commit-id');
-			var link = new entities.ProjectCommit({commitId: commitId, projectId: ids.projectId});
-			link.$save().then(function(data) {
-				$scope.pageChange();
-			}, modals.errorModal);
-		};
-		// 初期表示
-		$scope.pageChange();
-	})
-	// プロジェクトコミット紐付け解除画面のためのコントローラ
-	.controller('projects$projectId$commits$commitId$delete', function($log, $scope, entities, paths, modals) {
-		var ids = paths.pathToIds();
-		$scope.project = entities.ProjectStats.get({id: ids.projectId},
-				angular.noop, modals.errorModal);
-		$scope.commit = entities.ProjectCommit.get(ids, angular.noop, modals.errorModal);
-
-		$scope.submit = function() {
-			var p = entities.ProjectCommit.remove(ids);
-			$log.debug(p);
-			p.$promise.then(function (data) {
-				paths.stringToPath('projects/' + ids.projectId + '/commits');
-			}, modals.errorModal);
-		};
-	})
-	// プロジェクト変更パス一覧画面のためのコントローラ
-	.controller('prjects$projectId$changedpaths', function($log, $scope, $location, entities, paths, modals) {
-		var ids = paths.pathToIds();
-		$scope.project = entities.ProjectStats.get({id: ids.projectId},
-				angular.noop, modals.errorModal);
-		// クエリ文字列をもとに検索条件を初期化
-		$scope.cond = angular.extend(paths.queryToObject({page: 1}), ids);
-		// ページ変更時にコールされる関数を作成・設定
-		$scope.pageChange = function() {
-			entities.ProjectChangedPath.query($scope.cond).$promise.then(function(paginated) {
-				$scope.totalSize = paginated.totalSize;
-				$scope.size = paginated.size;
-				$scope.list = paginated.list;
-				if (paginated.page > 1) paths.entryToQuery('page', paginated.page);
-			}, modals.errorModal);
-		};
-		// 初期表示
-		$scope.pageChange();
-		$scope.csvDowloadUrl = function () {
-			var nativePath = window.location.pathname.replace(/index$/, '');
-			var ngPath = $location.path();
-			return nativePath + 'csv' + ngPath + '.csv';
-		};
-	})
-	.controller('prjects$projectId$parallels', function($log, $scope, $location, entities, paths, modals) {
-		var ids = paths.pathToIds();
-		$scope.project = entities.ProjectStats.get({id: ids.projectId},
-				angular.noop, modals.errorModal);
-		// クエリ文字列をもとに検索条件を初期化
-		$scope.cond = angular.extend(paths.queryToObject({page: 1}), ids);
-		// ページ変更時にコールされる関数を作成・設定
-		$scope.pageChange = function() {
-			entities.ProjectParallels.query($scope.cond).$promise.then(function(paginated) {
-				$scope.totalSize = paginated.totalSize;
-				$scope.size = paginated.size;
-				markRepeatedItems(paginated.list);
-				$scope.list = paginated.list;
-				if (paginated.page > 1) paths.entryToQuery('page', paginated.page);
-			}, modals.errorModal);
-		};
-		// 初期表示
-		$scope.pageChange();
-		$scope.csvDowloadUrl = function () {
-			var nativePath = window.location.pathname.replace(/index$/, '');
-			var ngPath = $location.path();
-			return nativePath + 'csv' + ngPath + '.csv';
-		};
-		var markRepeatedItems = function name(list) {
-			var previous = {}
-			var repeated = function(name, value) {
-				var prevValue = previous[name];
-				previous[name] = value;
-				return (prevValue !== undefined && prevValue == value); 
-			};
-			for (var i = 0; i < list.length; i ++) {
-				var item = list[i];
-				var repositoryRepeated = repeated('repositoryId', item.repositoryId);
-				if (repositoryRepeated) {
-					item.repositoryRepeated = true;
-					var pathRepeated = repeated('path', item.path);
-					if (pathRepeated) {
-						item.pathRepeated = true;
-					}
-				}
-			}
-		};
-	})
-	// リポジトリ一覧画面のためのコントローラ
-	.controller('repositories', function($log, $scope, $location, entities, paths, modals) {
-		// クエリ文字列をもとに検索条件を初期化
-		$scope.cond = paths.queryToObject({page: 1});
-		// ページ変更時にコールされる関数を作成・設定
-		$scope.pageChange = function() {
-			// APIを介してリポジトリ一覧を取得
-			entities.Repository.query($scope.cond).$promise.then(function(paginated) {
-				$scope.totalSize = paginated.totalSize;
-				$scope.size = paginated.size;
-				$scope.list = paginated.list;
-				if (paginated.page > 1) paths.entryToQuery('page', paginated.page);
-			}, modals.errorModal);
-		};
-		// 初期表示
-		$scope.pageChange();
-	})
-	// リポジトリ詳細画面のためのコントローラ
-	.controller('repositories$repositoryId', function($log, $scope, $location, entities, paths, modals) {
-		// パスからリポジトリIDを読み取る
-		var ids = paths.pathToIds();
-		// APIを介してリポジトリ情報を取得
-		$scope.repository = entities.Repository.get({id: ids.repositoryId},
-				angular.noop, modals.errorModal);
-	})
-	// リポジトリコミット一覧画面のためのコントローラ
-	.controller('repositories$repositoryId$commits', function($log, $scope, $location, entities, paths, modals) {
-		// パスからリポジトリIDを読み取る
-		var ids = paths.pathToIds();
-		// APIを介してリポジトリ情報を取得
-		$scope.repository = entities.Repository.get({id: ids.repositoryId},
-				angular.noop, modals.errorModal);
-		// クエリ文字列をもとに検索条件を初期化
-		$scope.cond = angular.extend(paths.queryToObject({page: 1}), ids);
-
-		// ページ変更時にコールされる関数を作成・設定
-		$scope.pageChange = function() {
-			entities.RepositoryCommitStats.query($scope.cond).$promise.then(function(paginated) {
-				$scope.list = paginated.list;
-				$scope.totalSize = paginated.totalSize;
-				$scope.size = paginated.size;
-				if (paginated.page > 1) paths.entryToQuery('page', paginated.page);
-			}, modals.errorModal);
-		};
-		
-		// 初期表示
-		$scope.pageChange();
-	})
-	// リポジトリ編集画面のためのコントローラ
-	.controller('repositories$repositoryId$edit', function($log, $scope, entities, paths, modals) {
-		// パスからIDを読み取る
-		var ids = paths.pathToIds();
-		if (ids.repositoryId !== undefined) {
-			$scope.repository = entities.Repository.get({id: ids.repositoryId},
-					angular.noop, modals.errorModal);
-		} else {
-			$scope.repository = new entities.Repository({
-				id: undefined,
-				baseUrl: 'http://www.example.com/svn',
-				trunkPathPattern: '/trunk',
-				branchPathPattern: '/branches/\\\w+',
-				username: '',
-				password: ''
-			});
-		}
-		
-		$scope.submit = function() {
-			var p;
-			if (ids.repositoryId !== undefined) {
-				p = $scope.repository.$resave();
-			} else {
-				p = $scope.repository.$save();
-			}
-			var waitingModal = modals.waitingModal('リポジトリの登録・更新処理を実行中です。');
-			p.then(function (data) {
-				paths.stringToPath('repositories/' + data.id);
-				waitingModal.close({});
-			}, function(error) {
-				modals.errorModal(error).result.then(angular.noop,function() {
-					waitingModal.close();
-				});
-			});
-		};
-	})
-	// リポジトリ削除画面のためのコントローラ
-	.controller('repositories$repositoryId$delete', function($log, $scope, $location, entities, paths, modals) {
-		// パスからIDを読み取る
-		var ids = paths.pathToIds();
-		$scope.repository = entities.Repository.get({id: paths.pathToIds().repositoryId},
-				angular.noop, modals.errorModal);
-		
-		$scope.submit = function() {
-			var p = $scope.repository.$remove();
-			$log.debug(p);
-			p.then(function (data) {
-				paths.stringToPath('repositories');
-			}, modals.errorModal);
-		};
-	})
-	// コミット詳細画面のためのコントローラ
-	.controller('repositories$repositoryId$commits$commitId', function($log, $scope, entities, paths, modals) {
-		// パスからリポジトリIDやコミットIDを読み取る
-		var ids = paths.pathToIds();
-		// APIを介してコミット情報を取得
-		$scope.commit = entities.RepositoryCommitStats.get(ids,
-				angular.noop, modals.errorModal);
-		// APIを介してコミットの関連プロジェクトを取得
-		$scope.projectList = entities.RepositoryCommitProject.query(ids,
-				angular.noop, modals.errorModal);
-	})
-	.controller('repositories$repositoryId$commits$commitId$link', function($log, $scope, entities, paths, modals) {
-		// パスからリポジトリIDやコミットIDを読み取る
-		var ids = paths.pathToIds();
-		// APIを介してコミット情報を取得
-		$scope.commit = entities.RepositoryCommit.get(ids,
-				angular.noop, modals.errorModal);
-		$scope.open = false;
-		// クエリ文字列をもとに検索条件を初期化
-		$scope.cond = paths.queryToObject({
-			page: 1,
-			pathbase: 0,
-			like: '',
-			unlinkedCommitId: ids.commitId
-		});
-		// 検索条件欄はデフォルトでは閉じておくがキーワード条件が存在する場合は開いておく
-		$scope.open = $scope.cond.like !== undefined && $scope.cond.like.length > 0;
-		// サジェスト用の関数を作成・設定
-		$scope.projectOrPathNames = function (partialName) {
-			if (partialName.length < 3) return;
-			// 変更パス・ベースの検索かどうかをチェック
-			if ($scope.cond.pathbase) {
-				// 変更パス・ベースの検索の場合
-				// APIを通じて変更パス名を取得して返す
-				return entities.PathName.query({like: partialName},
-						angular.noop, modals.errorModal).$promise;
-			} else {
-				// そうでない場合
-				// APIを通じてプロジェクト名を取得して返す
-				return entities.ProjectName.query({like: partialName},
-						angular.noop, modals.errorModal).$promise;
-			}
-		};
-		// 検索ボタンがクリックされたときにコールされる関数を作成・設定
-		$scope.submit = function() {
-			// プロジェクト一覧画面に遷移させる
-			paths.objectToQuery($scope.cond);
-		};
-		// ページ変更時にコールされる関数を作成・設定
-		$scope.pageChange = function() {
-			// APIを介してプロジェクト一覧を取得
-			entities.Project.query($scope.cond).$promise.then(function(paginated) {
-				// 取得に成功したら結果を画面に反映させる
-				$scope.totalSize = paginated.totalSize;
-				$scope.size = paginated.size;
-				appendSelectedStatus(paginated.list);
-				$scope.list = paginated.list;
-				if (paginated.page > 1) paths.entryToQuery('page', paginated.page);
-			}, modals.errorModal);
-		};
-		// 初期表示
-		$scope.pageChange();
-		
-		$scope.click = function() {
-			for (var i = 0; i < $scope.list.length; i ++) {
-				var item = $scope.list[i];
-				if (!item.selected) continue;
-				var link = new entities.ProjectCommit({commitId: ids.commitId, projectId: item.id});
-				link.$save().then((function(item) {
-					return function(data) {
-						$scope.pageChange();
-					}
-				})(item), modals.errorModal);
-			}
-		};
-		
-		var appendSelectedStatus = function (list) {
-			for (var i = 0; i < list.length; i ++) {
-				list[i].selected = false;
-			}
-		}
-	})
-	.controller('repositories$repositoryId$commits$commitId$changedpaths', function($log, $scope, entities, paths, modals) {
-		// パスからリポジトリIDやコミットIDを読み取る
-		var ids = paths.pathToIds();
-		// APIを介してコミット情報を取得
-		$scope.commit = entities.RepositoryCommit.get(ids,
-				angular.noop, modals.errorModal);
-		// APIを介してコミットの関連プロジェクトを取得
-		$scope.projectList = entities.RepositoryCommitProject.query(ids,
-				angular.noop, modals.errorModal);
-		// クエリ文字列をもとに検索条件を初期化
-		$scope.cond = angular.extend(paths.queryToObject({page: 1}), ids);
-		// ページ変更時にコールされる関数を作成・設定
-		$scope.pageChange = function() {
-			entities.RepositoryCommitChangedPath.query($scope.cond).$promise.then(function(paginated) {
-				// 取得に成功したら結果を画面に反映させる
-				$scope.totalSize = paginated.totalSize;
-				$scope.size = paginated.size;
-				$scope.list = paginated.list;
-				if (paginated.page > 1) paths.entryToQuery('page', paginated.page);
-			}, modals.errorModal);
-		};
-		// 初期表示
-		$scope.pageChange();
-	})
-	// ユーザ一覧画面のためのコントローラ
-	.controller('users', function($log, $scope, $location, entities, paths, modals) {
-		// クエリ文字列をもとに検索条件を初期化
-		$scope.cond = paths.queryToObject({page: 1});
-		// ページ変更時にコールされる関数を作成・設定
-		$scope.pageChange = function() {
-			entities.User.query($scope.cond).$promise.then(function(paginated) {
-				$scope.totalSize = paginated.totalSize;
-				$scope.size = paginated.size;
-				$scope.list = paginated.list;
-				if (paginated.page > 1) paths.entryToQuery('page', paginated.page);
-			}, modals.errorModal);
-		};
-		// 初期表示
-		$scope.pageChange();
-	})
-	// ユーザ編集画面のためのコントローラ
-	.controller('users$userId$edit', function($log, $scope, $location, entities, paths, modals) {
-		// パスからIDを読み取る
-		var ids = paths.pathToIds();
-		if (ids.userId !== undefined) {
-			$scope.user = entities.User.get({id: paths.pathToIds().userId},
-					angular.noop, modals.errorModal);
-			$scope.user.password = null;
-		} else {
-			$scope.user = new entities.User({id: undefined});
-		}
-		
-		$scope.submit = function() {
-			var p;
-			if (ids.userId !== undefined) {
-				p = $scope.user.$resave();
-			} else {
-				p = $scope.user.$save();
-			}
-			p.then(function (data) {
-				paths.stringToPath('users');
-			}, modals.errorModal);
-		};
-	})
-	// ユーザ削除画面のためのコントローラ
-	.controller('users$userId$delete', function($log, $scope, $location, entities, paths, modals) {
-		// パスからIDを読み取る
-		var ids = paths.pathToIds();
-		$scope.user = entities.User.get({id: paths.pathToIds().userId},
-				angular.noop, modals.errorModal);
-		
-		$scope.submit = function() {
-			var p = $scope.user.$remove();
-			p.then(function (data) {
-				paths.stringToPath('users');
-			}, modals.errorModal);
-		};
-	});
-	
-	// mvApiTesterモジュールを追加
-	angular.module('mvApiTester', ['mvCommon', 'ngResource', 'ui.bootstrap']);
-	
-	// mvApiTesterにmainコントローラを追加
-	angular.module('mvApiTester')
-	.controller("main", function($scope, $location, $http, $filter, $log){
-		var REQUEST_METHODS = ['GET', 'POST', 'PUT', 'DELETE'];
-		var REQUEST_PREFIX = null;
-		
-		if ($location.protocol() === 'file') {
-			var absUrl = $location.absUrl();
-			var restapiEndpointIndex = absUrl.indexOf('/templates/restapi-tester.html');
-			REQUEST_PREFIX = $location.absUrl().slice(0, restapiEndpointIndex) + '/static';
-		} else {
-			var absUrl = $location.absUrl();
-			var restapiEndpointIndex = absUrl.indexOf('/apitester');
-			REQUEST_PREFIX = $location.absUrl().slice(0, restapiEndpointIndex);
-		}
-		
-		$scope.requestPrefix = REQUEST_PREFIX;
-		$scope.requestMethod = REQUEST_METHODS[0];
-		$scope.requestPath = '';
-		$scope.requestBody = '';
-		$scope.responseBody = '';
-		
-		$scope.requestSubmitClick = function() {
-			var conf = {};
-			conf.method = $scope.requestMethod;
-			conf.url = $scope.requestPath;
-			if (conf.method === 'POST' || conf.method === 'PUT') {
-				conf.data = $scope.requestBody;
-			}
-			
-			$http(conf).success(function(data, status, headers, conf){
-				$scope.responseStatus = status;
-				if (typeof data === 'string') {
-					$scope.responseBody = data;
-				} else {
-					$scope.responseBody = $filter('json')(data);
-				}
-			}).error(function(data, status, headers, conf){
-				$scope.responseStatus = status;
-				if (typeof data === 'string') {
-					$scope.responseBody = data;
-				} else {
-					$scope.responseBody = $filter('json')(data);
-				}
-			});
-		};
-		
-		$scope.requestPathChange = function() {
-			if ($scope.requestPath.length > 0 && $scope.requestPath.slice(0,1) === '/') {
-				$scope.submitDisabled = false;
-			} else {
-				$scope.submitDisabled = true;
-			}
-		};
-		
-		$scope.requestPathChange();
-	});
-
-})(angular);
+var MetaVersion;
+(function (MetaVersion) {
+    function routeConfigurerFn($routeProvider) {
+        $routeProvider.when('/', {
+            templateUrl: 'js/templates/index.html'
+        }).when('/projects', {
+            templateUrl: 'js/templates/projects.html'
+        }).when('/projects/new', {
+            templateUrl: 'js/templates/projects$projectId$edit.html'
+        }).when('/projects/:projectId', {
+            templateUrl: 'js/templates/projects$projectId.html'
+        }).when('/projects/:projectId/link', {
+            templateUrl: 'js/templates/projects$projectId$link.html'
+        }).when('/projects/:projectId/edit', {
+            templateUrl: 'js/templates/projects$projectId$edit.html'
+        }).when('/projects/:projectId/delete', {
+            templateUrl: 'js/templates/projects$projectId$delete.html'
+        }).when('/projects/:projectId/commits', {
+            templateUrl: 'js/templates/projects$projectId$commits.html'
+        }).when('/projects/:projectId/commits/:commitId/delete', {
+            templateUrl: 'js/templates/projects$projectId$commits$commitId$delete.html'
+        }).when('/projects/:projectId/changedpaths', {
+            templateUrl: 'js/templates/projects$projectId$changedpaths.html'
+        }).when('/projects/:projectId/parallels', {
+            templateUrl: 'js/templates/projects$projectId$parallels.html'
+        }).when('/repositories', {
+            templateUrl: 'js/templates/repositories.html'
+        }).when('/repositories/new', {
+            templateUrl: 'js/templates/repositories$repositoryId$edit.html'
+        }).when('/repositories/:repositoryId', {
+            templateUrl: 'js/templates/repositories$repositoryId.html'
+        }).when('/repositories/:repositoryId/commits', {
+            templateUrl: 'js/templates/repositories$repositoryId$commits.html'
+        }).when('/repositories/:repositoryId/edit', {
+            templateUrl: 'js/templates/repositories$repositoryId$edit.html'
+        }).when('/repositories/:repositoryId/delete', {
+            templateUrl: 'js/templates/repositories$repositoryId$delete.html'
+        }).when('/repositories/:repositoryId/commits/:commitId', {
+            templateUrl: 'js/templates/repositories$repositoryId$commits$commitId.html'
+        }).when('/repositories/:repositoryId/commits/:commitId/link', {
+            templateUrl: 'js/templates/repositories$repositoryId$commits$commitId$link.html'
+        }).when('/repositories/:repositoryId/commits/:commitId/changedpaths', {
+            templateUrl: 'js/templates/repositories$repositoryId$commits$commitId$changedpaths.html'
+        }).when('/users', {
+            templateUrl: 'js/templates/users.html'
+        }).when('/users/new', {
+            templateUrl: 'js/templates/users$new.html'
+        }).when('/users/:userId/edit', {
+            templateUrl: 'js/templates/users$userId$edit.html'
+        }).when('/users/:userId/delete', {
+            templateUrl: 'js/templates/users$userId$delete.html'
+        }).otherwise({
+            redirectTo: '/'
+        });
+    }
+    MetaVersion.routeConfigurerFn = routeConfigurerFn;
+    function logConfigurerFn($logProvider) {
+        $logProvider.debugEnabled(true);
+    }
+    MetaVersion.logConfigurerFn = logConfigurerFn;
+    function userPasswordValidateFactoryFn() {
+        var d = {};
+        d.require = 'ngModel';
+        d.link = function (scope, elm, attrs, ctrl) {
+            var c = ctrl;
+            c.$parsers.push(function (viewValue) {
+                var len = viewValue.length;
+                if (len == 0 || len >= 8) {
+                    c.$setValidity('userPassword', true);
+                    return viewValue;
+                }
+                else {
+                    c.$setValidity('userPassword', false);
+                    return undefined;
+                }
+            });
+        };
+        return d;
+    }
+    MetaVersion.userPasswordValidateFactoryFn = userPasswordValidateFactoryFn;
+    function regexValidateDirectiveFactoryFn() {
+        var d = {};
+        d.require = 'ngModel';
+        d.link = function (scope, elm, attrs, ctrl) {
+            var c = ctrl;
+            c.$parsers.push(function (viewValue) {
+                try {
+                    var re = new RegExp(viewValue);
+                    c.$setValidity('regex', true);
+                    return re.source;
+                }
+                catch (e) {
+                    c.$setValidity('regex', false);
+                    return undefined;
+                }
+            });
+        };
+        return d;
+    }
+    MetaVersion.regexValidateDirectiveFactoryFn = regexValidateDirectiveFactoryFn;
+    function excerptFilterFactoryFn() {
+        return function (text, length) {
+            if (length === undefined) {
+                length = 100;
+            }
+            if (text !== null && text !== undefined) {
+                if (text.length > length) {
+                    return text.substring(0, length - 3) + '...';
+                }
+                else {
+                    return text;
+                }
+            }
+            return undefined;
+        };
+    }
+    MetaVersion.excerptFilterFactoryFn = excerptFilterFactoryFn;
+})(MetaVersion || (MetaVersion = {}));
+var MetaVersion;
+(function (MetaVersion) {
+    function indexControllerFn($scope, entities, paths, modals) {
+        $scope.projectNames = function (partialName) {
+            return entities.projectNames.query({ like: partialName }, angular.noop, modals.errorModal).$promise;
+        };
+        $scope.submit = function () {
+            paths.stringToPath('projects', { like: $scope.like });
+        };
+    }
+    MetaVersion.indexControllerFn = indexControllerFn;
+    function errorModalControllerFn($scope, $uibModalInstance, $log, error) {
+        $log.debug(error);
+        $scope.error = error;
+        $scope.close = function () {
+            $uibModalInstance.dismiss('cancel');
+        };
+    }
+    MetaVersion.errorModalControllerFn = errorModalControllerFn;
+    function waitingModalControllerFn($scope, $uibModalInstance, $log, messages) {
+        $scope.messages = messages;
+    }
+    MetaVersion.waitingModalControllerFn = waitingModalControllerFn;
+    function parentControllerFn($scope, $location, $interval, $log, entities) {
+        $scope.size = 25;
+        $scope.totalSize = Number.MAX_VALUE;
+        $scope.navItems = {
+            projects: false,
+            repositories: false,
+            users: false
+        };
+        $scope.$watch(function () {
+            return $location.path();
+        }, function (path) {
+            $scope.makeTitle(undefined);
+            $scope.navItems.projects = endsWith(path, "projects");
+            $scope.navItems.repositories = endsWith(path, "repositories");
+            $scope.navItems.users = endsWith(path, "users");
+        });
+        var updateLogImporter = function () {
+            entities.batches.query({}, function (data) {
+                var list = data.list;
+                for (var i in list) {
+                    var item = list[i];
+                    if (item.program === 'LOG_IMPORTER') {
+                        $scope.logImporter = item;
+                        break;
+                    }
+                }
+            }, function (error) {
+                $scope.logImporter = {};
+            });
+        };
+        updateLogImporter();
+        $interval(updateLogImporter, 60000);
+        $scope.appName = angular.element(document.getElementById('app-name')).text();
+        $scope.headTitle = $scope.appName;
+        $scope.title = '';
+        $scope.appVersion = angular.element(document.getElementById('app-version')).text();
+        $scope.appNameVersion = $scope.appName + ' ' + $scope.appVersion;
+        $scope.makeTitle = function (title) {
+            $scope.title = title;
+            $scope.headTitle = (title !== undefined ? (title + ' | ') : '') + $scope.appName;
+            return title;
+        };
+    }
+    MetaVersion.parentControllerFn = parentControllerFn;
+    function projectsControllerFn($log, $scope, $location, entities, paths, modals) {
+        $scope.open = true;
+        $scope.cond = paths.queryToObject({ page: 1, pathbase: 0, like: '' });
+        $scope.projectOrPathNames = function (partialName) {
+            if (partialName.length < 3)
+                return;
+            if ($scope.cond.pathbase) {
+                return entities.pathNames.query({ like: partialName }, angular.noop, modals.errorModal).$promise;
+            }
+            else {
+                return entities.projectNames.query({ like: partialName }, angular.noop, modals.errorModal).$promise;
+            }
+        };
+        $scope.submit = function () {
+            paths.objectToQuery($scope.cond);
+        };
+        $scope.pageChange = function () {
+            entities.projects.query($scope.cond, function (paginated) {
+                $scope.totalSize = paginated.totalSize;
+                $scope.size = paginated.size;
+                $scope.list = paginated.list;
+                if (paginated.page > 1)
+                    paths.entryToQuery('page', paginated.page);
+            }, modals.errorModal);
+        };
+        $scope.pageChange();
+    }
+    MetaVersion.projectsControllerFn = projectsControllerFn;
+    function projectsProjectIdControllerFn($log, $scope, entities, paths, modals) {
+        $scope.project = entities.projectStats.get({ id: paths.pathToIds().projectId }, angular.noop, modals.errorModal);
+    }
+    MetaVersion.projectsProjectIdControllerFn = projectsProjectIdControllerFn;
+    function projectsProjectIdEditControllerFn($log, $scope, $location, entities, paths, modals) {
+        var ids = paths.pathToIds();
+        if (ids.projectId !== undefined) {
+            $scope.project = entities.projects.get({ id: paths.pathToIds().projectId }, angular.noop, modals.errorModal);
+        }
+        else {
+            $scope.project = ({ id: undefined });
+        }
+        $scope.submit = function () {
+            if (ids.projectId !== undefined) {
+                entities.projects.resave($scope.project, successCallback, modals.errorModal);
+            }
+            else {
+                entities.projects.save($scope.project, successCallback, modals.errorModal);
+            }
+        };
+        function successCallback(data) {
+            paths.stringToPath('projects/' + data.id);
+        }
+    }
+    MetaVersion.projectsProjectIdEditControllerFn = projectsProjectIdEditControllerFn;
+    function projectsProjectIdDeleteControllerFn($log, $scope, entities, paths, modals) {
+        var ids = paths.pathToIds();
+        $scope.project = entities.projects.get({ id: paths.pathToIds().projectId }, angular.noop, modals.errorModal);
+        $scope.submit = function () {
+            entities.projects.resave($scope.project, function (data) {
+                paths.stringToPath('projects');
+            }, modals.errorModal);
+        };
+    }
+    MetaVersion.projectsProjectIdDeleteControllerFn = projectsProjectIdDeleteControllerFn;
+    function projectsProjectIdCommitsControllerFn($log, $scope, entities, paths, modals) {
+        var ids = paths.pathToIds();
+        $scope.project = entities.projectStats.get({ id: ids.projectId }, angular.noop, modals.errorModal);
+        $scope.open = false;
+        $scope.cond = angular.extend(paths.queryToObject({ page: 1, pathbase: false, like: '' }), ids);
+        $scope.pathNames = function (partialName) {
+            if (partialName.length < 3)
+                return;
+            if ($scope.cond.pathbase) {
+                return entities.pathNames.query({ like: partialName }, angular.noop, modals.errorModal).$promise;
+            }
+            else {
+                return {};
+            }
+        };
+        $scope.submit = function () {
+            paths.objectToQuery($scope.cond);
+        };
+        $scope.pageChange = function () {
+            entities.projectCommits.query($scope.cond, function (paginated) {
+                $scope.totalSize = paginated.totalSize;
+                $scope.size = paginated.size;
+                $scope.list = paginated.list;
+                if (paginated.page > 1)
+                    paths.entryToQuery('page', paginated.page);
+            }, modals.errorModal);
+        };
+        $scope.pageChange();
+    }
+    MetaVersion.projectsProjectIdCommitsControllerFn = projectsProjectIdCommitsControllerFn;
+    function projectsProjectIdCommitsLinkControllerFn($log, $scope, entities, paths, modals) {
+        var ids = paths.pathToIds();
+        $scope.project = entities.projectStats.get({ id: ids.projectId }, angular.noop, modals.errorModal);
+        $scope.cond = angular.extend(paths.queryToObject({ page: 1, pathbase: 0, like: '' }), ids);
+        $scope.cond.unlinked = true;
+        $scope.open = $scope.cond.like !== undefined && $scope.cond.like.length > 0;
+        $scope.projectOrPathNames = function (partialName) {
+            if (partialName.length < 3)
+                return;
+            if ($scope.cond.pathbase) {
+                return entities.pathNames.query({ like: partialName }, angular.noop, modals.errorModal).$promise;
+            }
+            else {
+                return null;
+            }
+        };
+        $scope.submit = function () {
+            paths.objectToQuery($scope.cond);
+        };
+        $scope.pageChange = function () {
+            entities.projectCommits.query($scope.cond, function (paginated) {
+                $scope.totalSize = paginated.totalSize;
+                $scope.size = paginated.size;
+                $scope.list = paginated.list;
+                if (paginated.page > 1)
+                    paths.entryToQuery('page', paginated.page);
+            }, modals.errorModal);
+        };
+        $scope.click = function ($event) {
+            var commitId = angular.element($event.target).attr('data-commit-id');
+            entities.projectCommits.save({ commitId: commitId, projectId: ids.projectId }, $scope.pageChange, modals.errorModal);
+        };
+        $scope.pageChange();
+    }
+    MetaVersion.projectsProjectIdCommitsLinkControllerFn = projectsProjectIdCommitsLinkControllerFn;
+    function projectsProjectIdCommitsCommitIdDeleteControllerFn($log, $scope, entities, paths, modals) {
+        var ids = paths.pathToIds();
+        $scope.project = entities.projectStats.get({ id: ids.projectId }, angular.noop, modals.errorModal);
+        $scope.commit = entities.projectCommits.get(ids, angular.noop, modals.errorModal);
+        $scope.submit = function () {
+            var p = entities.projectCommits.remove(ids, function (data) {
+                paths.stringToPath('projects/' + ids.projectId + '/commits');
+            }, modals.errorModal);
+        };
+    }
+    MetaVersion.projectsProjectIdCommitsCommitIdDeleteControllerFn = projectsProjectIdCommitsCommitIdDeleteControllerFn;
+    function projectsProjectIdChangedpathsControllerFn($log, $scope, $location, entities, paths, modals) {
+        var ids = paths.pathToIds();
+        $scope.project = entities.projectStats.get({ id: ids.projectId }, angular.noop, modals.errorModal);
+        $scope.cond = angular.extend(paths.queryToObject({ page: 1 }), ids);
+        $scope.pageChange = function () {
+            entities.projectChangedPaths.query($scope.cond, function (paginated) {
+                $scope.totalSize = paginated.totalSize;
+                $scope.size = paginated.size;
+                $scope.list = paginated.list;
+                if (paginated.page > 1)
+                    paths.entryToQuery('page', paginated.page);
+            }, modals.errorModal);
+        };
+        $scope.pageChange();
+        $scope.csvDowloadUrl = function () {
+            var nativePath = window.location.pathname.replace(/index$/, '');
+            var ngPath = $location.path();
+            return nativePath + 'csv' + ngPath + '.csv';
+        };
+    }
+    MetaVersion.projectsProjectIdChangedpathsControllerFn = projectsProjectIdChangedpathsControllerFn;
+    function projectsProjectIdParallelsControllerFn($log, $scope, $location, entities, paths, modals) {
+        var ids = paths.pathToIds();
+        $scope.project = entities.projectStats.get({ id: ids.projectId }, angular.noop, modals.errorModal);
+        $scope.cond = angular.extend(paths.queryToObject({ page: 1 }), ids);
+        $scope.pageChange = function () {
+            entities.projectParallels.query($scope.cond, function (paginated) {
+                $scope.totalSize = paginated.totalSize;
+                $scope.size = paginated.size;
+                markRepeatedItems(paginated.list);
+                $scope.list = paginated.list;
+                if (paginated.page > 1)
+                    paths.entryToQuery('page', paginated.page);
+            }, modals.errorModal);
+        };
+        $scope.pageChange();
+        $scope.csvDowloadUrl = function () {
+            var nativePath = window.location.pathname.replace(/index$/, '');
+            var ngPath = $location.path();
+            return nativePath + 'csv' + ngPath + '.csv';
+        };
+        var markRepeatedItems = function name(list) {
+            var previous = {};
+            var repeated = function (name, value) {
+                var prevValue = previous[name];
+                previous[name] = value;
+                return (prevValue !== undefined && prevValue == value);
+            };
+            for (var i = 0; i < list.length; i++) {
+                var item = list[i];
+                var repositoryRepeated = repeated('repositoryId', item.repositoryId);
+                if (repositoryRepeated) {
+                    item.repositoryRepeated = true;
+                    var pathRepeated = repeated('path', item.path);
+                    if (pathRepeated) {
+                        item.pathRepeated = true;
+                    }
+                }
+            }
+        };
+    }
+    MetaVersion.projectsProjectIdParallelsControllerFn = projectsProjectIdParallelsControllerFn;
+    function repositoriesControllerFn($log, $location, $scope, entities, paths, modals) {
+        $scope.cond = paths.queryToObject({ page: 1 });
+        $scope.pageChange = function () {
+            entities.repositories.query($scope.cond, function (paginated) {
+                $scope.totalSize = paginated.totalSize;
+                $scope.size = paginated.size;
+                $scope.list = paginated.list;
+                if (paginated.page > 1)
+                    paths.entryToQuery('page', paginated.page);
+            }, modals.errorModal);
+        };
+        $scope.pageChange();
+    }
+    MetaVersion.repositoriesControllerFn = repositoriesControllerFn;
+    function repositoriesRepositoryIdControllerFn($log, $location, $scope, entities, paths, modals) {
+        var ids = paths.pathToIds();
+        $scope.repository = entities.repositories.get({ id: ids.repositoryId }, angular.noop, modals.errorModal);
+    }
+    MetaVersion.repositoriesRepositoryIdControllerFn = repositoriesRepositoryIdControllerFn;
+    function repositoriesRepositoryIdCommitsControllerFn($log, $location, $scope, entities, paths, modals) {
+        var ids = paths.pathToIds();
+        $scope.repository = entities.repositories.get({ id: ids.repositoryId }, angular.noop, modals.errorModal);
+        $scope.cond = angular.extend(paths.queryToObject({ page: 1 }), ids);
+        $scope.pageChange = function () {
+            entities.repositoryCommitStats.query($scope.cond, function (paginated) {
+                $scope.list = paginated.list;
+                $scope.totalSize = paginated.totalSize;
+                $scope.size = paginated.size;
+                if (paginated.page > 1)
+                    paths.entryToQuery('page', paginated.page);
+            }, modals.errorModal);
+        };
+        $scope.pageChange();
+    }
+    MetaVersion.repositoriesRepositoryIdCommitsControllerFn = repositoriesRepositoryIdCommitsControllerFn;
+    function repositoriesRepositoryIdEditControllerFn($log, $location, $scope, entities, paths, modals) {
+        var ids = paths.pathToIds();
+        if (ids.repositoryId !== undefined) {
+            $scope.repository = entities.repositories.get({ id: ids.repositoryId }, angular.noop, modals.errorModal);
+        }
+        else {
+            $scope.repository = new entities.repositories({
+                id: undefined,
+                baseUrl: 'http://www.example.com/svn',
+                trunkPathPattern: '/trunk',
+                branchPathPattern: '/branches/\\\w+',
+                username: '',
+                password: ''
+            });
+        }
+        $scope.submit = function () {
+            var waitingModal = modals.waitingModal('リポジトリの登録・更新処理を実行中です。');
+            function successFn(data) {
+                paths.stringToPath('repositories/' + data.id);
+                waitingModal.close({});
+            }
+            function errorFn(error) {
+                modals.errorModal(error).result.then(angular.noop, function () {
+                    waitingModal.close();
+                });
+            }
+            if (ids.repositoryId !== undefined) {
+                entities.repositories.resave($scope.repository, successFn, errorFn);
+            }
+            else {
+                entities.repositories.save($scope.repository, successFn, errorFn);
+            }
+        };
+    }
+    MetaVersion.repositoriesRepositoryIdEditControllerFn = repositoriesRepositoryIdEditControllerFn;
+    function repositoriesRepositoryIdDeleteControllerFn($log, $location, $scope, entities, paths, modals) {
+        var ids = paths.pathToIds();
+        $scope.repository = entities.repositories.get({ id: paths.pathToIds().repositoryId }, angular.noop, modals.errorModal);
+        $scope.submit = function () {
+            entities.repositories.remove(function (data) {
+                paths.stringToPath('repositories');
+            }, modals.errorModal);
+        };
+    }
+    MetaVersion.repositoriesRepositoryIdDeleteControllerFn = repositoriesRepositoryIdDeleteControllerFn;
+    function repositoriesRepositoryIdCommitsCommitIdControllerFn($log, $location, $scope, entities, paths, modals) {
+        var ids = paths.pathToIds();
+        $scope.commit = entities.repositoryCommitStats.get(ids, angular.noop, modals.errorModal);
+        $scope.projectList = entities.repositoryCommitProjects.query(ids, angular.noop, modals.errorModal);
+    }
+    MetaVersion.repositoriesRepositoryIdCommitsCommitIdControllerFn = repositoriesRepositoryIdCommitsCommitIdControllerFn;
+    function repositoriesRepositoryIdCommitsCommitIdLinkControllerFn($log, $location, $scope, entities, paths, modals) {
+        var ids = paths.pathToIds();
+        $scope.commit = entities.repositoryCommits.get(ids, angular.noop, modals.errorModal);
+        $scope.open = false;
+        $scope.cond = paths.queryToObject({
+            page: 1,
+            pathbase: 0,
+            like: '',
+            unlinkedCommitId: ids.commitId
+        });
+        $scope.open = $scope.cond.like !== undefined && $scope.cond.like.length > 0;
+        $scope.projectOrPathNames = function (partialName) {
+            if (partialName.length < 3)
+                return;
+            if ($scope.cond.pathbase) {
+                return entities.pathNames.query({ like: partialName }, angular.noop, modals.errorModal).$promise;
+            }
+            else {
+                return entities.projectNames.query({ like: partialName }, angular.noop, modals.errorModal).$promise;
+            }
+        };
+        $scope.submit = function () {
+            paths.objectToQuery($scope.cond);
+        };
+        $scope.pageChange = function () {
+            entities.projects.query($scope.cond, function (paginated) {
+                $scope.totalSize = paginated.totalSize;
+                $scope.size = paginated.size;
+                appendSelectedStatus(paginated.list);
+                $scope.list = paginated.list;
+                if (paginated.page > 1)
+                    paths.entryToQuery('page', paginated.page);
+            }, modals.errorModal);
+        };
+        $scope.pageChange();
+        $scope.click = function () {
+            for (var i = 0; i < $scope.list.length; i++) {
+                var item = $scope.list[i];
+                if (!item.selected)
+                    continue;
+                var link = new entities.projectCommits({ commitId: ids.commitId, projectId: item.id });
+                entities.projectCommits.save(link, $scope.pageChange, modals.errorModal);
+            }
+        };
+        var appendSelectedStatus = function (list) {
+            for (var i = 0; i < list.length; i++) {
+                list[i].selected = false;
+            }
+        };
+    }
+    MetaVersion.repositoriesRepositoryIdCommitsCommitIdLinkControllerFn = repositoriesRepositoryIdCommitsCommitIdLinkControllerFn;
+    function repositoriesRepositoryIdCommitsCommitIdChangedpathsControllerFn($log, $location, $scope, entities, paths, modals) {
+        var ids = paths.pathToIds();
+        $scope.commit = entities.repositoryCommits.get(ids, angular.noop, modals.errorModal);
+        $scope.projectList = entities.repositoryCommitProjects.query(ids, angular.noop, modals.errorModal);
+        $scope.cond = angular.extend(paths.queryToObject({ page: 1 }), ids);
+        $scope.pageChange = function () {
+            entities.repositoryCommitChangedPaths.query($scope.cond, function (paginated) {
+                $scope.totalSize = paginated.totalSize;
+                $scope.size = paginated.size;
+                $scope.list = paginated.list;
+                if (paginated.page > 1)
+                    paths.entryToQuery('page', paginated.page);
+            }, modals.errorModal);
+        };
+        $scope.pageChange();
+    }
+    MetaVersion.repositoriesRepositoryIdCommitsCommitIdChangedpathsControllerFn = repositoriesRepositoryIdCommitsCommitIdChangedpathsControllerFn;
+    function usersControllerFn($log, $location, $scope, entities, paths, modals) {
+        $scope.cond = paths.queryToObject({ page: 1 });
+        $scope.pageChange = function () {
+            entities.users.query($scope.cond, function (paginated) {
+                $scope.totalSize = paginated.totalSize;
+                $scope.size = paginated.size;
+                $scope.list = paginated.list;
+                if (paginated.page > 1)
+                    paths.entryToQuery('page', paginated.page);
+            }, modals.errorModal);
+        };
+        $scope.pageChange();
+    }
+    MetaVersion.usersControllerFn = usersControllerFn;
+    function usersUserIdEditControllerFn($log, $location, $scope, entities, paths, modals) {
+        var ids = paths.pathToIds();
+        if (ids.userId !== undefined) {
+            $scope.user = entities.users.get({ id: paths.pathToIds().userId }, angular.noop, modals.errorModal);
+            $scope.user.password = null;
+        }
+        else {
+            $scope.user = new entities.users({ id: undefined });
+        }
+        $scope.submit = function () {
+            function successFn(data) {
+                paths.stringToPath('users');
+            }
+            if (ids.userId !== undefined) {
+                entities.users.resave($scope.user, successFn, modals.errorModal);
+            }
+            else {
+                entities.users.save($scope.user, successFn, modals.errorModal);
+            }
+        };
+    }
+    MetaVersion.usersUserIdEditControllerFn = usersUserIdEditControllerFn;
+    function usersUserIdDeleteControllerFn($log, $location, $scope, entities, paths, modals) {
+        var ids = paths.pathToIds();
+        $scope.user = entities.users.get({ id: paths.pathToIds().userId }, angular.noop, modals.errorModal);
+        $scope.submit = function () {
+            entities.users.remove(function (data) {
+                paths.stringToPath('users');
+            }, modals.errorModal);
+        };
+    }
+    MetaVersion.usersUserIdDeleteControllerFn = usersUserIdDeleteControllerFn;
+    function endsWith(target, subseq) {
+        var tl = target.length;
+        var sl = subseq.length;
+        var p = target.lastIndexOf(subseq);
+        return tl === (sl + p);
+    }
+})(MetaVersion || (MetaVersion = {}));
+var MetaVersion;
+(function (MetaVersion) {
+    function entitiesFactoryFn($log, $resource) {
+        var entities = {};
+        var pagingParams = { page: 1, size: 25 };
+        var projectsPagingParams = angular.extend({
+            like: '', pathbase: false, unlinkedCommitId: 0
+        }, pagingParams);
+        var suggestParams = { like: '', size: 25 };
+        entities.batches = entityResource("Batches", "api/batches/:programId", { programId: "@programId" }, pagingParams);
+        entities.projectChangedPaths = entityResource("ProjectChangedPath", "api/projects/:projectId/changedpaths", { projectId: "@projectId" }, pagingParams);
+        entities.projectCommits = entityResource("ProjectCommit", "api/projects/:projectId/commits/:commitId", { projectId: "@projectId", commitId: "@commitId" }, pagingParams);
+        entities.projectParallels = entityResource("ProjectParallels", "api/projects/:projectId/parallels", { projectId: "@projectId" }, pagingParams);
+        entities.projects = entityResource("Project", "api/projects/:id", { id: "@id" }, projectsPagingParams);
+        entities.projectStats = entityResource("ProjectStats", "api/projectstats/:id", { id: "@id" }, pagingParams);
+        entities.repositories = entityResource("Repository", "api/repositories/:id", { id: "@id" }, pagingParams);
+        entities.repositoryCommitChangedPaths = entityResource("RepositoryCommitChangedPath", "api/repositories/:repositoryId/commits/:commitId/changedpaths", { repositoryId: "@repositoryId", commitId: "@commitId" }, pagingParams);
+        entities.repositoryCommitProjects = entityResource("RepositoryCommitProject", "api/repositories/:repositoryId/commits/:commitId/projects", { repositoryId: "@repositoryId", commitId: "@commitId" }, pagingParams);
+        entities.repositoryCommits = entityResource("RepositoryCommit", "api/repositories/:repositoryId/commits/:commitId", { repositoryId: "@repositoryId", commitId: "@commitId" }, angular.extend({ unlinked: false }, pagingParams));
+        entities.repositoryCommitStats = entityResource("RepositoryCommitStats", "api/repositories/:repositoryId/commitstats/:commitId", { repositoryId: "@repositoryId", commitId: "@commitId" }, pagingParams);
+        entities.users = entityResource("User", "api/users/:id", { id: "@id" }, pagingParams);
+        entities.pathNames = suggestResource("PathName", "api/pathnames", {}, suggestParams);
+        entities.projectNames = suggestResource("ProjectName", "api/projectnames", {}, suggestParams);
+        return entities;
+        function entityResource(entityName, urlPattern, urlParams, queryParams) {
+            var xformResp = function (data) {
+                var paginated = angular.fromJson(data);
+                if (paginated.list === undefined) {
+                    return data;
+                }
+                return paginated;
+            };
+            var paginatedQueryAction = {
+                method: 'GET',
+                params: queryParams,
+                isArray: false,
+                transformResponse: xformResp
+            };
+            var resaveAction = {
+                method: 'PUT',
+                isArray: false
+            };
+            var customActions = {
+                'query': paginatedQueryAction,
+                'resave': resaveAction
+            };
+            return $resource(urlPattern, urlParams, customActions);
+        }
+        function suggestResource(entityName, urlPattern, urlParams, queryParams) {
+            var paginatedQueryAction = {
+                method: 'GET',
+                params: queryParams,
+                isArray: true
+            };
+            var customActions = {
+                'query': paginatedQueryAction
+            };
+            return $resource(urlPattern, urlParams, customActions);
+        }
+    }
+    MetaVersion.entitiesFactoryFn = entitiesFactoryFn;
+})(MetaVersion || (MetaVersion = {}));
+var MetaVersion;
+(function (MetaVersion) {
+    function pathsFactoryFn($log, $location) {
+        var p = {};
+        p.entryToQuery = function (key, value) {
+            var q = $location.search();
+            q[key] = value;
+            $location.search(q);
+        };
+        p.objectToQuery = function (data) {
+            $location.search(data);
+        };
+        p.pathToIds = function () {
+            var ids = {};
+            var url = $location.absUrl();
+            var res = null;
+            if (res = /\/users\/(\d+)/.exec(url)) {
+                ids.userId = +res[1];
+            }
+            if (res = /\/projects\/(\d+)/.exec(url)) {
+                ids.projectId = +res[1];
+            }
+            if (res = /\/repositories\/(\d+)/.exec(url)) {
+                ids.repositoryId = +res[1];
+            }
+            if (res = /\/commits\/(\d+)/.exec(url)) {
+                ids.commitId = +res[1];
+            }
+            return ids;
+        };
+        p.queryToObject = function (defaultParams) {
+            var params = defaultParams === undefined ? {} : angular.copy(defaultParams);
+            var search = $location.search();
+            if (search === undefined) {
+                return params;
+            }
+            for (var k in search) {
+                if (k in params) {
+                    var v = params[k];
+                    if (angular.isNumber(v)) {
+                        if (search[k] === 'true') {
+                            params[k] = 1;
+                        }
+                        else if (search[k] === 'false') {
+                            params[k] = 0;
+                        }
+                        else {
+                            params[k] = search[k] - 0;
+                        }
+                    }
+                    else if (angular.isString(v)) {
+                        params[k] = search[k] + '';
+                    }
+                    else if (v === true || v === false) {
+                        params[k] = search[k] == 'false' ? false : true;
+                    }
+                    else {
+                        params[k] = search[k];
+                    }
+                }
+                else {
+                    params[k] = search[k];
+                }
+            }
+            return params;
+        };
+        p.stringToPath = function (path, data) {
+            $location.path(path);
+            if (data !== undefined) {
+                $location.search(data);
+            }
+        };
+        return p;
+    }
+    MetaVersion.pathsFactoryFn = pathsFactoryFn;
+    function modalsFactoryFn($log, $uibModal, $location) {
+        var m = {};
+        m.errorModal = function (error) {
+            return $uibModal.open({
+                templateUrl: 'js/templates/errorModal.html',
+                controller: 'errorModal',
+                size: 'lg',
+                backdrop: 'static',
+                resolve: {
+                    error: function () {
+                        return error;
+                    }
+                }
+            });
+        };
+        m.waitingModal = function (messages) {
+            return $uibModal.open({
+                templateUrl: 'js/templates/waitingModal.html',
+                controller: 'waitingModal',
+                size: 'lg',
+                backdrop: 'static',
+                resolve: {
+                    messages: function () {
+                        return angular.isString(messages) ? [messages] : messages;
+                    }
+                }
+            });
+        };
+        return m;
+    }
+    MetaVersion.modalsFactoryFn = modalsFactoryFn;
+})(MetaVersion || (MetaVersion = {}));
+(function () {
+    var mv = MetaVersion;
+    var app = angular.module('app', ['ngResource', 'ngRoute', 'ui.bootstrap']);
+    app
+        .config(mv.logConfigurerFn)
+        .config(mv.routeConfigurerFn)
+        .directive('regexValidate', mv.regexValidateDirectiveFactoryFn)
+        .directive('userPasswordValidate', mv.userPasswordValidateFactoryFn)
+        .filter('excerpt', mv.excerptFilterFactoryFn)
+        .factory('modals', mv.modalsFactoryFn)
+        .factory('paths', mv.pathsFactoryFn)
+        .factory('entities', mv.entitiesFactoryFn)
+        .controller('parent', mv.parentControllerFn)
+        .controller('errorModal', mv.errorModalControllerFn)
+        .controller('waitingModal', mv.waitingModalControllerFn)
+        .controller('index', mv.indexControllerFn)
+        .controller('projects', mv.projectsControllerFn)
+        .controller('projects$projectId', mv.projectsProjectIdControllerFn)
+        .controller('projects$projectId$edit', mv.projectsProjectIdEditControllerFn)
+        .controller('projects$projectId$delete', mv.projectsProjectIdDeleteControllerFn)
+        .controller('prjects$projectId$commits', mv.projectsProjectIdCommitsControllerFn)
+        .controller('prjects$projectId$commits$link', mv.projectsProjectIdCommitsLinkControllerFn)
+        .controller('projects$projectId$commits$commitId$delete', mv.projectsProjectIdCommitsCommitIdDeleteControllerFn)
+        .controller('prjects$projectId$changedpaths', mv.projectsProjectIdChangedpathsControllerFn)
+        .controller('prjects$projectId$parallels', mv.projectsProjectIdParallelsControllerFn)
+        .controller('repositories', mv.repositoriesControllerFn)
+        .controller('repositories$repositoryId', mv.repositoriesRepositoryIdControllerFn)
+        .controller('repositories$repositoryId$commits', mv.repositoriesRepositoryIdCommitsControllerFn)
+        .controller('repositories$repositoryId$edit', mv.repositoriesRepositoryIdEditControllerFn)
+        .controller('repositories$repositoryId$delete', mv.repositoriesRepositoryIdDeleteControllerFn)
+        .controller('repositories$repositoryId$commits$commitId', mv.repositoriesRepositoryIdCommitsCommitIdControllerFn)
+        .controller('repositories$repositoryId$commits$commitId$link', mv.repositoriesRepositoryIdCommitsCommitIdLinkControllerFn)
+        .controller('repositories$repositoryId$commits$commitId$changedpaths', mv.repositoriesRepositoryIdCommitsCommitIdChangedpathsControllerFn)
+        .controller('users', mv.usersControllerFn)
+        .controller('users$userId$edit', mv.usersUserIdEditControllerFn)
+        .controller('users$userId$delete', mv.usersUserIdDeleteControllerFn);
+})();
+//# sourceMappingURL=app.js.map
