@@ -12,8 +12,8 @@ public interface OnlineBatchLockMapper {
 	int selectNextVal();
 	
 	@Insert("INSERT INTO online_batch_lock "
-			+ "(id, program_id, locked, last_lock_date, last_unlock_date, system_boot_date) "
-			+ "VALUES (#{lock.id}, #{lock.programId}, #{lock.locked}, #{lock.lastLockDate}, "
+			+ "(id, program_id, locked, last_lock_date, last_lock_user_id, last_unlock_date, system_boot_date) "
+			+ "VALUES (#{lock.id}, #{lock.programId}, #{lock.locked}, #{lock.lastLockDate}, 0, "
 			+ "#{lock.lastUnlockDate}, #{lock.systemBootDate}) ")
 	int insert(@Param("lock") OnlineBatchLock lock);
 	
