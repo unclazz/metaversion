@@ -1,11 +1,28 @@
 package org.unclazz.metaversion.entity;
 
+import java.util.Collections;
+import java.util.List;
+
 public class SvnCommitStats extends SvnCommit {
 	private int pathCount;
 	private int projectCount;
 	private int projectId;
 	private String projectName;
 	private String projectCode;
+	public int getBranchCount() {
+		return branchCount;
+	}
+	public void setBranchCount(int btanchCount) {
+		this.branchCount = btanchCount;
+	}
+	public List<String> getBranchNames() {
+		return branchNames;
+	}
+	public void setBranchNames(List<String> branchNames) {
+		this.branchNames = branchNames;
+	}
+	private int branchCount;
+	private List<String> branchNames = Collections.emptyList();
 	public final int getPathCount() {
 		return pathCount;
 	}

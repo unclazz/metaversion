@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
+import java.util.LinkedList;
+import java.util.List;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
@@ -58,16 +60,37 @@ public class CommitService {
 		final OrderByClause orderBy = OrderByClause.of("revision", Order.DESC);
 		final LimitOffsetClause limitOffset = LimitOffsetClause.of(paging);
 
+		final List<SvnCommitStats> cs = svnCommitMapper.selectStatsByRepositoryId(repositoryId, orderBy, limitOffset);
+		for (final SvnCommitStats c : cs) {
+			final List<String> bns = getBranchNameListByCommitId(c.getId());
+			c.setBranchNames(bns);
+			c.setBranchCount(bns.size());
+		}
+		
 		// コミット情報を検索する
-		return Paginated.of(paging, 
-				svnCommitMapper.selectStatsByRepositoryId(repositoryId, orderBy, limitOffset),
+		return Paginated.of(paging, cs,
 				svnCommitMapper.selectStatsCountByRepositoryId(repositoryId));
 		
 	}
 	
 	public SvnCommitStats getCommitStatsByCommitId(final int commitId) {
-		return svnCommitMapper.selectStatsOneByCommitId(commitId);
-		
+		final SvnCommitStats c = svnCommitMapper.selectStatsOneByCommitId(commitId);
+		final List<String> bns = getBranchNameListByCommitId(commitId);
+		c.setBranchNames(bns);
+		c.setBranchCount(bns.size());
+		return c;
+	}
+	
+	public List<String> getBranchNameListByCommitId(final int commitId) {
+		final LinkedList<String> ns = new LinkedList<String>();
+		for (final String bn : svnCommitPathMapper.selecBranchNameByCommitId(commitId)) {
+			if (bn.startsWith("/")) {
+				ns.add(bn.substring(1));
+			} else {
+				ns.add(bn);
+			}
+		}
+		return ns;
 	}
 	
 	public Paginated<SvnCommitWithRepositoryInfo> getCommitListByProjectId(final int projectId, final Paging paging) {

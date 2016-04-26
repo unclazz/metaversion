@@ -68,4 +68,10 @@ public interface SvnCommitPathMapper {
 			+ "	FROM svn_commit "
 			+ "	WHERE repository_id = #{repositoryId}) ")
 	int deleteBySvnRepositoryId(@Param("repositoryId") int repositoryId);
+
+	@Select("SELECT branch_path_segment "
+			+ "FROM svn_commit_path "
+			+ "WHERE commit_id = #{commitId} "
+			+ "GROUP BY branch_path_segment ")
+	List<String> selecBranchNameByCommitId(@Param("commitId") int commitId);
 }

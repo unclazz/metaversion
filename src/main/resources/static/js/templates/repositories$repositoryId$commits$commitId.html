@@ -30,6 +30,11 @@
 					<tr><th nowrap="nowrap">コミット日時</th><td>{{commit.commitDate}}</td></tr>
 					<tr><th>コミッター</th><td>{{commit.committerName}}</td></tr>
 					<tr><th>メッセージ</th><td>{{commit.commitMessage}}</td></tr>
+					<tr><th>ブランチ</th><td>
+						<span ng-repeat="item in commit.branchNames">
+							<span class="label label-info">{{item}}</span>
+						</span>
+					</td></tr>
 					<tr><th>変更パス数</th><td>{{commit.pathCount}}</td></tr>
 					<tr><th nowrap="nowrap">関連プロジェクト</th><td>
 						<span ng-show="projectList.totalSize == 0">（関連プロジェクトなし）</span>
