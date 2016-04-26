@@ -64,6 +64,7 @@
 					<thead>
 						<tr>
 							<th>変更タイプ</th>
+							<th>ブランチ</th>
 							<th>変更パス</th>
 						</tr>
 					</thead>
@@ -74,6 +75,11 @@
 								<span class="label label-danger" ng-show="item.changeTypeId == 2">DELETED</span>
 								<span class="label label-warning" ng-show="item.changeTypeId == 3">MODIFIED</span>
 								<span class="label label-danger" ng-show="item.changeTypeId == 4">REPLACED</span>
+							</td>
+							<td>
+								<span ng-show="item.branchName !== null">
+									<span class="label label-info">{{item.branchName}}</span>
+								</span>
 							</td>
 							<td>{{item.path}}</td>
 						</tr>

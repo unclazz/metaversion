@@ -16,7 +16,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.unclazz.metaversion.entity.ProjectChangedPath;
 import org.unclazz.metaversion.entity.SvnCommit;
-import org.unclazz.metaversion.entity.SvnCommitPath;
+import org.unclazz.metaversion.entity.SvnCommitPathWithBranchName;
 import org.unclazz.metaversion.entity.SvnCommitStats;
 import org.unclazz.metaversion.entity.SvnCommitWithRepositoryInfo;
 import org.unclazz.metaversion.mapper.SvnCommitMapper;
@@ -182,7 +182,7 @@ public class CommitService {
 		// Resourceインスタンスを初期化して返す
 		return new ByteArrayResource(os.toByteArray());
 	}
-	public Paginated<SvnCommitPath> getChangedPathListByRepositoryIdAndCommitId(
+	public Paginated<SvnCommitPathWithBranchName> getChangedPathListByRepositoryIdAndCommitId(
 			final int repositoryId, final int commitId, final Paging paging) {
 		// ＊検索にはリポジトリIDは利用しないが概念的に親子関係（親＝リポジトリ、子＝コミット）にあるため
 		// 念のため引数に取るようにしている。今後エンティティ構造に変更があった場合に役立つかもしれない。
@@ -190,9 +190,17 @@ public class CommitService {
 		final OrderByClause orderBy = OrderByClause.of("path");
 		final LimitOffsetClause limitOffset = LimitOffsetClause.of(paging);
 		
+		final List<SvnCommitPathWithBranchName> ps = svnCommitPathMapper.
+				selectBySvnCommitId(commitId, orderBy, limitOffset);
+		for (final SvnCommitPathWithBranchName p : ps) {
+			final String bn = p.getBranchName();
+			if (bn != null && bn.startsWith("/")) {
+				p.setBranchName(bn.substring(1));
+			}
+		}
+		
 		// パス情報を検索する
-		return Paginated.of(paging, 
-				svnCommitPathMapper.selectBySvnCommitId(commitId, orderBy, limitOffset),
+		return Paginated.of(paging, ps,
 				svnCommitPathMapper.selectCountBySvnCommitId(commitId));
 		
 	}
