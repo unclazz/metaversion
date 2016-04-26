@@ -164,7 +164,7 @@
 			AND pc.project_id = #{cond.projectId}
 		)
 		<if test="cond.like.length() &gt; 0">
-		AND c.commit_message like ('%' || #{cond.like} || '%')
+		AND lower(c.commit_message) like lower('%' || #{cond.like} || '%')
 		</if>
 		${orderBy} ${limitOffset} 
 	</select>
@@ -178,7 +178,7 @@
 			AND pc.project_id = #{cond.projectId}
 		)
 		<if test="cond.like.length() &gt; 0">
-		AND c.commit_message like ('%' || #{cond.like} || '%')
+		AND lower(c.commit_message) like lower('%' || #{cond.like} || '%')
 		</if>
 	</select>
 	<select id="selectByProjectIdAndPartialPath" resultType="SvnCommitWithRepositoryInfo">
@@ -203,7 +203,7 @@
 		AND EXISTS (SELECT 1 
 			FROM svn_commit_path cp
 			WHERE c.id = cp.commit_id
-			AND cp.path like ('%' || #{cond.like} || '%')
+			AND lower(cp.path) like lower('%' || #{cond.like} || '%')
 		)
 		</if>
 		${orderBy} ${limitOffset} 
@@ -221,7 +221,7 @@
 		AND EXISTS (SELECT 1 
 			FROM svn_commit_path cp
 			WHERE c.id = cp.commit_id
-			AND cp.path like ('%' || #{cond.like} || '%')
+			AND lower(cp.path) like lower('%' || #{cond.like} || '%')
 		)
 		</if>
 	</select>
