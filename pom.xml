@@ -5,7 +5,7 @@
     <groupId>org.unclazz</groupId>
 	<artifactId>metaversion</artifactId>
 	<name>MetaVersion</name>
-	<version>1.1.0-RELEASE</version>
+	<version>1.1.1-RELEASE</version>
 	<description></description>
 	<packaging>war</packaging>
 	
@@ -41,6 +41,7 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-tomcat</artifactId>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.mybatis</groupId>
@@ -75,6 +76,7 @@
 
 	<!-- Package as an executable jar -->
 	<build>
+		<finalName>metaversion</finalName>
 		<plugins>
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
