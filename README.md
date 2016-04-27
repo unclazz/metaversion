@@ -40,7 +40,7 @@ ORマッピングのためのフレームワーク`MyBatis`や SVNリポジト�
 HTMLテンプレート処理ライブラリ`Thymeleaf`やCSV加工処理ライブラリ`Apache Commons CSV`などを使用して構築されています。
 データベースにはPostgreSQLの`9.4`を利用しています。
 
-クライアントサイドは`AngularJS`の主要モジュールと`Bootstrap`のCSSを使用して構築されています。
+クライアントサイドは`AngularJS`の主要モジュールと`Bootstrap`のCSSを使用して構築されています。コーディングには`TypeScript`が利用されています。
 
 ## どのようにしてセットアップするの？
 
