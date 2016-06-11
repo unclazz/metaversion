@@ -1,6 +1,8 @@
 package org.unclazz.metaversion.controller;
 
 import java.security.Principal;
+import java.util.Collections;
+import java.util.List;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -24,6 +26,7 @@ import org.unclazz.metaversion.entity.SvnCommitStats;
 import org.unclazz.metaversion.entity.SvnRepository;
 import org.unclazz.metaversion.entity.SvnRepositoryStats;
 import org.unclazz.metaversion.service.CommitService;
+import org.unclazz.metaversion.service.PathNameService;
 import org.unclazz.metaversion.service.ProjectService;
 import org.unclazz.metaversion.service.RepositoryService;
 import org.unclazz.metaversion.service.SvnCommandService;
@@ -45,6 +48,8 @@ public class RepositoriesJsonController {
 	private SvnCommandService svnCommandService;
 	@Autowired
 	private ProjectService projectService;
+	@Autowired
+	private PathNameService pathNameService;
 	
 	/**
 	 * リポジトリ情報の一覧を返す.
@@ -195,24 +200,6 @@ public class RepositoriesJsonController {
 			return httpResponseOfInternalServerError(ex.getMessage());
 		}
 	}
-	
-	private void normalizeRepositoryInfo(final SvnRepository r) {
-		r.setBaseUrl(r.getBaseUrl().replaceAll("/+$", ""));
-	}
-	
-	private void checkConnectivity(final SvnRepository r) {
-		try {
-			logger.debug("リポジトリ接続を試行");
-			final SvnRepositoryInfo info = svnCommandService.getRepositoryInfo(r, 2);
-			logger.debug("リポジトリ接続 結果OK");
-			logger.debug("ルートURL： {}", info.getRootUrl());
-			logger.debug("UUID： {}", info.getUuid());
-			logger.debug("HEADリビジョン： {}", info.getHeadRevision());
-		} catch (final RuntimeException ex) {
-			logger.debug("リポジトリ接続 結果NG：", ex);
-			throw ex;
-		}
-	}
 
 	@RequestMapping(value="/repositories/{id}", method=RequestMethod.DELETE)
 	public ResponseEntity<SvnRepository> deleteRepositories(final Principal principal, @PathVariable("id") final int id) {
@@ -223,6 +210,19 @@ public class RepositoriesJsonController {
 		} catch (final RuntimeException e) {
 			logger.error(e.getMessage());
 			return httpResponseOfInternalServerError(e.getMessage());
+		}
+	}
+	
+	@RequestMapping(value="/repositories/{repositoryId}/pathnames", method=RequestMethod.GET)
+	public List<String> getRepositoriesPathNames(final Principal principal,
+			@PathVariable("repositoryId") final int repositoryId,
+			@RequestParam("like") final String like, 
+			@RequestParam("size") final int size) {
+		final String trimmed = like.trim();
+		if (trimmed.isEmpty() || size < 1) {
+			return Collections.emptyList();
+		} else {
+			return pathNameService.getPathNameList(repositoryId, like.trim(), size);
 		}
 	}
 	
@@ -293,5 +293,23 @@ public class RepositoriesJsonController {
 			@ModelAttribute final Paging paging) {
 		
 		return commitService.getChangedPathListByRepositoryIdAndCommitId(repositoryId, commitId, paging);
+	}
+	
+	private void normalizeRepositoryInfo(final SvnRepository r) {
+		r.setBaseUrl(r.getBaseUrl().replaceAll("/+$", ""));
+	}
+	
+	private void checkConnectivity(final SvnRepository r) {
+		try {
+			logger.debug("リポジトリ接続を試行");
+			final SvnRepositoryInfo info = svnCommandService.getRepositoryInfo(r, 2);
+			logger.debug("リポジトリ接続 結果OK");
+			logger.debug("ルートURL： {}", info.getRootUrl());
+			logger.debug("UUID： {}", info.getUuid());
+			logger.debug("HEADリビジョン： {}", info.getHeadRevision());
+		} catch (final RuntimeException ex) {
+			logger.debug("リポジトリ接続 結果NG：", ex);
+			throw ex;
+		}
 	}
 }
