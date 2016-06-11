@@ -195,24 +195,6 @@ public class RepositoriesJsonController {
 			return httpResponseOfInternalServerError(ex.getMessage());
 		}
 	}
-	
-	private void normalizeRepositoryInfo(final SvnRepository r) {
-		r.setBaseUrl(r.getBaseUrl().replaceAll("/+$", ""));
-	}
-	
-	private void checkConnectivity(final SvnRepository r) {
-		try {
-			logger.debug("リポジトリ接続を試行");
-			final SvnRepositoryInfo info = svnCommandService.getRepositoryInfo(r, 2);
-			logger.debug("リポジトリ接続 結果OK");
-			logger.debug("ルートURL： {}", info.getRootUrl());
-			logger.debug("UUID： {}", info.getUuid());
-			logger.debug("HEADリビジョン： {}", info.getHeadRevision());
-		} catch (final RuntimeException ex) {
-			logger.debug("リポジトリ接続 結果NG：", ex);
-			throw ex;
-		}
-	}
 
 	@RequestMapping(value="/repositories/{id}", method=RequestMethod.DELETE)
 	public ResponseEntity<SvnRepository> deleteRepositories(final Principal principal, @PathVariable("id") final int id) {
@@ -224,6 +206,16 @@ public class RepositoriesJsonController {
 			logger.error(e.getMessage());
 			return httpResponseOfInternalServerError(e.getMessage());
 		}
+	}
+	
+	@RequestMapping(value="/repositories/{repositoryId}/pathnames", method=RequestMethod.GET)
+	public Paginated<String> getRepositoriesPathNames(final Principal principal,
+			@PathVariable("repositoryId") final int repositoryId,
+			@RequestParam(value="unlinkedTo", required=false, defaultValue="0") final int unlinkedTo, 
+			@RequestParam("like") final String like, 
+			@ModelAttribute final Paging paging) {
+		return commitService.getChangedPathListByRepositoryIdAndPartialPath
+				(repositoryId, like == null ? "" : like.trim(), unlinkedTo, paging);
 	}
 	
 	/**
@@ -293,5 +285,23 @@ public class RepositoriesJsonController {
 			@ModelAttribute final Paging paging) {
 		
 		return commitService.getChangedPathListByRepositoryIdAndCommitId(repositoryId, commitId, paging);
+	}
+	
+	private void normalizeRepositoryInfo(final SvnRepository r) {
+		r.setBaseUrl(r.getBaseUrl().replaceAll("/+$", ""));
+	}
+	
+	private void checkConnectivity(final SvnRepository r) {
+		try {
+			logger.debug("リポジトリ接続を試行");
+			final SvnRepositoryInfo info = svnCommandService.getRepositoryInfo(r, 2);
+			logger.debug("リポジトリ接続 結果OK");
+			logger.debug("ルートURL： {}", info.getRootUrl());
+			logger.debug("UUID： {}", info.getUuid());
+			logger.debug("HEADリビジョン： {}", info.getHeadRevision());
+		} catch (final RuntimeException ex) {
+			logger.debug("リポジトリ接続 結果NG：", ex);
+			throw ex;
+		}
 	}
 }

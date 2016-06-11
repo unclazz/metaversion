@@ -12,6 +12,7 @@ import org.unclazz.metaversion.entity.ProjectStats;
 import org.unclazz.metaversion.mapper.ProjectMapper;
 import org.unclazz.metaversion.mapper.ProjectSvnCommitMapper;
 import org.unclazz.metaversion.mapper.ProjectSvnRepositoryMapper;
+import org.unclazz.metaversion.mapper.VirtualChangedPathMapper;
 import org.unclazz.metaversion.vo.LimitOffsetClause;
 import org.unclazz.metaversion.vo.OrderByClause;
 import org.unclazz.metaversion.vo.Paginated;
@@ -27,6 +28,8 @@ public class ProjectService {
 	private ProjectSvnCommitMapper projectSvnCommitMapper;
 	@Autowired
 	private ProjectSvnRepositoryMapper projectSvnRepositoryMapper;
+	@Autowired
+	private VirtualChangedPathMapper virtualChangedPathMapper;
 	
 	public List<String> getProjectNameList(final String partialName, final int size) {
 		final LimitOffsetClause limitOffset = LimitOffsetClause.ofLimit(size);
@@ -97,6 +100,7 @@ public class ProjectService {
 	public void removeProjectById(final int projectId) {
 		projectSvnCommitMapper.deleteByProjectId(projectId);
 		projectSvnRepositoryMapper.deleteByProjectId(projectId);
+		virtualChangedPathMapper.deleteByProjectId(projectId);
 		if (projectMapper.delete(projectId) != 1) {
 			throw MVUtils.illegalArgument("Unknown project(id=%s). Update operation failed.", projectId);
 		}

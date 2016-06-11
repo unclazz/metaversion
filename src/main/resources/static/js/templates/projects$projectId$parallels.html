@@ -4,25 +4,25 @@
 	<meta charset="utf-8" />
 </head>
 <body>
-	<div class="container" ng-controller="prjects$projectId$parallels">
+	<div class="container" ng-controller="projects$projectId$parallels">
 		<nav>
 			<ol class="breadcrumb">
 				  <li><a href="#" ng-href="#/">
 				  <span class="glyphicon glyphicon-home" aria-hidden="true"></span> トップ</a></li>
 				  <li><a href="#" ng-href="#/projects">プロジェクト一覧</a></li>
 				  <li><a href="#" ng-href="#/projects/{{project.id}}">プロジェクト詳細</a></li>
-				  <li class="active">{{makeTitle('並行開発プロジェクト一覧')}}</li>
+				  <li class="active">{{makeTitle('並行開発一覧')}}</li>
 			</ol>
 		</nav>
 
 		<header class="page-header">
-			<h1><span class="entity-attribute">{{project.name}}</span> の並行開発プロジェクト一覧</h1>
+			<h1><span class="entity-attribute">{{project.name}}</span> の並行開発一覧</h1>
 		</header>
 
 		<article>
 			<div class="panel panel-warning" ng-show="list.length === 0">
 				<div class="panel-heading">
-					並行開発プロジェクト一覧
+					並行開発一覧
 				</div>
 				<div class="panel-body">
 					並行開発の状態にあるプロジェクトは見つかりませんでした。
@@ -30,7 +30,7 @@
 			</div>
 			<div class="panel panel-default" ng-show="list.length > 0">
 				<div class="panel-heading">
-					並行開発プロジェクト一覧
+					並行開発一覧
 				</div>
 				<div class="panel-body">
 					<div class="row">

@@ -18,14 +18,18 @@ import org.unclazz.metaversion.MVApplication;
 import org.unclazz.metaversion.MVUserDetails;
 import org.unclazz.metaversion.entity.ProjectChangedPath;
 import org.unclazz.metaversion.entity.ProjectParallels;
+import org.unclazz.metaversion.entity.ChangeType;
 import org.unclazz.metaversion.entity.Project;
 import org.unclazz.metaversion.entity.ProjectStats;
 import org.unclazz.metaversion.entity.ProjectSvnCommit;
+import org.unclazz.metaversion.entity.ProjectVirtualChangedPath;
 import org.unclazz.metaversion.entity.SvnCommitWithRepositoryInfo;
+import org.unclazz.metaversion.entity.VirtualChangedPath;
 import org.unclazz.metaversion.service.P2CLinkerService;
 import org.unclazz.metaversion.service.CommitService;
 import org.unclazz.metaversion.service.ProjectParallelsService;
 import org.unclazz.metaversion.service.ProjectService;
+import org.unclazz.metaversion.service.VirtualChangedPathService;
 import org.unclazz.metaversion.vo.Paginated;
 import org.unclazz.metaversion.vo.Paging;
 import org.unclazz.metaversion.vo.ProjectCommitSearchCondition;
@@ -44,6 +48,8 @@ public class ProjectsJsonController {
 	private P2CLinkerService commitLinkService;
 	@Autowired
 	private ProjectParallelsService parallelsService;
+	@Autowired
+	private VirtualChangedPathService virtualChangedPathService;
 	
 	/**
 	 * 引数で指定された部分文字列を使用してプロジェクトを検索してその名称の一覧を返す.
@@ -270,5 +276,52 @@ public class ProjectsJsonController {
 	public Paginated<ProjectChangedPath> getProjectsChangedPaths(final Principal principal,
 			@PathVariable("id") final int id, @ModelAttribute final Paging paging) {
 		return commitService.getChangedPathListByProjectId(id, paging);
+	}
+
+	@RequestMapping(value="/projects/{id}/virtualchangedpaths", method=RequestMethod.GET)
+	public Paginated<ProjectVirtualChangedPath> getProjectsVirtualChangedPaths(final Principal principal,
+			@PathVariable("id") final int id, @ModelAttribute final Paging paging) {
+		return virtualChangedPathService.getPathListByProjectId(id, paging);
+	}
+
+	@RequestMapping(value="/projects/{projectId}/virtualchangedpaths/{virtualChangedPathId}", method=RequestMethod.GET)
+	public ResponseEntity<ProjectVirtualChangedPath> getProjectsVirtualChangedPaths(final Principal principal,
+			@PathVariable("projectId") final int projectId, 
+			@PathVariable("virtualChangedPathId") final int virtualChangedPathId) {
+	
+		try {
+			return httpResponseOfOk(virtualChangedPathService.getPathById(projectId, virtualChangedPathId));
+		} catch (final Exception e) {
+			return httpResponseOfInternalServerError(e.getMessage());
+		}
+	}
+
+	@RequestMapping(value="/projects/{projectId}/virtualchangedpaths/{virtualChangedPathId}", method=RequestMethod.DELETE)
+	public ResponseEntity<Void> deleteProjectsVirtualChangedPaths(final Principal principal,
+			@PathVariable("projectId") final int projectId, 
+			@PathVariable("virtualChangedPathId") final int virtualChangedPathId) {
+	
+		try {
+			virtualChangedPathService.removePath(virtualChangedPathId, MVUserDetails.of(principal));
+			return httpResponseOfOk();
+		} catch (final Exception e) {
+			return httpResponseOfInternalServerError(e.getMessage());
+		}
+	}
+
+	@RequestMapping(value="/projects/{projectId}/virtualchangedpaths", method=RequestMethod.POST)
+	public ResponseEntity<VirtualChangedPath> postProjectsVirtualChangedPaths(final Principal principal,
+			@PathVariable("projectId") final int projectId,
+			@RequestBody final VirtualChangedPath virtualChangedPath) {
+
+		virtualChangedPath.setProjectId(projectId);
+		virtualChangedPath.setChangeTypeId(ChangeType.MODIFY.getId());
+		
+		try {
+			virtualChangedPathService.registerPath(virtualChangedPath, MVUserDetails.of(principal));
+			return httpResponseOfOk(virtualChangedPath);
+		} catch (final Exception e) {
+			return httpResponseOfInternalServerError(e.getMessage());
+		}
 	}
 }

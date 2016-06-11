@@ -16,6 +16,12 @@ module MetaVersion {
 			templateUrl: 'js/templates/projects$projectId$delete.html'
 		}).when('/projects/:projectId/commits', {
 			templateUrl: 'js/templates/projects$projectId$commits.html'
+		}).when('/projects/:projectId/virtualchangedpaths', {
+			templateUrl: 'js/templates/projects$projectId$virtualchangedpaths.html'
+		}).when('/projects/:projectId/virtualchangedpaths/add', {
+			templateUrl: 'js/templates/projects$projectId$virtualchangedpaths$add.html'
+		}).when('/projects/:projectId/virtualchangedpaths/:virtualChangedPathId/delete', {
+			templateUrl: 'js/templates/projects$projectId$virtualchangedpaths$id$delete.html'
 		}).when('/projects/:projectId/commits/:commitId/delete', {
 			templateUrl: 'js/templates/projects$projectId$commits$commitId$delete.html'
 		}).when('/projects/:projectId/changedpaths', {

@@ -3,7 +3,6 @@ package org.unclazz.metaversion.service;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.LinkedList;
 import java.util.List;
@@ -12,6 +11,7 @@ import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.unclazz.metaversion.MVProperties;
 import org.unclazz.metaversion.entity.ProjectChangedPath;
 import org.unclazz.metaversion.entity.SvnCommit;
 import org.unclazz.metaversion.entity.SvnCommitPathWithBranchName;
@@ -28,8 +28,8 @@ import org.unclazz.metaversion.vo.ProjectCommitSearchCondition;
 
 @Service
 public class CommitService {
-	private static final Charset csvCharset = Charset.forName("Shift_JIS");
-	
+	@Autowired
+	private MVProperties props;
 	@Autowired
 	private SvnCommitMapper svnCommitMapper;
 	@Autowired
@@ -166,7 +166,7 @@ public class CommitService {
 		// CSVファイルのコンテンツを一時的に格納するためバイト配列出力ストリームを初期化
 		final ByteArrayOutputStream os = new ByteArrayOutputStream();
 		// そのストリームをラップするかたちでライターを初期化
-		final OutputStreamWriter osw = new OutputStreamWriter(os, csvCharset);
+		final OutputStreamWriter osw = new OutputStreamWriter(os, props.getCsvCharset());
 		// CSVフォーマットを定義
 		final CSVFormat format = CSVFormat.EXCEL.withHeader(
 				"REPOSITORY_ID",
@@ -221,6 +221,27 @@ public class CommitService {
 		// パス情報を検索する
 		return Paginated.of(paging, ps,
 				svnCommitPathMapper.selectCountBySvnCommitId(commitId));
-		
+	}
+	
+	/**
+	 * リポジトリの変更パスの一覧を取得する.
+	 * @param repositoryId リポジトリID. このリポジトリのパスがコミット横断的に検索される。
+	 * @param partialPath 部分パス文字列. この文字列を含まないパスは結果から除外される。
+	 * 						{@code null}もしくは空文字列の場合、除外は行われない。
+	 * @param unlinkedTo プロジェクトID. このプロジェクトと紐付けられたパスは結果から除外される。
+	 * 						{@code 0}の場合、除外は行われない。
+	 * @param paging ページング情報.
+	 * @return ページ付けされた変更パス一覧
+	 */
+	public Paginated<String> getChangedPathListByRepositoryIdAndPartialPath(
+			final int repositoryId, final String partialPath, final int unlinkedTo, 
+			final Paging paging) {
+		final OrderByClause orderBy = OrderByClause.of("path");
+		final LimitOffsetClause limitOffset = LimitOffsetClause.of(paging);
+		return Paginated.<String>of(paging, 
+				svnCommitPathMapper.selectPathNameByRepositoryIdAndPartialPath
+				(repositoryId, partialPath, unlinkedTo, orderBy, limitOffset),
+				svnCommitPathMapper.selectCountPathNameByRepositoryIdAndPartialPath
+				(repositoryId, partialPath, unlinkedTo));
 	}
 }

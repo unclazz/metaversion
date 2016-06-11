@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.unclazz.metaversion.service.CommitService;
 import org.unclazz.metaversion.service.ProjectParallelsService;
+import org.unclazz.metaversion.service.VirtualChangedPathService;
 
 @Controller
 public class CsvController {
@@ -21,6 +22,8 @@ public class CsvController {
 	private ProjectParallelsService parallelsService;
 	@Autowired
 	private CommitService commitService;
+	@Autowired
+	private VirtualChangedPathService virtualChangedPathService;
 	
 	@RequestMapping(value = "/csv/projects/{projectId}/parallels",
 			produces = MediaType.APPLICATION_OCTET_STREAM_VALUE,
@@ -43,6 +46,18 @@ public class CsvController {
  		final HttpHeaders headers = new HttpHeaders();
  		headers.add("contet-type", MimeTypeUtils.APPLICATION_OCTET_STREAM_VALUE + ";Shift_JIS");
  		headers.set("Content-Disposition", String.format("filename=\"changedpaths_%s.csv\"", id));
+ 		return new ResponseEntity<byte[]>(bytes, headers, HttpStatus.OK);
+	}
+	
+	@RequestMapping(value = "/csv/projects/{projectId}/virtualchangedpaths",
+			produces = MediaType.APPLICATION_OCTET_STREAM_VALUE,
+			method = RequestMethod.GET)
+ 	public ResponseEntity<byte[]> getProjectsVirtualChangedPathCsvDownload(
+ 			@PathVariable("projectId") final int id) throws IOException {
+ 		final byte[] bytes = virtualChangedPathService.getPathCsvByProjectId(id);
+ 		final HttpHeaders headers = new HttpHeaders();
+ 		headers.add("contet-type", MimeTypeUtils.APPLICATION_OCTET_STREAM_VALUE + ";Shift_JIS");
+ 		headers.set("Content-Disposition", String.format("filename=\"virtualchangedpaths_%s.csv\"", id));
  		return new ResponseEntity<byte[]>(bytes, headers, HttpStatus.OK);
 	}
 }

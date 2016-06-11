@@ -4,33 +4,67 @@
 	<meta charset="utf-8" />
 </head>
 <body>
-	<div class="container" ng-controller="projects$projectId$changedpaths">
+	<div class="container" ng-controller="projects$projectId$virtualchangedpaths$add">
 		<nav>
 			<ol class="breadcrumb">
 				  <li><a href="#" ng-href="#/">
 				  <span class="glyphicon glyphicon-home" aria-hidden="true"></span> トップ</a></li>
 				  <li><a href="#" ng-href="#/projects">プロジェクト一覧</a></li>
 				  <li><a href="#" ng-href="#/projects/{{project.id}}">プロジェクト詳細</a></li>
-				  <li class="active">{{makeTitle('プロジェクト変更パス一覧')}}</li>
+				  <li><a href="#" ng-href="#/projects/{{project.id}}/virtualchangedpaths">プロジェクト仮想変更パス一覧</a></li>
+				  <li class="active">{{makeTitle('プロジェクト仮想変更パス追加')}}</li>
 			</ol>
 		</nav>
 
 		<header class="page-header">
-			<h1><span class="entity-attribute">{{project.name}}</span> の変更パス一覧</h1>
+			<h1><span class="entity-attribute">{{project.name}}</span> の仮想変更パス追加</h1>
 		</header>
 
 		<article>
+			<form method="get" name="thisForm" ng-submit="submit()">
+				<uib-accordion>
+					<uib-accordion-group is-open="open">
+						<uib-accordion-heading>
+							検索条件 <span class="pull-right glyphicon" aria-hidden="true"
+							 ng-class="{'glyphicon-chevron-down': open, 'glyphicon-chevron-right': !open}"></span>
+						</uib-accordion-heading>
+						<table class="table table-borderless">
+							<tr>
+								<th>リポジトリ</th>
+								<td>
+									<select class="form-control" ng-model="cond.repositoryId"
+									ng-options="repository.id as repository.name for repository in repositories"></select>
+								</td>
+							</tr>
+							<tr>
+								<th>キーワード</th>
+								<td>
+									<input type="text" class="form-control" name="like" autocomplete="off"
+										placeholder="キーワードを入力してください" ng-model="cond.like" />
+								</td>
+							</tr>
+							<tr>
+								<td></td>
+								<td>
+									<input type="hidden" name="unlinked" value="true" />
+									<button class="btn btn-primary" type="submit" ng-disabled="thisForm.$invalid">検索</button>
+								</td>
+							</tr>
+						</table>
+					</uib-accordion-group>
+				</uib-accordion>
+			</form>
 			<div class="panel panel-warning" ng-show="list.length === 0">
 				<div class="panel-heading">
-					変更パス一覧
+					リポジトリ変更パス一覧
 				</div>
 				<div class="panel-body">
-					変更パス情報が1件も存在しません。
+					仮想変更パスとして追加可能なパスが1件も見つかりませんでした。
 				</div>
 			</div>
 			<div class="panel panel-default" ng-show="list.length > 0">
 				<div class="panel-heading">
-					変更パス一覧
+					リポジトリ変更パス一覧
 				</div>
 				<div class="panel-body">
 					<div class="row">
@@ -61,25 +95,27 @@
 				<table class="table table-hover table-condensed">
 					<thead>
 						<tr>
-							<th>リポジトリ名</th>
 							<th>変更パス</th>
-							<th>初期コミット日時</th>
-							<th>最終コミット日時</th>
+							<th>アクション</th>
 						</tr>
 					</thead>
 					<tbody>
 						<tr  ng-repeat="item in list">
-							<td>{{item.repositoryName}}</td>
-							<td>{{item.path}}</td>
-							<td>{{item.minCommitDate}}</td>
-							<td>{{item.maxCommitDate}}</td>
+							<td>{{item}}</td>
+							<td>
+								<div class="btn-group btn-group-xs" role="group">
+									<button type="button" class="btn btn-primary" ng-click="click($event)" data-changed-path="{{item}}" title="追加">
+										<span class="glyphicon glyphicon-link"></span>
+									</button>
+								</div>
+							</td>
 						</tr>
 					</tbody>
 				</table>
 				<div class="panel-body">
 					<div class="row">
 						<div class="col-lg-3">
-							<a class="btn btn-default" href="#" ng-href="{{csvDowloadUrl()}}" role="button">CSVダウンロード</a>
+							<!-- empty -->
 						</div>
 						<div class="col-lg-6" style="text-align: center;">
 							<uib-pagination total-items="totalSize"
@@ -95,13 +131,15 @@
 								last-text="最後"
 							></uib-pagination>
 						</div>
-						<div class="col-lg-3">
+						<div class="col-lg-2">
 							<!-- empty -->
+						</div>
+						<div class="col-lg-1">
 						</div>
 					</div>
 				</div>
 			</div>
 		</article>
-	</div>
+	</div><!-- /.container -->
 </body>
 </html>
