@@ -1,8 +1,6 @@
 package org.unclazz.metaversion.controller;
 
 import java.security.Principal;
-import java.util.Collections;
-import java.util.List;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -26,7 +24,6 @@ import org.unclazz.metaversion.entity.SvnCommitStats;
 import org.unclazz.metaversion.entity.SvnRepository;
 import org.unclazz.metaversion.entity.SvnRepositoryStats;
 import org.unclazz.metaversion.service.CommitService;
-import org.unclazz.metaversion.service.PathNameService;
 import org.unclazz.metaversion.service.ProjectService;
 import org.unclazz.metaversion.service.RepositoryService;
 import org.unclazz.metaversion.service.SvnCommandService;
@@ -48,8 +45,6 @@ public class RepositoriesJsonController {
 	private SvnCommandService svnCommandService;
 	@Autowired
 	private ProjectService projectService;
-	@Autowired
-	private PathNameService pathNameService;
 	
 	/**
 	 * リポジトリ情報の一覧を返す.
@@ -214,16 +209,13 @@ public class RepositoriesJsonController {
 	}
 	
 	@RequestMapping(value="/repositories/{repositoryId}/pathnames", method=RequestMethod.GET)
-	public List<String> getRepositoriesPathNames(final Principal principal,
+	public Paginated<String> getRepositoriesPathNames(final Principal principal,
 			@PathVariable("repositoryId") final int repositoryId,
+			@RequestParam(value="unlinkedTo", required=false, defaultValue="0") final int unlinkedTo, 
 			@RequestParam("like") final String like, 
-			@RequestParam("size") final int size) {
-		final String trimmed = like.trim();
-		if (trimmed.isEmpty() || size < 1) {
-			return Collections.emptyList();
-		} else {
-			return pathNameService.getPathNameList(repositoryId, like.trim(), size);
-		}
+			@ModelAttribute final Paging paging) {
+		return commitService.getChangedPathListByRepositoryIdAndPartialPath
+				(repositoryId, like == null ? "" : like.trim(), unlinkedTo, paging);
 	}
 	
 	/**

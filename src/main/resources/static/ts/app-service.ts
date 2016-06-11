@@ -12,6 +12,7 @@ module MetaVersion {
         projectId :number;
         repositoryId :number;
         commitId :number;
+		virtualChangedPathId :number;
     }
     
     /**
@@ -26,11 +27,13 @@ module MetaVersion {
         repositoryCommitStats :ng.resource.IResourceClass<IRepositoryCommitStats>;
         projects :IResourceClassResavable<IProject>;
         projectChangedPaths :ng.resource.IResourceClass<IProjectChangedPath>;
+		projectVirtualChangedPaths :ng.resource.IResourceClass<IProjectVirtualChangedPath>;
         projectCommits :ng.resource.IResourceClass<IProjectCommit>;
         projectParallels :ng.resource.IResourceClass<IProjectParallel>;
         projectStats :ng.resource.IResourceClass<IProjectStats>;
         batches :ng.resource.IResourceClass<IBatch>;
         pathNames :ng.resource.IResourceClass<string>;
+        repositoryPathNames :ng.resource.IResourceClass<string>;
         projectNames :ng.resource.IResourceClass<string>;
     }
     
@@ -69,6 +72,9 @@ module MetaVersion {
 			}
 			if (res = /\/commits\/(\d+)/.exec(url)) {
 				ids.commitId = + res[1];
+			}
+			if (res = /\/virtualchangedpaths\/(\d+)/.exec(url)) {
+				ids.virtualChangedPathId = + res[1];
 			}
 			return ids;
 		};

@@ -2,12 +2,16 @@
 -- PostgreSQL database dump
 --
 
+-- Dumped from database version 9.5.2
+-- Dumped by pg_dump version 9.5.2
+
 SET statement_timeout = 0;
 SET lock_timeout = 0;
 SET client_encoding = 'UTF8';
 SET standard_conforming_strings = on;
 SET check_function_bodies = false;
 SET client_min_messages = warning;
+SET row_security = off;
 
 --
 -- Name: plpgsql; Type: EXTENSION; Schema: -; Owner: 
@@ -217,7 +221,7 @@ ALTER TABLE project OWNER TO postgres;
 CREATE TABLE project_svn_commit (
     project_id integer NOT NULL,
     commit_id integer NOT NULL,
-    auto_linked boolean NOT NULL DEFAULT true,
+    auto_linked boolean DEFAULT true NOT NULL,
     create_date timestamp without time zone DEFAULT now() NOT NULL,
     create_user_id integer NOT NULL
 );
@@ -332,6 +336,58 @@ CREATE VIEW project_stats_view AS
 ALTER TABLE project_stats_view OWNER TO postgres;
 
 --
+-- Name: virtual_changed_path; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE virtual_changed_path (
+    id integer NOT NULL,
+    project_id integer NOT NULL,
+    repository_id integer NOT NULL,
+    path text NOT NULL,
+    change_type_id integer NOT NULL
+);
+
+
+ALTER TABLE virtual_changed_path OWNER TO postgres;
+
+--
+-- Name: project_changedpath_plus_view; Type: VIEW; Schema: public; Owner: postgres
+--
+
+CREATE VIEW project_changedpath_plus_view AS
+ SELECT project_changedpath_view.project_id,
+    project_changedpath_view.path,
+    project_changedpath_view.svn_repository_id,
+    project_changedpath_view.svn_repository_name,
+    project_changedpath_view.commit_count,
+    project_changedpath_view.min_revision,
+    project_changedpath_view.max_revision,
+    project_changedpath_view.min_commit_date,
+    project_changedpath_view.max_commit_date
+   FROM project_changedpath_view
+UNION ALL
+ SELECT vcp.project_id,
+    vcp.path,
+    vcp.repository_id AS svn_repository_id,
+    r.name AS svn_repository_name,
+    0 AS commit_count,
+    0 AS min_revision,
+    0 AS max_revision,
+    psv.min_commit_date,
+    psv.max_commit_date
+   FROM ((project_stats_view psv
+     JOIN virtual_changed_path vcp ON ((psv.id = vcp.project_id)))
+     JOIN svn_repository r ON ((r.id = vcp.repository_id)))
+  WHERE (NOT (EXISTS ( SELECT 1
+           FROM ((project_svn_commit pc
+             JOIN svn_commit c ON ((pc.commit_id = c.id)))
+             JOIN svn_commit_path cp ON ((c.id = cp.commit_id)))
+          WHERE ((pc.project_id = vcp.project_id) AND (c.repository_id = vcp.repository_id) AND (cp.path = vcp.path)))));
+
+
+ALTER TABLE project_changedpath_plus_view OWNER TO postgres;
+
+--
 -- Name: project_parallels_view; Type: VIEW; Schema: public; Owner: postgres
 --
 
@@ -357,11 +413,11 @@ CREATE VIEW project_parallels_view AS
     b_path.max_commit_date AS other_max_commit_date,
     a_path.svn_repository_id AS repository_id,
     a_path.svn_repository_name AS repository_name
-   FROM (((project_changedpath_view a_path
-     JOIN project_changedpath_view b_path ON (((a_path.path = b_path.path) AND (a_path.svn_repository_id = b_path.svn_repository_id))))
+   FROM (((project_changedpath_plus_view a_path
+     JOIN project_changedpath_plus_view b_path ON (((a_path.path = b_path.path) AND (a_path.svn_repository_id = b_path.svn_repository_id))))
      JOIN project_stats_view a_stat ON ((a_path.project_id = a_stat.id)))
      JOIN project b_proj ON ((b_path.project_id = b_proj.id)))
-  WHERE ((a_path.project_id <> b_path.project_id) AND (((((b_path.min_commit_date >= a_stat.min_commit_date) AND (b_path.min_commit_date <= a_stat.max_commit_date)) OR ((b_path.max_commit_date >= a_stat.min_commit_date) AND (b_path.max_commit_date <= a_stat.max_commit_date))) OR ((a_stat.min_commit_date >= b_path.min_commit_date) AND (a_stat.min_commit_date <= b_path.max_commit_date))) OR ((a_stat.max_commit_date >= b_path.min_commit_date) AND (a_stat.max_commit_date <= b_path.max_commit_date))));
+  WHERE ((a_path.project_id <> b_path.project_id) AND (((b_path.min_commit_date >= a_stat.min_commit_date) AND (b_path.min_commit_date <= a_stat.max_commit_date)) OR ((b_path.max_commit_date >= a_stat.min_commit_date) AND (b_path.max_commit_date <= a_stat.max_commit_date)) OR ((a_stat.min_commit_date >= b_path.min_commit_date) AND (a_stat.min_commit_date <= b_path.max_commit_date)) OR ((a_stat.max_commit_date >= b_path.min_commit_date) AND (a_stat.max_commit_date <= b_path.max_commit_date))));
 
 
 ALTER TABLE project_parallels_view OWNER TO postgres;
@@ -523,6 +579,20 @@ CREATE SEQUENCE system_boot_log_seq
 
 
 ALTER TABLE system_boot_log_seq OWNER TO postgres;
+
+--
+-- Name: virtual_changed_path_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE virtual_changed_path_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE virtual_changed_path_seq OWNER TO postgres;
 
 --
 -- Name: change_type_pk; Type: CONSTRAINT; Schema: public; Owner: postgres
@@ -709,6 +779,22 @@ ALTER TABLE ONLY application_user
 
 
 --
+-- Name: virtual_commit_path_pk; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY virtual_changed_path
+    ADD CONSTRAINT virtual_commit_path_pk PRIMARY KEY (id);
+
+
+--
+-- Name: virtual_commit_path_uniq0; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY virtual_changed_path
+    ADD CONSTRAINT virtual_commit_path_uniq0 UNIQUE (project_id, repository_id, path);
+
+
+--
 -- Name: svn_commit_idx01; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -860,6 +946,30 @@ ALTER TABLE ONLY svn_commit_path
 
 ALTER TABLE ONLY svn_commit_path
     ADD CONSTRAINT svn_commit_path_fk1 FOREIGN KEY (change_type_id) REFERENCES change_type(id);
+
+
+--
+-- Name: virtual_commit_path_fk0; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY virtual_changed_path
+    ADD CONSTRAINT virtual_commit_path_fk0 FOREIGN KEY (project_id) REFERENCES project(id);
+
+
+--
+-- Name: virtual_commit_path_fk1; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY virtual_changed_path
+    ADD CONSTRAINT virtual_commit_path_fk1 FOREIGN KEY (repository_id) REFERENCES svn_repository(id);
+
+
+--
+-- Name: virtual_commit_path_fk2; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY virtual_changed_path
+    ADD CONSTRAINT virtual_commit_path_fk2 FOREIGN KEY (change_type_id) REFERENCES change_type(id);
 
 
 --

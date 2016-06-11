@@ -16,10 +16,19 @@ public interface VirtualChangedPathMapper {
 	@Select("SELECT nextval('virtual_changed_path_seq') ")
 	int selectNextVal();
 	
-	@Select("SELECT id virtualChangedPathId, project_id projectId, "
-			+ "		repository_id repositoryId, r.name repositoryName, "
-			+ "		change_type_id changeTypeId, path "
-			+ "FROM virtual_changed_path "
+	@Select("SELECT vcp.id virtualChangedPathId, vcp.project_id projectId, "
+			+ "		vcp.repository_id repositoryId, r.name repositoryName, "
+			+ "		vcp.change_type_id changeTypeId, vcp.path "
+			+ "FROM virtual_changed_path vcp "
+			+ "INNER JOIN svn_repository r "
+			+ "ON repository_id =  r.id "
+			+ "WHERE vcp.id = #{id} ")
+	ProjectVirtualChangedPath selectOneById(@Param("id") int id);
+	
+	@Select("SELECT vcp.id virtualChangedPathId, vcp.project_id projectId, "
+			+ "		vcp.repository_id repositoryId, r.name repositoryName, "
+			+ "		vcp.change_type_id changeTypeId, vcp.path "
+			+ "FROM virtual_changed_path vcp "
 			+ "INNER JOIN svn_repository r "
 			+ "ON repository_id =  r.id "
 			+ "WHERE project_id = #{projectId} "

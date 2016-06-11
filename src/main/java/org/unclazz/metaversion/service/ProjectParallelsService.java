@@ -3,13 +3,13 @@ package org.unclazz.metaversion.service;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.unclazz.metaversion.MVProperties;
 import org.unclazz.metaversion.entity.ProjectParallels;
 import org.unclazz.metaversion.mapper.ProjectParallelsMapper;
 import org.unclazz.metaversion.vo.LimitOffsetClause;
@@ -19,8 +19,8 @@ import org.unclazz.metaversion.vo.Paging;
 
 @Service
 public class ProjectParallelsService {
-	private static final Charset csvCharset = Charset.forName("Shift_JIS");
-	
+	@Autowired
+	private MVProperties props;
 	@Autowired
 	private ProjectParallelsMapper projectParallelsMapper;
 	
@@ -42,7 +42,7 @@ public class ProjectParallelsService {
 		// CSVファイルのコンテンツを一時的に格納するためバイト配列出力ストリームを初期化
 		final ByteArrayOutputStream os = new ByteArrayOutputStream();
 		// そのストリームをラップするかたちでライターを初期化
-		final OutputStreamWriter osw = new OutputStreamWriter(os, csvCharset);
+		final OutputStreamWriter osw = new OutputStreamWriter(os, props.getCsvCharset());
 		// CSVフォーマットを定義
 		final CSVFormat format = CSVFormat.EXCEL.withHeader(
 				"SELF_PROJECT_ID",

@@ -1,5 +1,7 @@
 package org.unclazz.metaversion;
 
+import java.nio.charset.Charset;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
@@ -19,7 +21,12 @@ public class MVProperties {
 	private String applicationName;
 	@Value("${metaversion.application.version}")
 	private String applicationVersion;
+	@Value("${metaversion.csv.charset}")
+	private String csvCharset;
 	
+	public Charset getCsvCharset() {
+		return Charset.forName(csvCharset);
+	}
 	public int getDefaultAdminId() {
 		return defaultAdminId;
 	}

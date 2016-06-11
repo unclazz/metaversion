@@ -40,23 +40,10 @@ module MetaVersion {
         
     }
     export interface IProjectChangedPath {
-        otherMaxCommitDate : string
-        otherMaxRevision : number
-        otherMinCommitDate : string
-        otherMinRevision : number
-        otherProjectCode : string
-        otherProjectId : number
-        otherProjectName : string
-        otherProjectResponsiblePerson : string
-        parallelType : string
-        path : string
-        repositoryId : number
-        repositoryName : string
-        selfMaxCommitDate : string
-        selfMaxRevision : number
-        selfMinCommitDate : string
-        selfMinRevision : number
-        selfProjectId : number
+        
+    }
+    export interface IProjectVirtualChangedPath {
+        
     }
     export interface IProjectParallel {
         
@@ -87,6 +74,9 @@ module MetaVersion {
         entities.projectChangedPaths = entityResource<IProjectChangedPath>("ProjectChangedPath", 
             "api/projects/:projectId/changedpaths",
             {projectId: "@projectId"}, pagingParams);
+        entities.projectVirtualChangedPaths = entityResource<IProjectVirtualChangedPath>("ProjectVirtualChangedPath", 
+            "api/projects/:projectId/virtualchangedpaths/:virtualChangedPathId",
+            {projectId: "@projectId", virtualChangedPathId: "@virtualChangedPathId"}, pagingParams);
         entities.projectCommits = entityResource<IProjectCommit>("ProjectCommit", 
             "api/projects/:projectId/commits/:commitId",
             {projectId: "@projectId", commitId: "@commitId"}, pagingParams);
@@ -119,6 +109,9 @@ module MetaVersion {
             pagingParams) as IResourceClassResavable<IUser>;
         entities.pathNames = suggestResource("PathName", "api/pathnames", {}, suggestParams);
         entities.projectNames = suggestResource("ProjectName", "api/projectnames", {}, suggestParams);
+        entities.repositoryPathNames = entityResource<string>("RepositoryPathName", 
+            "api/repositories/:repositoryId/pathnames", 
+            {repositoryId: "@repositoryId"}, pagingParams);
         
         return entities;
         

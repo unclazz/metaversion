@@ -293,6 +293,130 @@ module MetaVersion {
 		$scope.pageChange();
 	}
 	
+    interface IProjectsProjectIdVirtualChangedPathsScope extends IParentScope {
+        project :IProjectStats;
+        list :IProjectCommit[];
+        cond :any;
+        pathNames :(subseq :string) => ng.IPromise<ng.resource.IResourceArray<string>>;
+        csvDowloadUrl :() => void;
+        pageChange :() => void;
+    }
+
+	// プロジェクト仮想変更パス一覧画面のためのコントローラ
+    export function projectsProjectIdVirtualChangedPathsControllerFn($log :ng.ILogService, 
+        $scope :IProjectsProjectIdVirtualChangedPathsScope, $location :ng.ILocationService,
+		entities :IEntityService, paths :IPathService, modals :IModalService) {
+
+		var ids = paths.pathToIds();
+		$scope.project = entities.projectStats.get({id: ids.projectId},
+				angular.noop, modals.errorModal);
+		// クエリ文字列をもとに検索条件を初期化
+		$scope.cond = angular.extend(paths.queryToObject({page: 1}), ids);
+		// ページ変更時にコールされる関数を作成・設定
+		$scope.pageChange = function() {
+			entities.projectVirtualChangedPaths.query($scope.cond, 
+			function(paginated :IPaginated<IProjectChangedPath>) {
+				$scope.totalSize = paginated.totalSize;
+				$scope.size = paginated.size;
+				$scope.list = paginated.list;
+				if (paginated.page > 1) paths.entryToQuery('page', paginated.page);
+			}, modals.errorModal);
+		};
+		// 初期表示
+		$scope.pageChange();
+		$scope.csvDowloadUrl = function () {
+			var nativePath = window.location.pathname.replace(/index$/, '');
+			var ngPath = $location.path();
+			return nativePath + 'csv' + ngPath;
+		};
+	}
+	
+    interface IProjectsProjectIdVirtualChangedPathsIdDeleteScope extends IParentScope {
+        project :IProjectStats;
+        path :IProjectVirtualChangedPath;
+        submit :() => void;
+    }
+	
+	// プロジェクトコミット紐付け解除画面のためのコントローラ
+	export function projectsProjectIdVirtualChangedPathsIdDeleteControllerFn($log :ng.ILogService, 
+			$scope :IProjectsProjectIdVirtualChangedPathsIdDeleteScope, 
+			entities :IEntityService, paths :IPathService, modals :IModalService) {
+		var ids = paths.pathToIds();
+		$scope.project = entities.projectStats.get({id: ids.projectId},
+				angular.noop, modals.errorModal);
+		$scope.path = entities.projectVirtualChangedPaths.get(ids, angular.noop, modals.errorModal);
+
+		$scope.submit = function() {
+			var p = entities.projectVirtualChangedPaths.remove(ids, function (data :any) {
+				paths.stringToPath('projects/' + ids.projectId + '/virtualchangedpaths');
+			}, modals.errorModal);
+		};
+	}
+	
+	/**
+	 * プロジェクト仮想変更パス追加画面のためのスコープ.
+	 */
+    interface IProjectsProjectIdVirtualChangedPathsAddScope extends IParentScope {
+        project :IProjectStats;
+        list :string[];
+		repositories :IRepository[];
+        cond :any;
+		open :boolean;
+        submit :() => void;
+        click :($event :Event) => void;
+        pageChange :() => void;
+    }
+	
+	/**
+	 * プロジェクト仮想変更パス追加画面のためのコントローラ.
+	 */
+	export function projectsProjectIdVirtualChangedPathsAddControllerFn($log :ng.ILogService, 
+			$scope :IProjectsProjectIdVirtualChangedPathsAddScope, 
+			entities :IEntityService, paths :IPathService, modals :IModalService) {
+		
+		// パスからID情報を取得
+		var ids = paths.pathToIds();
+		// プロジェクト情報を取得
+		$scope.project = entities.projectStats.get({id: ids.projectId}, angular.noop, modals.errorModal);
+		// クエリ文字列をもとに検索条件を初期化
+		$scope.cond = angular.extend(paths.queryToObject({page: 1, repositoryId: 0, like: ''}), ids);
+		$scope.cond.unlinkedTo = ids.projectId;
+		$scope.open = true;
+		$scope.repositories = [];
+		// 検索ボタンがクリックされたときにコールされる関数を作成・設定
+		$scope.submit = function() {
+			paths.objectToQuery($scope.cond);
+		};
+		entities.repositories.query({size: 999}, function name(paginated: IPaginated<IRepository>) {
+			$scope.repositories = paginated.list;
+			if ($scope.repositories.length > 0) {
+				$scope.cond.repositoryId = paginated.list[0].id;
+				$scope.pageChange();
+			}
+		});
+
+		// ページ変更時にコールされる関数を作成・設定
+		$scope.pageChange = function() {
+			if ($scope.cond.repositoryId == 0) {
+				return;
+			}
+			entities.repositoryPathNames.query($scope.cond, function(paginated :IPaginated<string>) {
+				$scope.totalSize = paginated.totalSize;
+				$scope.size = paginated.size;
+				$scope.list = paginated.list;
+				if (paginated.page > 1) paths.entryToQuery('page', paginated.page);
+			}, modals.errorModal);
+		};
+		$scope.click = function($event :Event) {
+			var path:string = angular.element($event.target).attr('data-changed-path');
+			entities.projectVirtualChangedPaths.save(
+				{path: path, projectId: ids.projectId, repositoryId: $scope.cond.repositoryId},
+				$scope.pageChange, modals.errorModal);
+		};
+		// 初期表示
+		$scope.pageChange();
+	}
+	
     interface IProjectsProjectIdCommitsLinkScope extends IParentScope {
         project :IProjectStats;
         list :IProjectCommit[];

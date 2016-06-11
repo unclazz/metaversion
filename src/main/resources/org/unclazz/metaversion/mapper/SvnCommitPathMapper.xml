@@ -62,6 +62,11 @@
 		AND lower(cp.path) LIKE lower('%' || #{partialPath} || '%')
 		</if>
 		<if test="unlinkedTo &gt; 0">
+		AND NOT EXISTS (SELECT 1 
+			FROM virtual_changed_path vcp
+			WHERE vcp.project_id = #{unlinkedTo} 
+			AND vcp.repository_id = c.repository_id 
+			AND cp.path = vcp.path)
 		EXCEPT
 		SELECT path
 		FROM svn_commit c
@@ -90,6 +95,11 @@
 			AND lower(cp.path) LIKE lower('%' || #{partialPath} || '%')
 			</if>
 			<if test="unlinkedTo &gt; 0">
+			AND NOT EXISTS (SELECT 1 
+				FROM virtual_changed_path vcp
+				WHERE vcp.project_id = #{unlinkedTo} 
+				AND vcp.repository_id = c.repository_id 
+				AND cp.path = vcp.path)
 			EXCEPT
 			SELECT path
 			FROM svn_commit c

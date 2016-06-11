@@ -4,33 +4,44 @@
 	<meta charset="utf-8" />
 </head>
 <body>
-	<div class="container" ng-controller="projects$projectId$parallels">
+	<div class="container" ng-controller="projects$projectId$virtualchangedpaths">
 		<nav>
 			<ol class="breadcrumb">
 				  <li><a href="#" ng-href="#/">
 				  <span class="glyphicon glyphicon-home" aria-hidden="true"></span> トップ</a></li>
 				  <li><a href="#" ng-href="#/projects">プロジェクト一覧</a></li>
 				  <li><a href="#" ng-href="#/projects/{{project.id}}">プロジェクト詳細</a></li>
-				  <li class="active">{{makeTitle('並行開発一覧')}}</li>
+				  <li class="active">{{makeTitle('プロジェクト仮想変更パス一覧')}}</li>
 			</ol>
 		</nav>
 
 		<header class="page-header">
-			<h1><span class="entity-attribute">{{project.name}}</span> の並行開発一覧</h1>
+			<h1><span class="entity-attribute">{{project.name}}</span> の仮想変更パス一覧</h1>
 		</header>
 
 		<article>
 			<div class="panel panel-warning" ng-show="list.length === 0">
 				<div class="panel-heading">
-					並行開発一覧
+					仮想変更パス一覧
 				</div>
 				<div class="panel-body">
-					並行開発の状態にあるプロジェクトは見つかりませんでした。
+					<div class="row">
+						<div class="col-lg-6">
+							変更パス情報が1件も存在しません。
+						</div>
+						<div class="col-lg-3">
+							<!-- empty -->
+						</div>
+						<div class="col-lg-3" style="text-align: right;">
+							<a class="btn btn-default" role="button" href="#"
+							ng-href="#/projects/{{project.id}}/virtualchangedpaths/add">追加</a>
+						</div>
+					</div>
 				</div>
 			</div>
 			<div class="panel panel-default" ng-show="list.length > 0">
 				<div class="panel-heading">
-					並行開発一覧
+					仮想変更パス一覧
 				</div>
 				<div class="panel-body">
 					<div class="row">
@@ -51,8 +62,9 @@
 								last-text="最後"
 							></uib-pagination>
 						</div>
-						<div class="col-lg-3">
-							<!-- empty -->
+						<div class="col-lg-3" style="text-align: right;">
+							<a class="btn btn-default" role="button" href="#"
+							ng-href="#/projects/{{project.id}}/virtualchangedpaths/add">追加</a>
 						</div>
 					</div>
 				</div>
@@ -61,17 +73,23 @@
 						<tr>
 							<th>リポジトリ名</th>
 							<th>変更パス</th>
-							<th>プロジェクト名</th>
-							<th>コード</th>
+							<th>アクション</th>
 						</tr>
 					</thead>
 					<tbody>
 						<tr  ng-repeat="item in list">
-							<td ng-class="{'repeated-item': item.repositoryRepeated}">{{item.repositoryName}}</td>
-							<td ng-class="{'repeated-item': item.pathRepeated}">{{item.path}}</td>
-							<td><a href="#" ng-href="#/projects/{{item.otherProjectId}}">
-							{{item.otherProjectName}}</a></td>
-							<td>{{item.otherProjectCode}}</td>
+							<td>{{item.repositoryName}}</td>
+							<td>{{item.path}}</td>
+							<td>
+								<div class="btn-group btn-group-xs" role="group">
+									<a class="btn btn-default" href="#" ng-href="#/projects?pathbase=1&like={{item.path}}" role="button" title="プロジェクト検索">
+										<span class=" glyphicon glyphicon-list"></span>
+									</a>
+									<a class="btn btn-danger" href="#" ng-href="#/projects/{{project.id}}/virtualchangedpaths/{{item.virtualChangedPathId}}/delete" role="button" title="削除">
+										<span class="glyphicon glyphicon-remove"></span>
+									</a>
+								</div>
+							</td>
 						</tr>
 					</tbody>
 				</table>
@@ -94,8 +112,9 @@
 								last-text="最後"
 							></uib-pagination>
 						</div>
-						<div class="col-lg-3">
-							<!-- empty -->
+						<div class="col-lg-3" style="text-align: right;">
+							<a class="btn btn-default" role="button" href="#"
+							ng-href="#/projects/{{project.id}}/virtualchangedpaths/add">追加</a>
 						</div>
 					</div>
 				</div>

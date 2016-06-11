@@ -17,6 +17,12 @@ var MetaVersion;
             templateUrl: 'js/templates/projects$projectId$delete.html'
         }).when('/projects/:projectId/commits', {
             templateUrl: 'js/templates/projects$projectId$commits.html'
+        }).when('/projects/:projectId/virtualchangedpaths', {
+            templateUrl: 'js/templates/projects$projectId$virtualchangedpaths.html'
+        }).when('/projects/:projectId/virtualchangedpaths/add', {
+            templateUrl: 'js/templates/projects$projectId$virtualchangedpaths$add.html'
+        }).when('/projects/:projectId/virtualchangedpaths/:virtualChangedPathId/delete', {
+            templateUrl: 'js/templates/projects$projectId$virtualchangedpaths$id$delete.html'
         }).when('/projects/:projectId/commits/:commitId/delete', {
             templateUrl: 'js/templates/projects$projectId$commits$commitId$delete.html'
         }).when('/projects/:projectId/changedpaths', {
@@ -276,6 +282,74 @@ var MetaVersion;
         $scope.pageChange();
     }
     MetaVersion.projectsProjectIdCommitsControllerFn = projectsProjectIdCommitsControllerFn;
+    function projectsProjectIdVirtualChangedPathsControllerFn($log, $scope, $location, entities, paths, modals) {
+        var ids = paths.pathToIds();
+        $scope.project = entities.projectStats.get({ id: ids.projectId }, angular.noop, modals.errorModal);
+        $scope.cond = angular.extend(paths.queryToObject({ page: 1 }), ids);
+        $scope.pageChange = function () {
+            entities.projectVirtualChangedPaths.query($scope.cond, function (paginated) {
+                $scope.totalSize = paginated.totalSize;
+                $scope.size = paginated.size;
+                $scope.list = paginated.list;
+                if (paginated.page > 1)
+                    paths.entryToQuery('page', paginated.page);
+            }, modals.errorModal);
+        };
+        $scope.pageChange();
+        $scope.csvDowloadUrl = function () {
+            var nativePath = window.location.pathname.replace(/index$/, '');
+            var ngPath = $location.path();
+            return nativePath + 'csv' + ngPath;
+        };
+    }
+    MetaVersion.projectsProjectIdVirtualChangedPathsControllerFn = projectsProjectIdVirtualChangedPathsControllerFn;
+    function projectsProjectIdVirtualChangedPathsIdDeleteControllerFn($log, $scope, entities, paths, modals) {
+        var ids = paths.pathToIds();
+        $scope.project = entities.projectStats.get({ id: ids.projectId }, angular.noop, modals.errorModal);
+        $scope.path = entities.projectVirtualChangedPaths.get(ids, angular.noop, modals.errorModal);
+        $scope.submit = function () {
+            var p = entities.projectVirtualChangedPaths.remove(ids, function (data) {
+                paths.stringToPath('projects/' + ids.projectId + '/virtualchangedpaths');
+            }, modals.errorModal);
+        };
+    }
+    MetaVersion.projectsProjectIdVirtualChangedPathsIdDeleteControllerFn = projectsProjectIdVirtualChangedPathsIdDeleteControllerFn;
+    function projectsProjectIdVirtualChangedPathsAddControllerFn($log, $scope, entities, paths, modals) {
+        var ids = paths.pathToIds();
+        $scope.project = entities.projectStats.get({ id: ids.projectId }, angular.noop, modals.errorModal);
+        $scope.cond = angular.extend(paths.queryToObject({ page: 1, repositoryId: 0, like: '' }), ids);
+        $scope.cond.unlinkedTo = ids.projectId;
+        $scope.open = true;
+        $scope.repositories = [];
+        $scope.submit = function () {
+            paths.objectToQuery($scope.cond);
+        };
+        entities.repositories.query({ size: 999 }, function name(paginated) {
+            $scope.repositories = paginated.list;
+            if ($scope.repositories.length > 0) {
+                $scope.cond.repositoryId = paginated.list[0].id;
+                $scope.pageChange();
+            }
+        });
+        $scope.pageChange = function () {
+            if ($scope.cond.repositoryId == 0) {
+                return;
+            }
+            entities.repositoryPathNames.query($scope.cond, function (paginated) {
+                $scope.totalSize = paginated.totalSize;
+                $scope.size = paginated.size;
+                $scope.list = paginated.list;
+                if (paginated.page > 1)
+                    paths.entryToQuery('page', paginated.page);
+            }, modals.errorModal);
+        };
+        $scope.click = function ($event) {
+            var path = angular.element($event.target).attr('data-changed-path');
+            entities.projectVirtualChangedPaths.save({ path: path, projectId: ids.projectId, repositoryId: $scope.cond.repositoryId }, $scope.pageChange, modals.errorModal);
+        };
+        $scope.pageChange();
+    }
+    MetaVersion.projectsProjectIdVirtualChangedPathsAddControllerFn = projectsProjectIdVirtualChangedPathsAddControllerFn;
     function projectsProjectIdCommitsLinkControllerFn($log, $scope, entities, paths, modals) {
         var ids = paths.pathToIds();
         $scope.project = entities.projectStats.get({ id: ids.projectId }, angular.noop, modals.errorModal);
@@ -602,6 +676,7 @@ var MetaVersion;
         var suggestParams = { like: '', size: 25 };
         entities.batches = entityResource("Batches", "api/batches/:programId", { programId: "@programId" }, pagingParams);
         entities.projectChangedPaths = entityResource("ProjectChangedPath", "api/projects/:projectId/changedpaths", { projectId: "@projectId" }, pagingParams);
+        entities.projectVirtualChangedPaths = entityResource("ProjectVirtualChangedPath", "api/projects/:projectId/virtualchangedpaths/:virtualChangedPathId", { projectId: "@projectId", virtualChangedPathId: "@virtualChangedPathId" }, pagingParams);
         entities.projectCommits = entityResource("ProjectCommit", "api/projects/:projectId/commits/:commitId", { projectId: "@projectId", commitId: "@commitId" }, pagingParams);
         entities.projectParallels = entityResource("ProjectParallels", "api/projects/:projectId/parallels", { projectId: "@projectId" }, pagingParams);
         entities.projects = entityResource("Project", "api/projects/:id", { id: "@id" }, projectsPagingParams);
@@ -614,6 +689,7 @@ var MetaVersion;
         entities.users = entityResource("User", "api/users/:id", { id: "@id" }, pagingParams);
         entities.pathNames = suggestResource("PathName", "api/pathnames", {}, suggestParams);
         entities.projectNames = suggestResource("ProjectName", "api/projectnames", {}, suggestParams);
+        entities.repositoryPathNames = entityResource("RepositoryPathName", "api/repositories/:repositoryId/pathnames", { repositoryId: "@repositoryId" }, pagingParams);
         return entities;
         function entityResource(entityName, urlPattern, urlParams, queryParams) {
             var xformResp = function (data) {
@@ -680,6 +756,9 @@ var MetaVersion;
             }
             if (res = /\/commits\/(\d+)/.exec(url)) {
                 ids.commitId = +res[1];
+            }
+            if (res = /\/virtualchangedpaths\/(\d+)/.exec(url)) {
+                ids.virtualChangedPathId = +res[1];
             }
             return ids;
         };
@@ -780,11 +859,14 @@ var MetaVersion;
         .controller('projects$projectId', mv.projectsProjectIdControllerFn)
         .controller('projects$projectId$edit', mv.projectsProjectIdEditControllerFn)
         .controller('projects$projectId$delete', mv.projectsProjectIdDeleteControllerFn)
-        .controller('prjects$projectId$commits', mv.projectsProjectIdCommitsControllerFn)
-        .controller('prjects$projectId$commits$link', mv.projectsProjectIdCommitsLinkControllerFn)
+        .controller('projects$projectId$commits', mv.projectsProjectIdCommitsControllerFn)
+        .controller('projects$projectId$virtualchangedpaths', mv.projectsProjectIdVirtualChangedPathsControllerFn)
+        .controller('projects$projectId$virtualchangedpaths$add', mv.projectsProjectIdVirtualChangedPathsAddControllerFn)
+        .controller('projects$projectId$virtualchangedpaths$id$delete', mv.projectsProjectIdVirtualChangedPathsIdDeleteControllerFn)
+        .controller('projects$projectId$commits$link', mv.projectsProjectIdCommitsLinkControllerFn)
         .controller('projects$projectId$commits$commitId$delete', mv.projectsProjectIdCommitsCommitIdDeleteControllerFn)
-        .controller('prjects$projectId$changedpaths', mv.projectsProjectIdChangedpathsControllerFn)
-        .controller('prjects$projectId$parallels', mv.projectsProjectIdParallelsControllerFn)
+        .controller('projects$projectId$changedpaths', mv.projectsProjectIdChangedpathsControllerFn)
+        .controller('projects$projectId$parallels', mv.projectsProjectIdParallelsControllerFn)
         .controller('repositories', mv.repositoriesControllerFn)
         .controller('repositories$repositoryId', mv.repositoriesRepositoryIdControllerFn)
         .controller('repositories$repositoryId$commits', mv.repositoriesRepositoryIdCommitsControllerFn)
