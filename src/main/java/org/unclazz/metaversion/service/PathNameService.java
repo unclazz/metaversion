@@ -16,9 +16,4 @@ public class PathNameService {
 		return svnCommitPathMapper.selectPathByPartialPath(
 				partialPath, LimitOffsetClause.ofLimit(size));
 	}
-	
-	public List<String> getPathNameList(final int repositoryId, final String partialPath, final int size) {
-		return svnCommitPathMapper.selectPathByRepositoryIdAndPartialPath(
-				repositoryId, partialPath, LimitOffsetClause.ofLimit(size));
-	}
 }

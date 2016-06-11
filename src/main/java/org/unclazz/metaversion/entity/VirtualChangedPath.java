@@ -1,6 +1,6 @@
 package org.unclazz.metaversion.entity;
 
-public class VirtualCommitPath {
+public class VirtualChangedPath {
 	private int id;
 	private int projectId;
 	private int repositoryId;

@@ -221,6 +221,17 @@ public class CommitService {
 		// パス情報を検索する
 		return Paginated.of(paging, ps,
 				svnCommitPathMapper.selectCountBySvnCommitId(commitId));
-		
+	}
+	
+	public Paginated<String> getChangedPathListByRepositoryIdAndPartialPath(
+			final int repositoryId, final String partialPath, final int unlinkedTo, 
+			final Paging paging) {
+		final OrderByClause orderBy = OrderByClause.of("path");
+		final LimitOffsetClause limitOffset = LimitOffsetClause.of(paging);
+		return Paginated.<String>of(paging, 
+				svnCommitPathMapper.selectPathNameByRepositoryIdAndPartialPath
+				(repositoryId, partialPath, unlinkedTo, orderBy, limitOffset),
+				svnCommitPathMapper.selectCountPathNameByRepositoryIdAndPartialPath
+				(repositoryId, partialPath, unlinkedTo));
 	}
 }

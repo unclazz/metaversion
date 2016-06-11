@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.unclazz.metaversion.mapper.SvnCommitPathMapper">
+ 
+ 	<select id="selectNextVal" resultType="int">
+		SELECT nextval('svn_commit_path_seq') 
+	</select>
+
+	<select id="selectPathByPartialPath" resultType="String">
+		SELECT path
+		FROM svn_commit_path cp
+		INNER JOIN project_svn_commit pc
+		ON cp.commit_id = pc.commit_id
+		WHERE path like ('%' || #{partialPath} || '%')
+		GROUP BY path
+		ORDER BY path ${limitOffset} 
+	</select>
+
+	<select id="selectBySvnCommitId" resultType="SvnCommitPathWithBranchName">
+		SELECT id, commit_id commitId, change_type_id changeTypeId, 
+				path, branch_path_segment branchName 
+		FROM svn_commit_path 
+		WHERE commit_id = #{commitId} 
+		${orderBy} ${limitOffset} 
+	</select>
+
+	<select id="selectCountBySvnCommitId" resultType="int">
+		SELECT count(1) 
+		FROM svn_commit_path 
+		WHERE commit_id = #{commitId} 
+	</select>
+	
+	<select id="selectByProjectId" resultType="ProjectChangedPath">
+		SELECT path, svn_repository_id repositoryId, svn_repository_name repositoryName, 
+				commit_count commitCount, min_revision minRevision, max_revision maxRevision, 
+				min_commit_date minCommitDate, max_commit_date maxCommitDate 
+		FROM project_changedpath_view 
+		WHERE project_id = #{projectId} 
+		${orderBy} ${limitOffset} 
+	</select>
+
+	<select id="selectCountByProjectId" resultType="int">
+		SELECT count(1) 
+		FROM  project_changedpath_view 
+		WHERE project_id = #{projectId} 
+	</select>
+
+	<select id="selecBranchNameByCommitId" resultType="String">
+		SELECT branch_path_segment
+		FROM svn_commit_path
+		WHERE commit_id = #{commitId}
+		GROUP BY branch_path_segment 
+	</select>
+
+	<select id="selectPathNameByRepositoryIdAndPartialPath" resultType="String">
+		SELECT path
+		FROM svn_commit c
+		INNER JOIN svn_commit_path cp
+		ON c.id = cp.commit_id
+		WHERE c.repository_id = #{repositoryId}
+		<if test="partialPath.length() &gt; 0">
+		AND lower(cp.path) LIKE lower('%' || #{partialPath} || '%')
+		</if>
+		<if test="unlinkedTo &gt; 0">
+		EXCEPT
+		SELECT path
+		FROM svn_commit c
+		INNER JOIN project_svn_commit pc
+		ON c.id = pc.commit_id
+		INNER JOIN svn_commit_path cp
+		ON c.id = cp.commit_id
+		WHERE c.repository_id = #{repositoryId}
+		AND pc.project_id = #{unlinkedTo}
+		<if test="partialPath.length() &gt; 0">
+		AND lower(cp.path) LIKE lower('%' || #{partialPath} || '%')
+		</if>
+		</if>
+		${orderBy} ${limitOffset} 
+	</select>
+
+	<select id="selectCountPathNameByRepositoryIdAndPartialPath" resultType="int">
+		SELECT count(1)
+		FROM (
+			SELECT path
+			FROM svn_commit c
+			INNER JOIN svn_commit_path cp
+			ON c.id = cp.commit_id
+			WHERE c.repository_id = #{repositoryId}
+			<if test="partialPath.length() &gt; 0">
+			AND lower(cp.path) LIKE lower('%' || #{partialPath} || '%')
+			</if>
+			<if test="unlinkedTo &gt; 0">
+			EXCEPT
+			SELECT path
+			FROM svn_commit c
+			INNER JOIN project_svn_commit pc
+			ON c.id = pc.commit_id
+			INNER JOIN svn_commit_path cp
+			ON c.id = cp.commit_id
+			WHERE c.repository_id = #{repositoryId}
+			AND pc.project_id = #{unlinkedTo}
+			<if test="partialPath.length() &gt; 0">
+			AND lower(cp.path) LIKE lower('%' || #{partialPath} || '%')
+			</if>
+			</if>
+		) X
+	</select>
+
+	<insert id="insert">
+		INSERT INTO svn_commit_path 
+			(id, commit_id, change_type_id, path, 
+			raw_path, base_path_segment, branch_path_segment, create_user_id) 
+		VALUES (#{path.id}, #{path.commitId}, #{path.changeTypeId}, #{path.path}, 
+			#{path.rawPath}, #{path.basePathSegment}, #{path.branchPathSegment}, #{auth.id}) 
+	</insert>
+	
+	<delete id="deleteBySvnRepositoryId">
+		DELETE FROM svn_commit_path 
+		WHERE commit_id IN (
+			SELECT id 
+			FROM svn_commit 
+			WHERE repository_id = #{repositoryId})  
+	</delete>
+</mapper>
