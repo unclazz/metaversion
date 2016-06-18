@@ -1,7 +1,38 @@
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SET check_function_bodies = false;
+SET client_min_messages = warning;
+SET row_security = off;
+
+CREATE EXTENSION IF NOT EXISTS plpgsql WITH SCHEMA pg_catalog;
+COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
+
+SET search_path = public, pg_catalog;
+SET default_with_oids = false;
 
 ALTER TABLE project ADD COLUMN scheduled_release_date timestamp without time zone;
 
-CREATE OR REPLACE VIEW public.project_changedpath_view AS 
+CREATE OR REPLACE VIEW project_path_count_view AS 
+ SELECT x2.project_id,
+    count(x2.path) AS path_count
+   FROM ( SELECT pc2.project_id,
+            cp2.path
+           FROM project_svn_commit pc2
+             JOIN svn_commit_path cp2 ON pc2.commit_id = cp2.commit_id
+          GROUP BY pc2.project_id, cp2.path) x2
+  GROUP BY x2.project_id;
+
+ALTER TABLE project_path_count_view
+  OWNER TO postgres;
+
+DROP VIEW project_parallels_view;
+DROP VIEW project_changedpath_plus_view;
+DROP VIEW project_changedpath_view;
+DROP VIEW project_stats_view;
+
+CREATE OR REPLACE VIEW project_changedpath_view AS 
  SELECT pc.project_id,
     cp.path,
     r.id AS svn_repository_id,
@@ -23,10 +54,10 @@ CREATE OR REPLACE VIEW public.project_changedpath_view AS
      JOIN project p ON p.id = pc.project_id
   GROUP BY pc.project_id, cp.path, r.id, r.name, p.scheduled_release_date;
 
-ALTER TABLE public.project_changedpath_view
+ALTER TABLE project_changedpath_view
   OWNER TO postgres;
 
-CREATE OR REPLACE VIEW public.project_stats_view AS 
+CREATE OR REPLACE VIEW project_stats_view AS 
  SELECT p.id,
     p.code,
     p.name,
@@ -49,10 +80,10 @@ CREATE OR REPLACE VIEW public.project_stats_view AS
      LEFT JOIN svn_commit c ON pc.commit_id = c.id
   GROUP BY p.id, p.code, p.name, p.responsible_person, p.commit_sign_pattern;
 
-ALTER TABLE public.project_stats_view
+ALTER TABLE project_stats_view
   OWNER TO postgres;
 
-CREATE OR REPLACE VIEW public.project_changedpath_plus_view AS 
+CREATE OR REPLACE VIEW project_changedpath_plus_view AS 
  SELECT project_changedpath_view.project_id,
     project_changedpath_view.path,
     project_changedpath_view.svn_repository_id,
@@ -84,10 +115,10 @@ UNION ALL
              JOIN svn_commit_path cp ON c.id = cp.commit_id
           WHERE pc.project_id = vcp.project_id AND c.repository_id = vcp.repository_id AND cp.path = vcp.path));
 
-ALTER TABLE public.project_changedpath_plus_view
+ALTER TABLE project_changedpath_plus_view
   OWNER TO postgres;
 
-CREATE OR REPLACE VIEW public.project_parallels_view AS 
+CREATE OR REPLACE VIEW project_parallels_view AS 
  SELECT a_stat.id AS self_project_id,
     a_path.path,
         CASE
@@ -118,19 +149,5 @@ CREATE OR REPLACE VIEW public.project_parallels_view AS
      JOIN project b_proj ON b_path.project_id = b_proj.id
   WHERE a_path.project_id <> b_path.project_id AND (a_path.min_commit_date <= b_path.min_commit_date AND b_path.potential_max_commit_date <= a_path.potential_max_commit_date OR b_path.min_commit_date <= a_path.min_commit_date AND a_path.potential_max_commit_date <= b_path.potential_max_commit_date OR a_path.min_commit_date <= b_path.min_commit_date AND b_path.min_commit_date <= a_path.potential_max_commit_date OR b_path.min_commit_date <= a_path.min_commit_date AND a_path.min_commit_date <= b_path.potential_max_commit_date);
 
-ALTER TABLE public.project_parallels_view
+ALTER TABLE project_parallels_view
   OWNER TO postgres;
-
-CREATE OR REPLACE VIEW public.project_path_count_view AS 
- SELECT x2.project_id,
-    count(x2.path) AS path_count
-   FROM ( SELECT pc2.project_id,
-            cp2.path
-           FROM project_svn_commit pc2
-             JOIN svn_commit_path cp2 ON pc2.commit_id = cp2.commit_id
-          GROUP BY pc2.project_id, cp2.path) x2
-  GROUP BY x2.project_id;
-
-ALTER TABLE public.project_path_count_view
-  OWNER TO postgres;
-
