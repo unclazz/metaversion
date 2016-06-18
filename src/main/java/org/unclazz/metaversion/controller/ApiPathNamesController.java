@@ -14,7 +14,7 @@ import org.unclazz.metaversion.service.PathNameService;
 
 @RestController
 @RequestMapping(MVApplication.REST_API_PATH_PREFIX)
-public class PathNamesJsonController {
+public class ApiPathNamesController {
 	@Autowired
 	private PathNameService pathNameService;
 	
@@ -28,7 +28,7 @@ public class PathNamesJsonController {
 	 * @return 名前の一覧
 	 */
 	@RequestMapping(value="/pathnames", method=RequestMethod.GET)
-	public List<String> getPathNames(final Principal principal,
+	public List<String> getList(final Principal principal,
 			@RequestParam("like") final String like, 
 			@RequestParam("size") final int size) {
 		final String trimmed = like.trim();

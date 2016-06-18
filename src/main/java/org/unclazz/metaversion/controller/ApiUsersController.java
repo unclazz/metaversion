@@ -20,7 +20,7 @@ import static org.unclazz.metaversion.MVUtils.*;
 
 @RestController
 @RequestMapping(MVApplication.REST_API_PATH_PREFIX)
-public class UsersJsonController {
+public class ApiUsersController {
 	@Autowired
 	private UserService userService;
 	
@@ -31,7 +31,7 @@ public class UsersJsonController {
 	 * @return ユーザ情報一覧
 	 */
 	@RequestMapping(value="/users", method=RequestMethod.GET)
-	public Paginated<User> getUserList(final Principal principal, @ModelAttribute final Paging paging) {
+	public Paginated<User> getPaginated(final Principal principal, @ModelAttribute final Paging paging) {
 		return Paginated.of(paging, userService.getUserList(paging), userService.getUserCount());
 	}
 	
@@ -43,7 +43,7 @@ public class UsersJsonController {
 	 * @return ユーザ情報
 	 */
 	@RequestMapping(value="/users/{id}", method=RequestMethod.GET)
-	public ResponseEntity<User> getUser(final Principal principal, @PathVariable("id") final int id) {
+	public ResponseEntity<User> getOne(final Principal principal, @PathVariable("id") final int id) {
 		return httpResponseOfOkOrNotFound(userService.getUser(id));
 	}
 	
@@ -56,7 +56,7 @@ public class UsersJsonController {
 	 * @return 更新結果のユーザ情報
 	 */
 	@RequestMapping(value="/users/{id}", method=RequestMethod.PUT)
-	public ResponseEntity<User> putUser(final Principal principal, @RequestBody final User user) {
+	public ResponseEntity<User> put(final Principal principal, @RequestBody final User user) {
 		
 		try {
 			if (user.getPassword() == null) {
@@ -80,7 +80,7 @@ public class UsersJsonController {
 	 * @return 登録結果のユーザ情報
 	 */
 	@RequestMapping(value="/users", method=RequestMethod.POST)
-	public ResponseEntity<User> postUser(final Principal principal, @RequestBody final User user) {
+	public ResponseEntity<User> post(final Principal principal, @RequestBody final User user) {
 		
 		try {
 			userService.doPasswordEncode(user);
@@ -93,7 +93,7 @@ public class UsersJsonController {
 	}
 	
 	@RequestMapping(value="/users/{id}", method=RequestMethod.DELETE)
-	public ResponseEntity<User> deleteUser(final Principal principal, @PathVariable("id") final int id) {
+	public ResponseEntity<User> delete(final Principal principal, @PathVariable("id") final int id) {
 		try {
 			userService.removeUser(id, MVUserDetails.of(principal));
 			return httpResponseOfOk();
