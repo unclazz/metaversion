@@ -119,6 +119,9 @@
 						<tr>
 							<th>プロジェクト名</th>
 							<th>プロジェクトコード</th>
+							<th>担当者</th>
+							<th>コミット・サイン</th>
+							<th>リリース予定日時</th>
 							<th>アクション</th>
 						</tr>
 					</thead>
@@ -126,6 +129,9 @@
 						<tr  ng-repeat="item in list">
 							<td><a href="#" ng-href="#/projects/{{item.id}}">{{item.name}}</a></td>
 							<td>{{item.code}}</td>
+							<td>{{item.responsiblePerson}}</td>
+							<td>{{item.commitSignPattern}}</td>
+							<td>{{item.scheduledReleaseDate | limitTo : 16}}</td>
 							<td>
 								<div class="btn-group btn-group-xs" role="group">
 									<a class="btn btn-default" href="#" ng-href="#/projects/{{item.id}}" role="button">プロジェクト詳細</a>

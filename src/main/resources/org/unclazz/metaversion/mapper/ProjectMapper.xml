@@ -17,7 +17,8 @@
 			code, 
 			name, 
 			responsible_person responsiblePerson, 
-			commit_sign_pattern commitSignPattern 
+			commit_sign_pattern commitSignPattern,
+			scheduled_release_date scheduledReleaseDate 
 		FROM project 
 		WHERE id = #{id} 
 	</select>
@@ -31,7 +32,9 @@
 			commit_count commitCount, 
 			min_commit_date minCommitDate, 
 			max_commit_date maxCommitDate,
-			path_count pathCount
+			path_count pathCount,
+			scheduled_release_date scheduledReleaseDate,
+			potential_max_commit_date potentialMaxCommitDate
 		FROM project_stats_view
 		WHERE id = #{id} 
 	</select>
@@ -41,7 +44,8 @@
 			code, 
 			name, 
 			responsible_person responsiblePerson, 
-			commit_sign_pattern commitSignPattern
+			commit_sign_pattern commitSignPattern,
+    		scheduled_release_date scheduledReleaseDate
 		FROM project 
 		${orderBy} ${limitOffset}
 	</select>
@@ -55,7 +59,8 @@
 		    code,
 		    name,
 		    responsible_person responsiblePerson,
-		    commit_sign_pattern commitSignPattern
+		    commit_sign_pattern commitSignPattern,
+    		scheduled_release_date scheduledReleaseDate
 		FROM project p
 		WHERE 0 = 0
 		<if test="like.length() &gt; 0">
@@ -95,7 +100,8 @@
 				code,
 				name,
 				responsible_person responsiblePerson,
-				commit_sign_pattern commitSignPattern
+				commit_sign_pattern commitSignPattern,
+    			scheduled_release_date scheduledReleaseDate
 		FROM project p
 		WHERE 0 = 0
 		<if test="like.length() &gt; 0">
@@ -141,7 +147,8 @@
 	<select id="selectByCommitId" resultType="Project">
 		SELECT p.id, code, name, 
 			responsible_person responsiblePerson, 
-			commit_sign_pattern commitSignPattern
+			commit_sign_pattern commitSignPattern,
+    		scheduled_release_date scheduledReleaseDate
 		FROM project p
 		INNER JOIN project_svn_commit pc
 		ON p.id = pc.project_id
@@ -164,14 +171,16 @@
 			responsible_person, 
 			commit_sign_pattern, 
 			create_user_id, 
-			update_user_id) 
+			update_user_id,
+			scheduled_release_date) 
 		VALUES (#{proj.id}, 
 			#{proj.code}, 
 			#{proj.name}, 
 			#{proj.responsiblePerson}, 
 			#{proj.commitSignPattern}, 
 			#{auth.id}, 
-			#{auth.id})
+			#{auth.id},
+			#{proj.scheduledReleaseDate})
 	</insert>
 	
 	<update id="update">
@@ -180,7 +189,8 @@
 			name = #{proj.name}, 
 			responsible_person = #{proj.responsiblePerson},
 			commit_sign_pattern = #{proj.commitSignPattern}, 
-			update_user_id = #{auth.id}
+			update_user_id = #{auth.id},
+			scheduled_release_date = #{proj.scheduledReleaseDate}
 		WHERE id = #{proj.id} 
 	</update>
 

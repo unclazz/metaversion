@@ -221,7 +221,7 @@ var MetaVersion;
         $scope.project = entities.projectStats.get({ id: paths.pathToIds().projectId }, angular.noop, modals.errorModal);
     }
     MetaVersion.projectsProjectIdControllerFn = projectsProjectIdControllerFn;
-    function projectsProjectIdEditControllerFn($log, $scope, $location, entities, paths, modals) {
+    function projectsProjectIdEditControllerFn($log, $scope, $location, entities, paths, modals, $filter) {
         var ids = paths.pathToIds();
         if (ids.projectId !== undefined) {
             $scope.project = entities.projects.get({ id: paths.pathToIds().projectId }, angular.noop, modals.errorModal);
@@ -240,6 +240,13 @@ var MetaVersion;
         function successCallback(data) {
             paths.stringToPath('projects/' + data.id);
         }
+        $scope.dpOptions = {
+            showWeeks: false,
+            initDate: null
+        };
+        $scope.dpChange = function () {
+            $scope.project.scheduledReleaseDate = $filter('date')($scope.dpDate, 'yyyy/MM/dd HH:mm:ss.sss');
+        };
     }
     MetaVersion.projectsProjectIdEditControllerFn = projectsProjectIdEditControllerFn;
     function projectsProjectIdDeleteControllerFn($log, $scope, entities, paths, modals) {

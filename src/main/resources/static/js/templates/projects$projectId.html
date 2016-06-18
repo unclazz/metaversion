@@ -27,8 +27,10 @@
 					<tr><th>コード</th><td>{{project.code}}</td></tr>
 					<tr><th>担当者</th><td>{{project.responsiblePerson}}</td></tr>
 					<tr><th>コミット・サイン</th><td>{{project.commitSignPattern}}</td></tr>
-					<tr><th>初期コミット日時</th><td>{{project.minCommitDate}}</td></tr>
-					<tr><th>最終コミット日時</th><td>{{project.maxCommitDate}}</td></tr>
+					<tr><th>リリース予定日時</th><td>{{project.scheduledReleaseDate | limitTo: 16}}</td></tr>
+					<tr><th>初期コミット日時</th><td>{{project.minCommitDate | limitTo: 16}}</td></tr>
+					<tr><th>最終コミット日時</th><td>{{project.maxCommitDate | limitTo: 16}}</td></tr>
+					<tr><th>潜在的な最終コミット日時</th><td>{{project.potentialMaxCommitDate | limitTo: 16}}</td></tr>
 					<tr><th>コミット回数</th><td>{{project.commitCount}}</td></tr>
 					<tr><th>変更パス数</th><td>{{project.pathCount}}</td></tr>
 				</table>

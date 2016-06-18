@@ -82,12 +82,10 @@
 							<td>{{item.path}}</td>
 							<td>
 								<div class="btn-group btn-group-xs" role="group">
-									<a class="btn btn-default" href="#" ng-href="#/projects?pathbase=1&like={{item.path}}" role="button" title="プロジェクト検索">
-										<span class=" glyphicon glyphicon-list"></span>
-									</a>
-									<a class="btn btn-danger" href="#" ng-href="#/projects/{{project.id}}/virtualchangedpaths/{{item.virtualChangedPathId}}/delete" role="button" title="削除">
-										<span class="glyphicon glyphicon-remove"></span>
-									</a>
+									<a class="btn btn-default" href="#" role="button"
+									ng-href="#/projects?pathbase=1&like={{item.path}}">プロジェクト検索</a>
+									<a class="btn btn-danger" href="#" role="button"
+									ng-href="#/projects/{{project.id}}/virtualchangedpaths/{{item.virtualChangedPathId}}/delete">削除</a>
 								</div>
 							</td>
 						</tr>

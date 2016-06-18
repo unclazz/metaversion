@@ -18,6 +18,7 @@ public interface ProjectParallelsMapper {
 			+ "		self_min_commit_date selfMinCommitDate, "
 			+ "		self_max_revision selfMaxRevision, "
 			+ "		self_max_commit_date selfMaxCommitDate, "
+			+ "		self_potential_max_commit_date selfPotentialMaxCommitDate, "
 			+ "		other_project_id otherProjectId, "
 			+ "		other_project_name otherProjectName, "
 			+ "		other_project_code otherProjectCode, "
@@ -25,7 +26,8 @@ public interface ProjectParallelsMapper {
 			+ "		other_min_revision otherMinRevision, "
 			+ "		other_min_commit_date otherMinCommitDate, "
 			+ "		other_max_revision otherMaxRevision, "
-			+ "		other_max_commit_date otherMaxCommitDate "
+			+ "		other_max_commit_date otherMaxCommitDate, "
+			+ "		other_potential_max_commit_date otherPotentialMaxCommitDate "
 			+ "FROM project_parallels_view "
 			+ "WHERE self_project_id = #{projectId} "
 			+ "${orderBy} ${limitOffset} ")
