@@ -122,12 +122,10 @@
 							</span></td>
 							<td>
 								<div class="btn-group btn-group-xs" role="group">
-									<a class="btn btn-default" href="#" ng-href="#/repositories/{{item.repositoryId}}/commits/{{item.id}}" role="button" title="コミット詳細">
-										<span class=" glyphicon glyphicon-list"></span>
-									</a>
-									<a class="btn btn-danger" href="#" ng-href="#/projects/{{project.id}}/commits/{{item.id}}/delete" role="button" title="コミット紐づけ">
-										<span class="glyphicon glyphicon-remove"></span>
-									</a>
+									<a class="btn btn-default" href="#" role="button"
+									ng-href="#/repositories/{{item.repositoryId}}/commits/{{item.id}}">コミット詳細</a>
+									<a class="btn btn-danger" href="#" role="button"
+									ng-href="#/projects/{{project.id}}/commits/{{item.id}}/delete">紐づけ解除</a>
 								</div>
 							</td>
 						</tr>
