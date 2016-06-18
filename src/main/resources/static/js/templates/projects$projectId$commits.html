@@ -114,7 +114,7 @@
 						<tr ng-repeat="item in list">
 							<td>{{item.repositoryName}}</td>
 							<td><a href="#" ng-href="#/repositories/{{item.repositoryId}}/commits/{{item.id}}">{{item.revision}}</a></td>
-							<td>{{item.commitDate}}</td>
+							<td>{{item.commitDate | limitTo: 16}}</td>
 							<td>{{item.commitMessage | excerpt:50}}</td>
 							<td><span ng-show="item.branchCount > 0">
 								<span class="label label-info">{{item.branchNames[0]}}</span>

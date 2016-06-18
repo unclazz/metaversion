@@ -194,12 +194,15 @@ module MetaVersion {
     
     interface IProjectsProjectIdEditScope extends IParentScope {
         submit : () => void;
+        dpChange : () => void;
         project : IProject;
+		dpOptions : any;
+		dpDate : Date;
     } 
     
     export function projectsProjectIdEditControllerFn($log :ng.ILogService, 
         $scope :IProjectsProjectIdEditScope, $location :ng.ILogService, 
-        entities :IEntityService, paths :IPathService, modals :IModalService) {
+        entities :IEntityService, paths :IPathService, modals :IModalService, $filter: any) {
 
 		const ids = paths.pathToIds();
 		if (ids.projectId !== undefined) {
@@ -220,6 +223,15 @@ module MetaVersion {
         function successCallback(data :IProject) {
             paths.stringToPath('projects/' + data.id);
         }
+
+		$scope.dpOptions = {
+			showWeeks : false,
+			initDate : null
+		};
+
+		$scope.dpChange = function() {
+			$scope.project.scheduledReleaseDate = $filter('date')($scope.dpDate, 'yyyy/MM/dd HH:mm:ss.sss');
+		};
 	}
     
     export function projectsProjectIdDeleteControllerFn ($log :ng.ILogService,

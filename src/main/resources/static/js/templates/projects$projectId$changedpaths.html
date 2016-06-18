@@ -71,8 +71,8 @@
 						<tr  ng-repeat="item in list">
 							<td>{{item.repositoryName}}</td>
 							<td>{{item.path}}</td>
-							<td>{{item.minCommitDate}}</td>
-							<td>{{item.maxCommitDate}}</td>
+							<td>{{item.minCommitDate | limitTo: 16}}</td>
+							<td>{{item.maxCommitDate | limitTo: 16}}</td>
 						</tr>
 					</tbody>
 				</table>

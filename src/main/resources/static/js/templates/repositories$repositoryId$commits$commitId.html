@@ -27,7 +27,7 @@
 				</div>
 				<table class="table">
 					<tr><th>リビジョン</th><td>{{commit.revision}}</td></tr>
-					<tr><th nowrap="nowrap">コミット日時</th><td>{{commit.commitDate}}</td></tr>
+					<tr><th nowrap="nowrap">コミット日時</th><td>{{commit.commitDate | limitTo: 16}}</td></tr>
 					<tr><th>コミッター</th><td>{{commit.committerName}}</td></tr>
 					<tr><th>メッセージ</th><td>{{commit.commitMessage}}</td></tr>
 					<tr><th>ブランチ</th><td>

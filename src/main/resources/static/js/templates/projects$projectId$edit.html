@@ -42,6 +42,17 @@
 							ng-model="project.responsiblePerson" /></td>
 						</tr>
 						<tr>
+							<th>リリース予定日</th>
+							<td>
+								<input type="text" class="form-control" readonly="readonly" 
+								value="{{dpDate | date : 'yyyy/MM/dd'}}" />
+								<div style="padding: 1ex 0;">
+								<uib-datepicker ng-model="dpDate" 
+								ng-change="dpChange()"
+								datepicker-options="options"></uib-datepicker>
+							</td>
+						</tr>
+						<tr>
 							<th>コミット・サイン</th>
 							<td><input type="text" name="commitSignPattern" class="form-control" required="required" 
 							ng-model="project.commitSignPattern" regex-validate="regex-validate" />

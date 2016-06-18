@@ -32,6 +32,7 @@ module MetaVersion {
     export interface IProject {
         id :number;
         name :string;
+        scheduledReleaseDate :string;
     }
     export interface IProjectStats {
         

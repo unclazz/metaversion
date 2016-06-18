@@ -114,15 +114,14 @@
 						<tr  ng-repeat="item in list">
 							<td>{{item.repositoryName}}</td>
 							<td><a href="#" ng-href="#/repositories/{{item.repositoryId}}/commits/{{item.id}}">{{item.revision}}</a></td>
-							<td>{{item.commitDate}}</td>
+							<td>{{item.commitDate | limitTo: 16}}</td>
 							<td>{{item.commitMessage | excerpt:50}}</td>
 							<td>
 								<div class="btn-group btn-group-xs" role="group">
-									<a class="btn btn-default" role="button" href="#" ng-href="#/repositories/{{item.repositoryId}}/commits/{{item.id}}" title="コミット詳細">
-										<span class="glyphicon glyphicon-info-sign"></span>
-									</a>
-									<button type="button" class="btn btn-primary" ng-click="click($event)" data-commit-id="{{item.id}}" title="紐付け">
-										<span class="glyphicon glyphicon-link"></span>
+									<a class="btn btn-default" role="button" href="#" 
+									ng-href="#/repositories/{{item.repositoryId}}/commits/{{item.id}}">コミット詳細</a>
+									<button type="button" class="btn btn-primary" ng-click="click($event)" 
+									data-commit-id="{{item.id}}">紐付け</span>
 									</button>
 								</div>
 							</td>
