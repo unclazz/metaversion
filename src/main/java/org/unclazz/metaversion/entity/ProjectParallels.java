@@ -12,10 +12,12 @@ public class ProjectParallels {
 	private Date selfMinCommitDate;
 	private int selfMaxRevision;
 	private Date selfMaxCommitDate;
+	private Date selfPotentialMaxCommitDate;
 	private int otherProjectId;
 	private String otherProjectName;
 	private String otherProjectCode;
 	private String otherProjectResponsiblePerson;
+	private String otherPotentialProjectResponsiblePerson;
 	private int otherMinRevision;
 	private Date otherMinCommitDate;
 	private int otherMaxRevision;
@@ -121,5 +123,17 @@ public class ProjectParallels {
 	}
 	public final void setRepositoryName(String repositoryName) {
 		this.repositoryName = repositoryName;
+	}
+	public Date getSelfPotentialMaxCommitDate() {
+		return selfPotentialMaxCommitDate;
+	}
+	public void setSelfPotentialMaxCommitDate(Date selfPotentialMaxCommitDate) {
+		this.selfPotentialMaxCommitDate = selfPotentialMaxCommitDate;
+	}
+	public String getOtherPotentialProjectResponsiblePerson() {
+		return otherPotentialProjectResponsiblePerson;
+	}
+	public void setOtherPotentialProjectResponsiblePerson(String otherPotentialProjectResponsiblePerson) {
+		this.otherPotentialProjectResponsiblePerson = otherPotentialProjectResponsiblePerson;
 	}
 }

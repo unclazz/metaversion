@@ -10,6 +10,8 @@ public class ProjectStats extends Project {
 	private Date minCommitDate;
 	@JsonFormat(pattern="yyyy/MM/dd HH:mm:ss.SSS")
 	private Date maxCommitDate;
+	@JsonFormat(pattern="yyyy/MM/dd HH:mm:ss.SSS")
+	private Date potentialMaxCommitDate;
 	private int pathCount;
 	public final int getCommitCount() {
 		return commitCount;
@@ -34,5 +36,11 @@ public class ProjectStats extends Project {
 	}
 	public final void setPathCount(int pathCount) {
 		this.pathCount = pathCount;
+	}
+	public Date getPotentialMaxCommitDate() {
+		return potentialMaxCommitDate;
+	}
+	public void setPotentialMaxCommitDate(Date potentialMaxCommitDate) {
+		this.potentialMaxCommitDate = potentialMaxCommitDate;
 	}
 }

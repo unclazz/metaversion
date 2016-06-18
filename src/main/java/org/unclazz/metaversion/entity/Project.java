@@ -1,5 +1,8 @@
 package org.unclazz.metaversion.entity;
 
+import java.util.Date;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -13,6 +16,8 @@ public class Project {
 	private String responsiblePerson;
 	@JsonProperty(required=true)
 	private String commitSignPattern;
+	@JsonFormat(pattern="yyyy/MM/dd HH:mm:ss.SSS")
+	private Date scheduledReleaseDate;
 	private boolean redoCommitLink;
 	public final int getId() {
 		return id;
@@ -49,5 +54,11 @@ public class Project {
 	}
 	public void setRedoCommitLink(boolean redoCommitLink) {
 		this.redoCommitLink = redoCommitLink;
+	}
+	public Date getScheduledReleaseDate() {
+		return scheduledReleaseDate;
+	}
+	public void setScheduledReleaseDate(Date scheduledReleaseDate) {
+		this.scheduledReleaseDate = scheduledReleaseDate;
 	}
 }
