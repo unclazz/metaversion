@@ -13,18 +13,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.unclazz.metaversion.MVApplication;
 import org.unclazz.metaversion.MVUserDetails;
-import org.unclazz.metaversion.entity.Project;
-import org.unclazz.metaversion.entity.SvnCommit;
-import org.unclazz.metaversion.entity.SvnCommitPathWithBranchName;
-import org.unclazz.metaversion.entity.SvnCommitStats;
 import org.unclazz.metaversion.entity.SvnRepository;
-import org.unclazz.metaversion.entity.SvnRepositoryStats;
-import org.unclazz.metaversion.service.CommitService;
-import org.unclazz.metaversion.service.ProjectService;
 import org.unclazz.metaversion.service.RepositoryService;
 import org.unclazz.metaversion.service.SvnCommandService;
 import org.unclazz.metaversion.vo.Paginated;
@@ -35,16 +27,12 @@ import static org.unclazz.metaversion.MVUtils.*;
 
 @RestController
 @RequestMapping(MVApplication.REST_API_PATH_PREFIX)
-public class RepositoriesJsonController {
+public class ApiRepositoriesController {
 	private final Logger logger = LoggerFactory.getLogger(this.getClass());
 	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
-	private CommitService commitService;
-	@Autowired
 	private SvnCommandService svnCommandService;
-	@Autowired
-	private ProjectService projectService;
 	
 	/**
 	 * リポジトリ情報の一覧を返す.
@@ -53,29 +41,10 @@ public class RepositoriesJsonController {
 	 * @return リポジトリ情報の一覧
 	 */
 	@RequestMapping(value="/repositories", method=RequestMethod.GET)
-	public Paginated<SvnRepository> getRepositoryList(final Principal principal,
+	public Paginated<SvnRepository> getPaginated(final Principal principal,
 			@ModelAttribute final Paging paging) {
 		
 		return repositoryService.getRepositoryList(paging);
-	}
-	
-	/**
-	 * リポジトリとその統計情報の一覧を返す.
-	 * @param principal 認証情報
-	 * @param paging リクエストパラメータ{@code page}と{@code size}の情報を格納したオブジェクト
-	 * @return リポジトリとその統計情報の一覧
-	 */
-	@RequestMapping(value="/repositorystats", method=RequestMethod.GET)
-	public Paginated<SvnRepositoryStats> getRepositoryStatsList(final Principal principal,
-			@ModelAttribute final Paging paging) {
-		
-		return repositoryService.getRepositoryStatsList(paging);
-	}
-	@RequestMapping(value="/repositorystats/{id}", method=RequestMethod.GET)
-	public ResponseEntity<SvnRepositoryStats> getRepositoryStats(final Principal principal,
-			@PathVariable("id") final int id) {
-		
-		return httpResponseOfOkOrNotFound(repositoryService.getRepositoryStats(id));
 	}
 	
 	/**
@@ -86,7 +55,7 @@ public class RepositoriesJsonController {
 	 * @return リポジトリ情報
 	 */
 	@RequestMapping(value="/repositories/{id}", method=RequestMethod.GET)
-	public ResponseEntity<SvnRepository> getRepository(final Principal principal, @PathVariable("id") final int id) {
+	public ResponseEntity<SvnRepository> getOne(final Principal principal, @PathVariable("id") final int id) {
 		return httpResponseOfOkOrNotFound(repositoryService.getRepository(id));
 	}
 	
@@ -107,7 +76,7 @@ public class RepositoriesJsonController {
 	 * @return 更新結果のリポジトリ情報
 	 */
 	@RequestMapping(value="/repositories/{id}", method=RequestMethod.PUT)
-	public ResponseEntity<SvnRepository> putRepository(final Principal principal,
+	public ResponseEntity<SvnRepository> put(final Principal principal,
 			@PathVariable("id") final int id,
 			@RequestBody final SvnRepository repository) {
 		
@@ -161,7 +130,7 @@ public class RepositoriesJsonController {
 	 * @return 更新結果のリポジトリ情報
 	 */
 	@RequestMapping(value="/repositories", method=RequestMethod.POST)
-	public ResponseEntity<SvnRepository> postRepository(final Principal principal,
+	public ResponseEntity<SvnRepository> post(final Principal principal,
 			@RequestBody SvnRepository repository) {
 		
 		normalizeRepositoryInfo(repository);
@@ -197,7 +166,7 @@ public class RepositoriesJsonController {
 	}
 
 	@RequestMapping(value="/repositories/{id}", method=RequestMethod.DELETE)
-	public ResponseEntity<SvnRepository> deleteRepositories(final Principal principal, @PathVariable("id") final int id) {
+	public ResponseEntity<SvnRepository> delete(final Principal principal, @PathVariable("id") final int id) {
 		try {
 			repositoryService.removeRepository(id, MVUserDetails.of(principal));
 			return httpResponseOfOk();
@@ -206,85 +175,6 @@ public class RepositoriesJsonController {
 			logger.error(e.getMessage());
 			return httpResponseOfInternalServerError(e.getMessage());
 		}
-	}
-	
-	@RequestMapping(value="/repositories/{repositoryId}/pathnames", method=RequestMethod.GET)
-	public Paginated<String> getRepositoriesPathNames(final Principal principal,
-			@PathVariable("repositoryId") final int repositoryId,
-			@RequestParam(value="unlinkedTo", required=false, defaultValue="0") final int unlinkedTo, 
-			@RequestParam("like") final String like, 
-			@ModelAttribute final Paging paging) {
-		return commitService.getChangedPathListByRepositoryIdAndPartialPath
-				(repositoryId, like == null ? "" : like.trim(), unlinkedTo, paging);
-	}
-	
-	/**
-	 * IDで指定されたリポジトリのコミット情報の一覧を返す.
-	 * 
-	 * @param principal 認証情報
-	 * @param repositoryId リポジトリID
-	 * @param unlinked プロジェクト紐付けされていないもののみを対象とするかどうか
-	 * @param paging リクエストパラメータ{@code page}と{@code size}の情報を格納したオブジェクト
-	 * @return コミット情報の一覧
-	 */
-	@RequestMapping(value="/repositories/{repositoryId}/commits", method=RequestMethod.GET)
-	public Paginated<SvnCommit> getRepositoriesCommits(final Principal principal,
-			@PathVariable("repositoryId") final int repositoryId,
-			@RequestParam(value="unlinked", defaultValue="false") final boolean unlinked,
-			@ModelAttribute final Paging paging) {
-		if (unlinked) {
-			return commitService.getProjectUndeterminedCommitList(repositoryId, paging);
-		} else {
-			return commitService.getCommitListByRepositoryId(repositoryId, paging);
-		}
-	}
-
-	@RequestMapping(value="/repositories/{repositoryId}/commitstats", method=RequestMethod.GET)
-	public Paginated<SvnCommitStats> getRepositoriesCommitStats(final Principal principal,
-			@PathVariable("repositoryId") final int repositoryId,
-			@ModelAttribute final Paging paging) {
-		return commitService.getCommitStatsListByRepositoryId(repositoryId, paging);
-	}
-
-	@RequestMapping(value="/repositories/{repositoryId}/commitstats/{commitId}", method=RequestMethod.GET)
-	public ResponseEntity<SvnCommitStats> getRepositoriesCommitStats(final Principal principal,
-			@PathVariable("repositoryId") final int repositoryId,
-			@PathVariable("commitId") final int commitId,
-			@ModelAttribute final Paging paging) {
-		return httpResponseOfOkOrNotFound(commitService.getCommitStatsByCommitId(commitId));
-	}
-
-	@RequestMapping(value="/repositories/{repositoryId}/commits/{commitId}", method=RequestMethod.GET)
-	public ResponseEntity<SvnCommit> getRepositoriesCommitsCommitId(final Principal principal,
-			@PathVariable("repositoryId") final int repositoryId,
-			@PathVariable("commitId") final int commitId) {
-		return httpResponseOfOkOrNotFound(commitService.getCommitById(commitId));
-	}
-	
-	@RequestMapping(value="/repositories/{repositoryId}/commits/{commitId}/projects", method=RequestMethod.GET)
-	public Paginated<Project> getRepositoriesCommitsCommitIdProjects(final Principal principal,
-			@PathVariable("repositoryId") final int repositoryId,
-			@PathVariable("commitId") final int commitId,
-			@ModelAttribute final Paging paging) {
-		return projectService.getProjectListByCommitId(commitId, paging);
-	}
-	
-	/**
-	 * IDで指定されたコミットにより変更されたパスの一覧を返す.
-	 * 
-	 * @param principal 認証情報
-	 * @param repositoryId リポジトリID
-	 * @param commitId コミットID
-	 * @param paging リクエストパラメータ{@code page}と{@code size}の情報を格納したオブジェクト
-	 * @return コミットにより変更されたパスの一覧
-	 */
-	@RequestMapping(value="/repositories/{repositoryId}/commits/{commitId}/changedpaths", method=RequestMethod.GET)
-	public Paginated<SvnCommitPathWithBranchName> getRepositorysCommitsChangedPaths(final Principal principal,
-			@PathVariable("repositoryId") final int repositoryId,
-			@PathVariable("commitId") final int commitId,
-			@ModelAttribute final Paging paging) {
-		
-		return commitService.getChangedPathListByRepositoryIdAndCommitId(repositoryId, commitId, paging);
 	}
 	
 	private void normalizeRepositoryInfo(final SvnRepository r) {

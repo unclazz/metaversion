@@ -28,7 +28,7 @@ public class CsvController {
 	@RequestMapping(value = "/csv/projects/{projectId}/parallels",
 			produces = MediaType.APPLICATION_OCTET_STREAM_VALUE,
 			method = RequestMethod.GET)
- 	public ResponseEntity<byte[]> getProjectsParallelsListCsvDownload(
+ 	public ResponseEntity<byte[]> getProjectsParallels(
  			@PathVariable("projectId") final int id) throws IOException {
  		final byte[] bytes = parallelsService.getProjectParallelsCsvByProjectId(id);
  		final HttpHeaders headers = new HttpHeaders();
@@ -40,7 +40,7 @@ public class CsvController {
 	@RequestMapping(value = "/csv/projects/{projectId}/changedpaths",
 			produces = MediaType.APPLICATION_OCTET_STREAM_VALUE,
 			method = RequestMethod.GET)
- 	public ResponseEntity<byte[]> getProjectsChangedPathCsvDownload(
+ 	public ResponseEntity<byte[]> getProjectsChangedPaths(
  			@PathVariable("projectId") final int id) throws IOException {
  		final byte[] bytes = commitService.getProjectChangedPathCsvByProjectId(id);
  		final HttpHeaders headers = new HttpHeaders();
@@ -52,7 +52,7 @@ public class CsvController {
 	@RequestMapping(value = "/csv/projects/{projectId}/virtualchangedpaths",
 			produces = MediaType.APPLICATION_OCTET_STREAM_VALUE,
 			method = RequestMethod.GET)
- 	public ResponseEntity<byte[]> getProjectsVirtualChangedPathCsvDownload(
+ 	public ResponseEntity<byte[]> getProjectsVirtualChangedPaths(
  			@PathVariable("projectId") final int id) throws IOException {
  		final byte[] bytes = virtualChangedPathService.getPathCsvByProjectId(id);
  		final HttpHeaders headers = new HttpHeaders();
