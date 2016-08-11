@@ -334,7 +334,9 @@ var MetaVersion;
         entities.repositories.query({ size: 999 }, function name(paginated) {
             $scope.repositories = paginated.list;
             if ($scope.repositories.length > 0) {
-                $scope.cond.repositoryId = paginated.list[0].id;
+                if ($scope.cond.repositoryId === 0) {
+                    $scope.cond.repositoryId = $scope.repositories[0].id;
+                }
                 $scope.pageChange();
             }
         });

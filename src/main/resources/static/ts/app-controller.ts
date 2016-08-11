@@ -1,13 +1,13 @@
 module MetaVersion {
     export interface IErrorData {
     }
-    
+
     interface INavItemSwithes {
         projects :boolean;
         repositories :boolean;
         users :boolean;
     }
-    
+
     interface IParentScope extends ng.IScope {
         size :number;
         totalSize :number;
@@ -20,22 +20,22 @@ module MetaVersion {
         makeTitle :(title :string) => string;
         logImporter :IBatch;
     }
-    
+
     interface IErrorModalScope extends ng.IScope {
         error :IErrorData;
         close :() => void;
     }
-    
+
     interface IWaitingModalScope extends ng.IScope {
         messages :string[];
     }
-    
+
     interface IIndexScope extends IParentScope {
         projectNames :(subseq :string) => ng.IPromise<ng.resource.IResourceArray<string>>;
         submit :() => void;
         like :string
     }
-    
+
     interface IProjectsScope extends IParentScope {
         open :boolean;
         cond :any;
@@ -44,7 +44,7 @@ module MetaVersion {
         pageChange :() => void;
         list :IProject[];
     }
-    
+
     export function indexControllerFn($scope :IIndexScope,
         entities :IEntityService, paths :IPathService, modals :IModalService) {
 		// サジェスト用の関数を作成・設定
@@ -59,11 +59,11 @@ module MetaVersion {
 			paths.stringToPath('projects', {like: $scope.like});
 		};
 	}
-    
+
     export function errorModalControllerFn($scope :IErrorModalScope,
-            $uibModalInstance :ng.ui.bootstrap.IModalServiceInstance, 
+            $uibModalInstance :ng.ui.bootstrap.IModalServiceInstance,
             $log :ng.ILogService, error :IErrorData) {
-            
+
 		// オブジェクトの階層化された表示など便利な面が多々あるためコンソールにも出力する
 		$log.debug(error);
 		// スコープに登録する
@@ -73,23 +73,23 @@ module MetaVersion {
 			$uibModalInstance.dismiss('cancel');
 		};
     }
-    
+
     export function waitingModalControllerFn($scope :IWaitingModalScope,
-            $uibModalInstance :ng.ui.bootstrap.IModalServiceInstance, 
+            $uibModalInstance :ng.ui.bootstrap.IModalServiceInstance,
             $log :ng.ILogService, messages :string[]) {
 		$scope.messages = messages;
 	}
-    
+
     export function parentControllerFn($scope :IParentScope,
-        $location :ng.ILocationService, $interval :ng.IIntervalService, 
+        $location :ng.ILocationService, $interval :ng.IIntervalService,
         $log :ng.ILogService, entities :IEntityService) {
-        
+
 		// Paginationディレクティブのためのデフォルト値
 		// ＊外部スコープにてページネーションに関わる値─とくにtotalSizeを初期化することで、
 		// 画面初期表示時にページ番号が強制的にリセットされてしまう問題への対策としている。
 		$scope.size = 25;
 		$scope.totalSize = Number.MAX_VALUE;
-		
+
 		// ナビの項目のアクティブ/非アクティブを制御するためのマップ
 		$scope.navItems = {
 				projects: false,
@@ -105,7 +105,7 @@ module MetaVersion {
             $scope.navItems.repositories = endsWith(path, "repositories");
             $scope.navItems.users = endsWith(path, "users");
 		});
-		
+
 		var updateLogImporter = function() {
 			entities.batches.query({}, function(data :{list :IBatch[]}) {
 				const list = data.list;
@@ -133,12 +133,12 @@ module MetaVersion {
 			return title;
 		}
     }
-    
+
 	// プロジェクト一覧画面のためのコントローラ
-	export function projectsControllerFn($log :ng.ILogService, 
+	export function projectsControllerFn($log :ng.ILogService,
             $scope :IProjectsScope, $location :ng.ILocationService,
             entities :IEntityService, paths :IPathService, modals :IModalService) {
-		
+
         $scope.open = true;
 		// クエリ文字列をもとに検索条件を初期化
 		$scope.cond = paths.queryToObject({page: 1, pathbase: 0, like: ''});
@@ -177,31 +177,31 @@ module MetaVersion {
 		// 初期表示
 		$scope.pageChange();
 	}
-    
+
     interface IProjectsProjectIdScope extends IParentScope {
         project :IProjectStats;
     }
-    
+
     export function projectsProjectIdControllerFn($log :ng.ILogService,
-        $scope :IProjectsProjectIdScope, entities :IEntityService, 
+        $scope :IProjectsProjectIdScope, entities :IEntityService,
         paths :IPathService, modals :IModalService) {
 		$scope.project = entities.projectStats.get({id: paths.pathToIds().projectId},
 				angular.noop, modals.errorModal)
     }
-    
+
 	// プロジェクト編集画面のためのコントローラ
 	// .controller('projects$projectId$edit',
-    
+
     interface IProjectsProjectIdEditScope extends IParentScope {
         submit : () => void;
         dpChange : () => void;
         project : IProject;
 		dpOptions : any;
 		dpDate : Date;
-    } 
-    
-    export function projectsProjectIdEditControllerFn($log :ng.ILogService, 
-        $scope :IProjectsProjectIdEditScope, $location :ng.ILogService, 
+    }
+
+    export function projectsProjectIdEditControllerFn($log :ng.ILogService,
+        $scope :IProjectsProjectIdEditScope, $location :ng.ILogService,
         entities :IEntityService, paths :IPathService, modals :IModalService, $filter: any) {
 
 		const ids = paths.pathToIds();
@@ -211,7 +211,7 @@ module MetaVersion {
 		} else {
 			$scope.project = <IProject>({id: undefined});
 		}
-		
+
 		$scope.submit = function() {
 			if (ids.projectId !== undefined) {
                 entities.projects.resave($scope.project, successCallback, modals.errorModal);
@@ -219,7 +219,7 @@ module MetaVersion {
                 entities.projects.save($scope.project, successCallback, modals.errorModal);
 			}
 		};
-        
+
         function successCallback(data :IProject) {
             paths.stringToPath('projects/' + data.id);
         }
@@ -233,22 +233,22 @@ module MetaVersion {
 			$scope.project.scheduledReleaseDate = $filter('date')($scope.dpDate, 'yyyy/MM/dd HH:mm:ss.sss');
 		};
 	}
-    
+
     export function projectsProjectIdDeleteControllerFn ($log :ng.ILogService,
-        $scope :IProjectsProjectIdEditScope, entities :IEntityService, 
+        $scope :IProjectsProjectIdEditScope, entities :IEntityService,
         paths :IPathService, modals :IModalService) {
 
 		var ids = paths.pathToIds();
 		$scope.project = entities.projects.get({id: paths.pathToIds().projectId},
 				angular.noop, modals.errorModal);
-		
+
 		$scope.submit = function() {
             entities.projects.resave($scope.project, function (data) {
 				paths.stringToPath('projects');
 			}, modals.errorModal);
 		};
 	}
-    
+
     interface IProjectsProjectIdCommitsScope extends IParentScope {
         project :IProjectStats;
         list :IProjectCommit[];
@@ -260,8 +260,8 @@ module MetaVersion {
     }
 
 	// プロジェクトコミット一覧画面のためのコントローラ
-    export function projectsProjectIdCommitsControllerFn($log :ng.ILogService, 
-        $scope :IProjectsProjectIdCommitsScope, entities :IEntityService, 
+    export function projectsProjectIdCommitsControllerFn($log :ng.ILogService,
+        $scope :IProjectsProjectIdCommitsScope, entities :IEntityService,
         paths :IPathService, modals :IModalService) {
 		// パスからID情報を取得
 		var ids = paths.pathToIds();
@@ -304,7 +304,7 @@ module MetaVersion {
 		// 初期表示
 		$scope.pageChange();
 	}
-	
+
     interface IProjectsProjectIdVirtualChangedPathsScope extends IParentScope {
         project :IProjectStats;
         list :IProjectCommit[];
@@ -315,7 +315,7 @@ module MetaVersion {
     }
 
 	// プロジェクト仮想変更パス一覧画面のためのコントローラ
-    export function projectsProjectIdVirtualChangedPathsControllerFn($log :ng.ILogService, 
+    export function projectsProjectIdVirtualChangedPathsControllerFn($log :ng.ILogService,
         $scope :IProjectsProjectIdVirtualChangedPathsScope, $location :ng.ILocationService,
 		entities :IEntityService, paths :IPathService, modals :IModalService) {
 
@@ -326,7 +326,7 @@ module MetaVersion {
 		$scope.cond = angular.extend(paths.queryToObject({page: 1}), ids);
 		// ページ変更時にコールされる関数を作成・設定
 		$scope.pageChange = function() {
-			entities.projectVirtualChangedPaths.query($scope.cond, 
+			entities.projectVirtualChangedPaths.query($scope.cond,
 			function(paginated :IPaginated<IProjectChangedPath>) {
 				$scope.totalSize = paginated.totalSize;
 				$scope.size = paginated.size;
@@ -342,16 +342,16 @@ module MetaVersion {
 			return nativePath + 'csv' + ngPath;
 		};
 	}
-	
+
     interface IProjectsProjectIdVirtualChangedPathsIdDeleteScope extends IParentScope {
         project :IProjectStats;
         path :IProjectVirtualChangedPath;
         submit :() => void;
     }
-	
+
 	// プロジェクトコミット紐付け解除画面のためのコントローラ
-	export function projectsProjectIdVirtualChangedPathsIdDeleteControllerFn($log :ng.ILogService, 
-			$scope :IProjectsProjectIdVirtualChangedPathsIdDeleteScope, 
+	export function projectsProjectIdVirtualChangedPathsIdDeleteControllerFn($log :ng.ILogService,
+			$scope :IProjectsProjectIdVirtualChangedPathsIdDeleteScope,
 			entities :IEntityService, paths :IPathService, modals :IModalService) {
 		var ids = paths.pathToIds();
 		$scope.project = entities.projectStats.get({id: ids.projectId},
@@ -364,7 +364,7 @@ module MetaVersion {
 			}, modals.errorModal);
 		};
 	}
-	
+
 	/**
 	 * プロジェクト仮想変更パス追加画面のためのスコープ.
 	 */
@@ -378,14 +378,14 @@ module MetaVersion {
         click :($event :Event) => void;
         pageChange :() => void;
     }
-	
+
 	/**
 	 * プロジェクト仮想変更パス追加画面のためのコントローラ.
 	 */
-	export function projectsProjectIdVirtualChangedPathsAddControllerFn($log :ng.ILogService, 
-			$scope :IProjectsProjectIdVirtualChangedPathsAddScope, 
+	export function projectsProjectIdVirtualChangedPathsAddControllerFn($log :ng.ILogService,
+			$scope :IProjectsProjectIdVirtualChangedPathsAddScope,
 			entities :IEntityService, paths :IPathService, modals :IModalService) {
-		
+
 		// パスからID情報を取得
 		var ids = paths.pathToIds();
 		// プロジェクト情報を取得
@@ -402,7 +402,9 @@ module MetaVersion {
 		entities.repositories.query({size: 999}, function name(paginated: IPaginated<IRepository>) {
 			$scope.repositories = paginated.list;
 			if ($scope.repositories.length > 0) {
-				$scope.cond.repositoryId = paginated.list[0].id;
+        if ($scope.cond.repositoryId === 0) {
+          $scope.cond.repositoryId = $scope.repositories[0].id;
+        }
 				$scope.pageChange();
 			}
 		});
@@ -428,7 +430,7 @@ module MetaVersion {
 		// 初期表示
 		$scope.pageChange();
 	}
-	
+
     interface IProjectsProjectIdCommitsLinkScope extends IParentScope {
         project :IProjectStats;
         list :IProjectCommit[];
@@ -439,12 +441,12 @@ module MetaVersion {
         click :($event :Event) => void;
         pageChange :() => void;
     }
-	
+
 	// プロジェクトコミット紐付け画面のためのコントローラ
-	export function projectsProjectIdCommitsLinkControllerFn($log :ng.ILogService, 
-			$scope :IProjectsProjectIdCommitsLinkScope, 
+	export function projectsProjectIdCommitsLinkControllerFn($log :ng.ILogService,
+			$scope :IProjectsProjectIdCommitsLinkScope,
 			entities :IEntityService, paths :IPathService, modals :IModalService) {
-		
+
 		// パスからID情報を取得
 		var ids = paths.pathToIds();
 		// プロジェクト情報を取得
@@ -491,16 +493,16 @@ module MetaVersion {
 		// 初期表示
 		$scope.pageChange();
 	}
-	
+
     interface IProjectsProjectIdCommitsCommitIdDeleteScope extends IParentScope {
         project :IProjectStats;
         commit :IProjectCommit;
         submit :() => void;
     }
-	
+
 	// プロジェクトコミット紐付け解除画面のためのコントローラ
-	export function projectsProjectIdCommitsCommitIdDeleteControllerFn($log :ng.ILogService, 
-			$scope :IProjectsProjectIdCommitsCommitIdDeleteScope, 
+	export function projectsProjectIdCommitsCommitIdDeleteControllerFn($log :ng.ILogService,
+			$scope :IProjectsProjectIdCommitsCommitIdDeleteScope,
 			entities :IEntityService, paths :IPathService, modals :IModalService) {
 		var ids = paths.pathToIds();
 		$scope.project = entities.projectStats.get({id: ids.projectId},
@@ -513,7 +515,7 @@ module MetaVersion {
 			}, modals.errorModal);
 		};
 	}
-    
+
     interface IProjectsProjectIdChangedpathsScope extends IParentScope {
         project :IProjectStats;
 		list: IProjectChangedPath[];
@@ -522,13 +524,13 @@ module MetaVersion {
         csvDowloadUrl :() => string;
         pageChange :() => void;
     }
-	
+
 	// プロジェクト変更パス一覧画面のためのコントローラ
 	export function projectsProjectIdChangedpathsControllerFn ($log :ng.ILogService,
-			$scope :IProjectsProjectIdChangedpathsScope, 
+			$scope :IProjectsProjectIdChangedpathsScope,
 			$location :ng.ILocationService, entities :IEntityService,
 			paths :IPathService, modals :IModalService) {
-				
+
 		var ids = paths.pathToIds();
 		$scope.project = entities.projectStats.get({id: ids.projectId},
 				angular.noop, modals.errorModal);
@@ -536,7 +538,7 @@ module MetaVersion {
 		$scope.cond = angular.extend(paths.queryToObject({page: 1}), ids);
 		// ページ変更時にコールされる関数を作成・設定
 		$scope.pageChange = function() {
-			entities.projectChangedPaths.query($scope.cond, 
+			entities.projectChangedPaths.query($scope.cond,
 			function(paginated :IPaginated<IProjectChangedPath>) {
 				$scope.totalSize = paginated.totalSize;
 				$scope.size = paginated.size;
@@ -552,7 +554,7 @@ module MetaVersion {
 			return nativePath + 'csv' + ngPath;
 		};
 	}
-	
+
     interface IProjectsProjectIdParallelsScope extends IParentScope {
         project :IProjectStats;
 		list: IProjectParallel[];
@@ -560,11 +562,11 @@ module MetaVersion {
         csvDowloadUrl :() => string;
         pageChange :() => void;
     }
-	
-	export function projectsProjectIdParallelsControllerFn ($log :ng.ILogService, 
-			$scope :IProjectsProjectIdParallelsScope, $location :ng.ILocationService, 
+
+	export function projectsProjectIdParallelsControllerFn ($log :ng.ILogService,
+			$scope :IProjectsProjectIdParallelsScope, $location :ng.ILocationService,
 			entities :IEntityService, paths :IPathService, modals :IModalService) {
-				
+
 		var ids = paths.pathToIds();
 		$scope.project = entities.projectStats.get({id: ids.projectId},
 				angular.noop, modals.errorModal);
@@ -572,7 +574,7 @@ module MetaVersion {
 		$scope.cond = angular.extend(paths.queryToObject({page: 1}), ids);
 		// ページ変更時にコールされる関数を作成・設定
 		$scope.pageChange = function() {
-			entities.projectParallels.query($scope.cond, 
+			entities.projectParallels.query($scope.cond,
 			function(paginated :IPaginated<IProjectParallel>) {
 				$scope.totalSize = paginated.totalSize;
 				$scope.size = paginated.size;
@@ -593,7 +595,7 @@ module MetaVersion {
 			var repeated = function(name :string, value :string) {
 				var prevValue = previous[name];
 				previous[name] = value;
-				return (prevValue !== undefined && prevValue == value); 
+				return (prevValue !== undefined && prevValue == value);
 			};
 			for (var i = 0; i < list.length; i ++) {
 				var item :any = list[i];
@@ -615,17 +617,17 @@ module MetaVersion {
         csvDowloadUrl :() => string;
         pageChange :() => void;
     }
-	
+
 	// リポジトリ一覧画面のためのコントローラ
 	export function repositoriesControllerFn ($log :ng.ILogService,
-			$location :ng.ILocationService, $scope :IRepositoriesScope, 
+			$location :ng.ILocationService, $scope :IRepositoriesScope,
 			entities :IEntityService, paths :IPathService, modals :IModalService) {
 		// クエリ文字列をもとに検索条件を初期化
 		$scope.cond = paths.queryToObject({page: 1});
 		// ページ変更時にコールされる関数を作成・設定
 		$scope.pageChange = function() {
 			// APIを介してリポジトリ一覧を取得
-			entities.repositories.query($scope.cond, 
+			entities.repositories.query($scope.cond,
 			function(paginated :IPaginated<IRepository>) {
 				$scope.totalSize = paginated.totalSize;
 				$scope.size = paginated.size;
@@ -636,35 +638,35 @@ module MetaVersion {
 		// 初期表示
 		$scope.pageChange();
 	}
-	
+
     interface IRepositoriesRepositoryIdScope extends IParentScope {
 		repository: IRepository;
     }
-	
+
 	// リポジトリ詳細画面のためのコントローラ
 	export function repositoriesRepositoryIdControllerFn ($log :ng.ILogService,
-			$location :ng.ILocationService, $scope :IRepositoriesRepositoryIdScope, 
+			$location :ng.ILocationService, $scope :IRepositoriesRepositoryIdScope,
 			entities :IEntityService, paths :IPathService, modals :IModalService) {
-				
+
 		// パスからリポジトリIDを読み取る
 		var ids = paths.pathToIds();
 		// APIを介してリポジトリ情報を取得
 		$scope.repository = entities.repositories.get({id: ids.repositoryId},
 				angular.noop, modals.errorModal);
 	}
-	
+
     interface IRepositoriesRepositoryIdCommitsScope extends IParentScope {
 		repository: IRepository;
 		cond :any;
 		list : IRepositoryCommitStats[];
 		pageChange : () => void;
     }
-	
+
 	// リポジトリコミット一覧画面のためのコントローラ
 	export function repositoriesRepositoryIdCommitsControllerFn ($log :ng.ILogService,
-			$location :ng.ILocationService, $scope :IRepositoriesRepositoryIdCommitsScope, 
+			$location :ng.ILocationService, $scope :IRepositoriesRepositoryIdCommitsScope,
 			entities :IEntityService, paths :IPathService, modals :IModalService) {
-				
+
 		// パスからリポジトリIDを読み取る
 		var ids = paths.pathToIds();
 		// APIを介してリポジトリ情報を取得
@@ -683,21 +685,21 @@ module MetaVersion {
 				if (paginated.page > 1) paths.entryToQuery('page', paginated.page);
 			}, modals.errorModal);
 		};
-		
+
 		// 初期表示
 		$scope.pageChange();
 	}
-	
+
     interface IRepositoriesRepositoryIdEditScope extends IParentScope {
 		repository: IRepository;
 		cond :any;
 		list : IRepositoryCommitStats[];
 		submit : () => void;
     }
-	
+
 	// リポジトリ編集画面のためのコントローラ
 	export function repositoriesRepositoryIdEditControllerFn ($log :ng.ILogService,
-			$location :ng.ILocationService, $scope :IRepositoriesRepositoryIdEditScope, 
+			$location :ng.ILocationService, $scope :IRepositoriesRepositoryIdEditScope,
 			entities :IEntityService, paths :IPathService, modals :IModalService) {
 		// パスからIDを読み取る
 		var ids = paths.pathToIds();
@@ -714,7 +716,7 @@ module MetaVersion {
 				password: ''
 			});
 		}
-		
+
 		$scope.submit = function() {
 			var waitingModal = modals.waitingModal('リポジトリの登録・更新処理を実行中です。');
 			function successFn (data :IRepository) {
@@ -729,7 +731,7 @@ module MetaVersion {
 					waitingModal.close();
 				});
 			}
-			
+
 			if (ids.repositoryId !== undefined) {
 				entities.repositories.resave($scope.repository, successFn, errorFn);
 			} else {
@@ -737,39 +739,39 @@ module MetaVersion {
 			}
 		};
 	}
-	
+
     interface IRepositoriesRepositoryIdDeleteScope extends IParentScope {
 		repository: IRepository;
 		submit : () => void;
     }
-	
+
 	// リポジトリ削除画面のためのコントローラ
 	export function repositoriesRepositoryIdDeleteControllerFn ($log :ng.ILogService,
-			$location :ng.ILocationService, $scope :IRepositoriesRepositoryIdEditScope, 
+			$location :ng.ILocationService, $scope :IRepositoriesRepositoryIdEditScope,
 			entities :IEntityService, paths :IPathService, modals :IModalService) {
-		
+
 		// パスからIDを読み取る
 		var ids = paths.pathToIds();
 		$scope.repository = entities.repositories.get({id: paths.pathToIds().repositoryId},
 				angular.noop, modals.errorModal);
-		
+
 		$scope.submit = function() {
 			entities.repositories.remove(function (data :IRepository) {
 				paths.stringToPath('repositories');
 			}, modals.errorModal);
 		};
 	}
-	
+
     interface IRepositoriesRepositoryIdCommitsCommitIdScope extends IParentScope {
 		commit: IRepositoryCommitStats;
 		projectList : IRepositoryCommitProject[];
     }
-	
+
 	// コミット詳細画面のためのコントローラ
 	export function repositoriesRepositoryIdCommitsCommitIdControllerFn ($log :ng.ILogService,
-			$location :ng.ILocationService, $scope :IRepositoriesRepositoryIdCommitsCommitIdScope, 
+			$location :ng.ILocationService, $scope :IRepositoriesRepositoryIdCommitsCommitIdScope,
 			entities :IEntityService, paths :IPathService, modals :IModalService) {
-				
+
 		// パスからリポジトリIDやコミットIDを読み取る
 		var ids = paths.pathToIds();
 		// APIを介してコミット情報を取得
@@ -779,7 +781,7 @@ module MetaVersion {
 		$scope.projectList = entities.repositoryCommitProjects.query(ids,
 				angular.noop, modals.errorModal);
 	}
-	
+
     interface IRepositoriesRepositoryIdCommitsCommitIdLinkScope extends IParentScope {
 		commit: IRepositoryCommitStats;
 		open: boolean;
@@ -791,11 +793,11 @@ module MetaVersion {
 		click: () => void;
 		pageChange: () => void;
     }
-	
+
 	export function repositoriesRepositoryIdCommitsCommitIdLinkControllerFn ($log :ng.ILogService,
-			$location :ng.ILocationService, $scope :IRepositoriesRepositoryIdCommitsCommitIdLinkScope, 
+			$location :ng.ILocationService, $scope :IRepositoriesRepositoryIdCommitsCommitIdLinkScope,
 			entities :IEntityService, paths :IPathService, modals :IModalService) {
-				
+
 		// パスからリポジトリIDやコミットIDを読み取る
 		var ids = paths.pathToIds();
 		// APIを介してコミット情報を取得
@@ -835,7 +837,7 @@ module MetaVersion {
 		// ページ変更時にコールされる関数を作成・設定
 		$scope.pageChange = function() {
 			// APIを介してプロジェクト一覧を取得
-			entities.projects.query($scope.cond, 
+			entities.projects.query($scope.cond,
 			function(paginated :IPaginated<IProject>) {
 				// 取得に成功したら結果を画面に反映させる
 				$scope.totalSize = paginated.totalSize;
@@ -847,7 +849,7 @@ module MetaVersion {
 		};
 		// 初期表示
 		$scope.pageChange();
-		
+
 		$scope.click = function() {
 			for (var i = 0; i < $scope.list.length; i ++) {
 				var item :any = $scope.list[i];
@@ -856,14 +858,14 @@ module MetaVersion {
 				entities.projectCommits.save(link, $scope.pageChange, modals.errorModal);
 			}
 		};
-		
+
 		var appendSelectedStatus = function (list :any) {
 			for (var i = 0; i < list.length; i ++) {
 				list[i].selected = false;
 			}
 		}
 	}
-	
+
     interface IRepositoriesRepositoryIdCommitsCommitIdChangedpathsScope extends IParentScope {
 		commit: IRepositoryCommitStats;
 		projectList : IRepositoryCommitProject[];
@@ -872,11 +874,11 @@ module MetaVersion {
 		list : IRepositoryCommitChangedPath[];
 		pageChange: () => void;
     }
-	
+
 	export function repositoriesRepositoryIdCommitsCommitIdChangedpathsControllerFn ($log :ng.ILogService,
-			$location :ng.ILocationService, $scope :IRepositoriesRepositoryIdCommitsCommitIdChangedpathsScope, 
+			$location :ng.ILocationService, $scope :IRepositoriesRepositoryIdCommitsCommitIdChangedpathsScope,
 			entities :IEntityService, paths :IPathService, modals :IModalService) {
-				
+
 		// パスからリポジトリIDやコミットIDを読み取る
 		var ids = paths.pathToIds();
 		// APIを介してコミット情報を取得
@@ -889,7 +891,7 @@ module MetaVersion {
 		$scope.cond = angular.extend(paths.queryToObject({page: 1}), ids);
 		// ページ変更時にコールされる関数を作成・設定
 		$scope.pageChange = function() {
-			entities.repositoryCommitChangedPaths.query($scope.cond, 
+			entities.repositoryCommitChangedPaths.query($scope.cond,
 			function(paginated :IPaginated<IRepositoryCommitChangedPath>) {
 				// 取得に成功したら結果を画面に反映させる
 				$scope.totalSize = paginated.totalSize;
@@ -901,22 +903,22 @@ module MetaVersion {
 		// 初期表示
 		$scope.pageChange();
 	}
-	
+
     interface IUsersScope extends IParentScope {
 		cond: any;
 		list: IUser[];
 		pageChange: () => void;
     }
-	
+
 	// ユーザ一覧画面のためのコントローラ
 	export function usersControllerFn ($log :ng.ILogService,
-			$location :ng.ILocationService, $scope :IUsersScope, 
+			$location :ng.ILocationService, $scope :IUsersScope,
 			entities :IEntityService, paths :IPathService, modals :IModalService) {
 		// クエリ文字列をもとに検索条件を初期化
 		$scope.cond = paths.queryToObject({page: 1});
 		// ページ変更時にコールされる関数を作成・設定
 		$scope.pageChange = function() {
-			entities.users.query($scope.cond, 
+			entities.users.query($scope.cond,
 			function(paginated :IPaginated<IUser>) {
 				$scope.totalSize = paginated.totalSize;
 				$scope.size = paginated.size;
@@ -927,15 +929,15 @@ module MetaVersion {
 		// 初期表示
 		$scope.pageChange();
 	}
-	
+
     interface IUsersUserIdEditScope extends IParentScope {
 		user: IUser;
 		submit: () => void;
     }
-	
+
 	// ユーザ編集画面のためのコントローラ
 	export function usersUserIdEditControllerFn ($log :ng.ILogService,
-			$location :ng.ILocationService, $scope :IUsersUserIdEditScope, 
+			$location :ng.ILocationService, $scope :IUsersUserIdEditScope,
 			entities :IEntityService, paths :IPathService, modals :IModalService) {
 		// パスからIDを読み取る
 		var ids = paths.pathToIds();
@@ -946,7 +948,7 @@ module MetaVersion {
 		} else {
 			$scope.user = new entities.users({id: undefined});
 		}
-		
+
 		$scope.submit = function() {
 			function successFn(data: any) {
 				paths.stringToPath('users');
@@ -958,25 +960,25 @@ module MetaVersion {
 			}
 		};
 	}
-	
+
 	// ユーザ削除画面のためのコントローラ
 	export function usersUserIdDeleteControllerFn ($log :ng.ILogService,
-			$location :ng.ILocationService, $scope :IUsersUserIdEditScope, 
+			$location :ng.ILocationService, $scope :IUsersUserIdEditScope,
 			entities :IEntityService, paths :IPathService, modals :IModalService) {
-				
+
 		// パスからIDを読み取る
 		var ids = paths.pathToIds();
 		$scope.user = entities.users.get({id: paths.pathToIds().userId},
 				angular.noop, modals.errorModal);
-		
+
 		$scope.submit = function() {
 			entities.users.remove(function (data :any) {
 				paths.stringToPath('users');
 			}, modals.errorModal);
 		};
 	}
-	
-	
+
+
     function endsWith(target: string, subseq :string) {
         const tl = target.length;
         const sl = subseq.length;
