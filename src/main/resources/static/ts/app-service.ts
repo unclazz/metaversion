@@ -14,7 +14,7 @@ module MetaVersion {
         commitId :number;
 		virtualChangedPathId :number;
     }
-    
+
     /**
      * RESTful APIにアクセスするためのリソース・クラスのコレクション.
      */
@@ -36,16 +36,16 @@ module MetaVersion {
         repositoryPathNames :ng.resource.IResourceClass<string>;
         projectNames :ng.resource.IResourceClass<string>;
     }
-    
+
     export interface IResourceClassResavable<T> extends ng.resource.IResourceClass<T> {
-        resave(params :any, success :(data :IProject) => void, error? :Function) : T;
+        resave(params :any, success :(data :T) => void, error? :Function) : T;
     }
-    
+
     export interface IModalService {
         errorModal : (e :IErrorData) => ng.ui.bootstrap.IModalServiceInstance;
         waitingModal : (...ms :string[]) => ng.ui.bootstrap.IModalServiceInstance;
     }
-    
+
     export function pathsFactoryFn($log :ng.ILogService,
             $location :ng.ILocationService) {
         const p :IPathService = <IPathService>{};
@@ -116,11 +116,11 @@ module MetaVersion {
 		};
         return p;
     }
-    
+
     export function modalsFactoryFn($log :ng.ILogService,
             $uibModal :ng.ui.bootstrap.IModalService,
             $location :ng.ILocationService) {
-        
+
         const m :IModalService = <IModalService>{};
         m.errorModal = function(error) {
 			return $uibModal.open({
