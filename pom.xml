@@ -5,7 +5,7 @@
     <groupId>org.unclazz</groupId>
 	<artifactId>metaversion</artifactId>
 	<name>MetaVersion</name>
-	<version>1.3.2-RELEASE</version>
+	<version>1.3.3-RELEASE</version>
 	<description></description>
 	<packaging>war</packaging>
 
