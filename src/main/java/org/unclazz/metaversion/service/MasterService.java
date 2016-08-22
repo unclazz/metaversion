@@ -1,5 +1,6 @@
 package org.unclazz.metaversion.service;
 
+import java.util.Calendar;
 import java.util.Date;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,6 +50,14 @@ public class MasterService {
 	@Autowired
 	private SystemBootLogService bootLogService;
 	
+	private Date anHourAgo() {
+		final Date now = new Date();
+		final Calendar cal = Calendar.getInstance();
+		cal.setTime(now);
+		cal.add(Calendar.HOUR_OF_DAY, -1);
+		return cal.getTime();
+	}
+	
 	/**
 	 * マスタデータを初期化する.
 	 * @param auth 認証済みユーザ情報
@@ -56,7 +65,7 @@ public class MasterService {
 	 */
 	@Transactional
 	public void initializeMaster() {
-		final Date now = new Date();
+		final Date anHourAgo = anHourAgo();
 		final User defaultAdmin = new User();
 		defaultAdmin.setId(0);
 		defaultAdmin.setName(props.getDefaultAdminName());
@@ -81,8 +90,8 @@ public class MasterService {
 			
 			final OnlineBatchLock lock = new OnlineBatchLock();
 			lock.setId(onlineBatchLockMapper.selectNextVal());
-			lock.setLastLockDate(now);
-			lock.setLastUnlockDate(now);
+			lock.setLastLockDate(anHourAgo);
+			lock.setLastUnlockDate(anHourAgo);
 			lock.setLocked(false);
 			lock.setProgramId(value.getId());
 			lock.setSystemBootDate(bootLogService.getSystemBootDate());
@@ -91,8 +100,8 @@ public class MasterService {
 			final OnlineBatchLog log = new OnlineBatchLog();
 			log.setId(onlineBatchLogMapper.selectNextVal());
 			log.setProgramId(value.getId());
-			log.setStartDate(now);
-			log.setEndDate(now);
+			log.setStartDate(anHourAgo);
+			log.setEndDate(anHourAgo);
 			log.setStatusId(OnlineBatchStatus.ENDED.getId());
 			onlineBatchLogMapper.insert(log, auth);
 		}
