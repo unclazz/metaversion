@@ -185,7 +185,7 @@ module MetaVersion {
     export function projectsProjectIdControllerFn($log :ng.ILogService,
         $scope :IProjectsProjectIdScope, entities :IEntityService,
         paths :IPathService, modals :IModalService) {
-		$scope.project = entities.projectStats.get({id: paths.pathToIds().projectId},
+		    $scope.project = entities.projectStats.get({id: paths.pathToIds().projectId},
 				angular.noop, modals.errorModal)
     }
 
@@ -196,8 +196,8 @@ module MetaVersion {
         submit : () => void;
         dpChange : () => void;
         project : IProject;
-		dpOptions : any;
-		dpDate : Date;
+    		dpOptions : any;
+    		dpDate : Date;
     }
 
     export function projectsProjectIdEditControllerFn($log :ng.ILogService,
@@ -226,7 +226,7 @@ module MetaVersion {
 
 		$scope.dpOptions = {
 			showWeeks : false,
-			initDate : null
+			initDate : new Date()
 		};
 
 		$scope.dpChange = function() {

@@ -242,7 +242,7 @@ var MetaVersion;
         }
         $scope.dpOptions = {
             showWeeks: false,
-            initDate: null
+            initDate: new Date()
         };
         $scope.dpChange = function () {
             $scope.project.scheduledReleaseDate = $filter('date')($scope.dpDate, 'yyyy/MM/dd HH:mm:ss.sss');
