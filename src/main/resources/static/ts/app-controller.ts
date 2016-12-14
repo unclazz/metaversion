@@ -243,7 +243,7 @@ module MetaVersion {
 				angular.noop, modals.errorModal);
 
 		$scope.submit = function() {
-            entities.projects.resave($scope.project, function (data) {
+      entities.projects.delete($scope.project, function (data :any) {
 				paths.stringToPath('projects');
 			}, modals.errorModal);
 		};
@@ -752,11 +752,12 @@ module MetaVersion {
 
 		// パスからIDを読み取る
 		var ids = paths.pathToIds();
-		$scope.repository = entities.repositories.get({id: paths.pathToIds().repositoryId},
+		$scope.repository = entities.repositories.get({id: ids.repositoryId},
 				angular.noop, modals.errorModal);
 
 		$scope.submit = function() {
-			entities.repositories.remove(function (data :IRepository) {
+			entities.repositories.delete({id: ids.repositoryId},
+      function (data :any) {
 				paths.stringToPath('repositories');
 			}, modals.errorModal);
 		};

@@ -253,7 +253,7 @@ var MetaVersion;
         var ids = paths.pathToIds();
         $scope.project = entities.projects.get({ id: paths.pathToIds().projectId }, angular.noop, modals.errorModal);
         $scope.submit = function () {
-            entities.projects.resave($scope.project, function (data) {
+            entities.projects.delete($scope.project, function (data) {
                 paths.stringToPath('projects');
             }, modals.errorModal);
         };
@@ -539,9 +539,9 @@ var MetaVersion;
     MetaVersion.repositoriesRepositoryIdEditControllerFn = repositoriesRepositoryIdEditControllerFn;
     function repositoriesRepositoryIdDeleteControllerFn($log, $location, $scope, entities, paths, modals) {
         var ids = paths.pathToIds();
-        $scope.repository = entities.repositories.get({ id: paths.pathToIds().repositoryId }, angular.noop, modals.errorModal);
+        $scope.repository = entities.repositories.get({ id: ids.repositoryId }, angular.noop, modals.errorModal);
         $scope.submit = function () {
-            entities.repositories.remove(function (data) {
+            entities.repositories.delete({ id: ids.repositoryId }, function (data) {
                 paths.stringToPath('repositories');
             }, modals.errorModal);
         };
